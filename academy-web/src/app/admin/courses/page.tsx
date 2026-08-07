@@ -13,26 +13,12 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface Course {
-  _id: string;
-  title: string;
-  description: string;
-  ageRange: string;
-  level: "Beginner" | "Intermediate" | "Advanced";
-  duration: string;
-  schedule: string;
-  price: number;
-  instructor: string;
-  maxStudents: number;
-  enrolledCount: number;
-  isActive: boolean;
-}
+import type { Course } from "@/types/course";
 
 const EMPTY: Omit<Course, "_id"> = {
   title: "", description: "", ageRange: "8–16",
   level: "Beginner", duration: "", schedule: "",
-  price: 0, instructor: "", maxStudents: 12, enrolledCount: 0, isActive: true,
+  price: 0, instructor: "", maxStudents: 50, enrolledCount: 0, isActive: true,
 };
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;

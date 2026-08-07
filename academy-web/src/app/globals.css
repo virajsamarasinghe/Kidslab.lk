@@ -33,8 +33,15 @@
 }
 
 :root {
-  --brand-navy: #1d2b52;
-  --brand-red: #8b1c1c;
+  /* ── Circuit-board palette ──
+     Circuit  — near-black solder-mask green, primary dark surface/CTA
+     Copper   — warm metallic accent, replaces the old red accent
+     Signal   — electric blue, secondary accent / trust cue
+     Paper    — warm off-white, replaces clinical pure white in places */
+  --brand-navy: #0f2418;
+  --brand-red: #e08a3c;
+  --brand-blue: #2b5fe0;
+  --brand-paper: #f7f5ee;
   --background: oklch(1 0 0);
   --foreground: oklch(0.13 0.02 264);
   --card: oklch(1 0 0);
@@ -99,9 +106,9 @@
 .text-display-xl {
   font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
   font-size: clamp(2.5rem, 3.6vw, 5.5rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.05;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
 }
 
 /* Section headings */
@@ -136,19 +143,12 @@
   letter-spacing: 0em;
 }
 
-/* Section label */
+/* Section label — set in mono, like a PCB silkscreen part number */
 .text-label {
-  font-size: clamp(0.68rem, 0.55vw, 0.85rem);
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-/* Section labels — ALL CAPS */
-.text-label {
-  font-size: 0.75rem;    /* 12px */
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(0.68rem, 0.55vw, 0.8rem);
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -162,6 +162,84 @@
 .btn-register {
   position: relative;
   overflow: hidden;
+}
+
+/* ── Solid brand-color buttons — inline bg wins over Tailwind hover
+     classes by specificity, so give them a real hover state here ── */
+.btn-brand-navy {
+  background-color: var(--brand-navy);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.btn-brand-navy:hover {
+  background-color: color-mix(in srgb, var(--brand-navy) 85%, black);
+}
+.btn-brand-navy:active {
+  background-color: color-mix(in srgb, var(--brand-navy) 75%, black);
+}
+
+.btn-brand-copper {
+  background-color: var(--brand-red);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+.btn-brand-copper:hover {
+  background-color: color-mix(in srgb, var(--brand-red) 85%, black);
+}
+.btn-brand-copper:active {
+  background-color: color-mix(in srgb, var(--brand-red) 75%, black);
+}
+
+/* ── Signature: circuit-trace motif ──
+   A thin trace with a "via" pad at each end — used under eyebrow labels
+   as a connective device, standing in for the generic underline/divider. */
+.pcb-trace {
+  display: block;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--brand-red) 0%,
+    color-mix(in srgb, var(--brand-red) 35%, transparent) 70%,
+    transparent 100%
+  );
+  position: relative;
+}
+.pcb-trace::before {
+  content: "";
+  position: absolute;
+  left: -3px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--brand-red);
+  transform: translateY(-50%);
+}
+
+/* ── Signature: PCB edge-connector card ──
+   Small copper "pads" notched into the top corners, like the gold
+   fingers on a circuit board's edge connector. */
+.pcb-card {
+  position: relative;
+}
+.pcb-card::before,
+.pcb-card::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  width: 14px;
+  height: 3px;
+  background: var(--brand-red);
+  border-radius: 0 0 2px 2px;
+  opacity: 0.55;
+}
+.pcb-card::before { left: 20px; }
+.pcb-card::after { right: 20px; }
+
+/* ── Signature: datasheet corner-stamp badge ──
+   Replaces the generic rounded pill — one clipped corner, monospace
+   label, like a component datasheet's revision stamp. */
+.pcb-stamp {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  clip-path: polygon(0 0, 100% 0, 100% 70%, calc(100% - 10px) 100%, 0 100%);
 }
 
 .btn-register::after {

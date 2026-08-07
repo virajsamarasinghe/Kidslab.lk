@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/config/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = "https://kidslab.lk";
+  const base = SITE_URL;
   const now  = new Date();
 
   return [

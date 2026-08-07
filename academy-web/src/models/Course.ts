@@ -25,7 +25,7 @@ const CourseSchema = new Schema<ICourse>(
     schedule:       { type: String, default: "" },
     price:          { type: Number, default: 0 },
     instructor:     { type: String, default: "" },
-    maxStudents:    { type: Number, default: 12 },
+    maxStudents:    { type: Number, default: 50 },
     enrolledCount:  { type: Number, default: 0 },
     isActive:       { type: Boolean, default: true },
   },

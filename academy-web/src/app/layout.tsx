@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { SITE_URL, SITE_NAME } from "@/config/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,15 +15,13 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const jakarta = Plus_Jakarta_Sans({
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-const SITE_URL = "https://kidslab.lk";
-const SITE_NAME = "kidslab.lk";
 const DESCRIPTION =
   "Sri Lanka's #1 Robotics & AI academy for children aged 9–14. Hands-on programs designed and taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Free introductory seminar on 27 June 2026 — limited seats, register now.";
 
@@ -123,7 +122,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${jakarta.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-white text-slate-900">
         {children}

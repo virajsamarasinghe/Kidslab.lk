@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/config/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,7 +10,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow:  ["/admin", "/admin/", "/api/", "/login"],
       },
     ],
-    sitemap: "https://kidslab.lk/sitemap.xml",
-    host:    "https://kidslab.lk",
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host:    SITE_URL,
   };
 }

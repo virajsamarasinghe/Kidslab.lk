@@ -1,8 +1,9 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { ADMIN_COOKIE_NAME } from "@/config/site";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
-const COOKIE = "kidslab_admin_token";
+const COOKIE = ADMIN_COOKIE_NAME;
 
 export async function signToken(payload: Record<string, string>) {
   return new SignJWT(payload)

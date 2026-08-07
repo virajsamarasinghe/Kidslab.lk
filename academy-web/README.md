@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Robotics Academy — Web
 
-## Getting Started
+Marketing site and admin dashboard for AI Robotics Academy, built with Next.js (App Router), TypeScript, Tailwind CSS, and MongoDB.
 
-First, run the development server:
+## Stack
+
+- **Framework**: Next.js 16 (App Router), React 19
+- **Styling**: Tailwind CSS v4, shadcn/ui components (`src/components/ui`)
+- **3D/animation**: React Three Fiber + drei, Motion
+- **Database**: MongoDB via Mongoose
+- **Auth**: JWT sessions (`jose`) + `bcryptjs` password hashing
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and fill in:
 
-## Learn More
+```
+MONGODB_URI=your-mongodb-connection-string
+JWT_SECRET=your-jwt-secret
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` — start the dev server
+- `npm run build` — production build
+- `npm run start` — run the production build
+- `npm run lint` — lint the codebase
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    admin/        # Admin dashboard (courses, users) — protected via proxy.ts
+    api/          # Route handlers: auth, courses, users, register, stats, health
+    login/        # Login page
+    register/     # Registration page
+    page.tsx      # Public homepage
+  components/
+    admin/        # Admin-only UI (sidebar, etc.)
+    ui/           # shadcn/ui primitives
+  config/         # site.ts — site URL/name, admin cookie name
+  lib/            # auth.ts (JWT), mongodb.ts (connection), utils.ts
+  models/         # Mongoose schemas (Course, User)
+  types/          # Shared client-facing domain types (Course, User)
+  proxy.ts        # Middleware-style route protection
+```

@@ -32,7 +32,7 @@ export default function Navbar() {
     >
       <div className="max-w-screen-2xl mx-auto px-6 xl:px-12 2xl:px-16 h-16 xl:h-20 2xl:h-24 flex items-center justify-between">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5">
+        <a href="#" className="flex items-center gap-2.5 opacity-100 hover:opacity-80 transition-opacity">
           <Image
             src="/logo.png"
             alt="kidslab.lk logo"
@@ -79,8 +79,7 @@ export default function Navbar() {
           >
             <a href="/register">
               <Button
-                className="btn-register text-white font-semibold text-sm xl:text-base 2xl:text-lg px-5 xl:px-7 h-9 xl:h-11 2xl:h-12 rounded-full shadow-sm"
-                style={{ backgroundColor: "var(--brand-navy)" }}
+                className="btn-register btn-brand-copper text-white font-semibold text-sm xl:text-base 2xl:text-lg px-5 xl:px-7 h-9 xl:h-11 2xl:h-12 rounded-full shadow-sm"
               >
                 Register
               </Button>
@@ -119,7 +118,7 @@ export default function Navbar() {
             </Button>
           </a>
           <a href="/register" className="mt-1">
-            <Button className="w-full text-white font-semibold rounded-full" style={{ backgroundColor: "var(--brand-navy)" }}>
+            <Button className="btn-brand-copper w-full text-white font-semibold rounded-full">
               Register
             </Button>
           </a>

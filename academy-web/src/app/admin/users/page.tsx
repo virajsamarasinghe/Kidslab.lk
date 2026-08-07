@@ -12,19 +12,7 @@ import {
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  phone: string;
-  age: number;
-  parentName: string;
-  city: string;
-  interestedCourse: string;
-  status: "active" | "inactive";
-  createdAt: string;
-}
+import type { User } from "@/types/user";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
