@@ -753,7 +753,7 @@ export default function Home() {
               {stats.map(({ value, label, icon: Icon }) => (
                 <div
                   key={label}
-                  className="bg-white rounded-2xl border border-slate-100 shadow-sm px-6 xl:px-8 py-4 lg:py-4 xl:py-7 flex items-center gap-4 xl:gap-6"
+                  className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm px-6 xl:px-8 py-4 lg:py-4 xl:py-7 flex items-center gap-4 xl:gap-6"
                 >
                   <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5 text-blue-600" />
@@ -850,7 +850,7 @@ export default function Home() {
                   }}
                 >
                   <Card
-                    className="border-2 rounded-2xl hover:-translate-y-1 transition-transform duration-300"
+                    className="pcb-card border-2 rounded-2xl hover:-translate-y-1 transition-transform duration-300"
                     style={{
                       borderColor: "var(--brand-navy)",
                       backgroundColor: "#fff",
@@ -949,8 +949,7 @@ export default function Home() {
                           }}
                         >
                           <button
-                            className="btn-register w-full text-white font-semibold h-11 rounded-full text-[14px] tracking-[-0.01em] hover:opacity-90"
-                            style={{ backgroundColor: "var(--brand-navy)" }}
+                            className="btn-register btn-brand-copper w-full text-white font-semibold h-11 rounded-full text-[14px] tracking-[-0.01em]"
                           >
                             Register for Free Seminar
                           </button>
@@ -989,7 +988,7 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
               {whyUs.map((item, i) => (
                 <AnimateIn key={item.title} delay={i * 0.07} className="h-full">
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
+                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
                     <h4 className="text-display-md text-slate-900 mb-2">
                       {item.title}
                     </h4>
@@ -1004,33 +1003,39 @@ export default function Home() {
         {/* ══ Team / Founders ════════════════════════════════════════════ */}
         <section
           id="team"
-          className="py-28 px-6 xl:py-36 xl:px-12 bg-gradient-to-br from-slate-900 via-blue-950 to-violet-950 relative overflow-hidden"
+          className="py-28 px-6 xl:py-36 xl:px-12 relative overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
+          }}
         >
           {/* Decorative blobs */}
           <div
             className="absolute -left-32 top-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
             style={{
-              background: "radial-gradient(circle, #3b82f6, transparent)",
+              background: "radial-gradient(circle, var(--brand-blue), transparent)",
             }}
           />
           <div
             className="absolute -right-32 bottom-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
             style={{
-              background: "radial-gradient(circle, #8b5cf6, transparent)",
+              background: "radial-gradient(circle, var(--brand-red), transparent)",
             }}
           />
 
           <div className="max-w-screen-2xl mx-auto relative z-10">
             {/* Header */}
             <AnimateIn className="text-center mb-16 xl:mb-20">
-              <p className="text-label text-blue-400 mb-3">Meet the Founders</p>
+              <SectionLabel className="text-[color:#f0a868]">
+                Meet the Founders
+              </SectionLabel>
               <h2 className="text-display-lg text-white">
                 Built by Real{" "}
                 <span
                   className="bg-clip-text text-transparent"
                   style={{
                     backgroundImage:
-                      "linear-gradient(to right, #60a5fa, #a78bfa)",
+                      "linear-gradient(to right, #60a5fa, #f0a868)",
                   }}
                 >
                   Engineers
@@ -1152,7 +1157,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
               {testimonials.map((t, i) => (
                 <AnimateIn key={t.name} delay={i * 0.1} className="h-full">
-                  <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 flex flex-col gap-5 h-full hover:shadow-md transition-shadow duration-300">
+                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-8 flex flex-col gap-5 h-full hover:shadow-md transition-shadow duration-300">
                     <div className="flex gap-1">
                       {Array.from({ length: t.stars }).map((_, s) => (
                         <Star
@@ -1208,13 +1213,13 @@ export default function Home() {
           <div
             className="absolute -left-40 top-10 w-96 h-96 rounded-full opacity-[0.07] pointer-events-none"
             style={{
-              background: "radial-gradient(circle, #1d2b52, transparent)",
+              background: "radial-gradient(circle, var(--brand-navy), transparent)",
             }}
           />
           <div
             className="absolute -right-40 bottom-10 w-96 h-96 rounded-full opacity-[0.07] pointer-events-none"
             style={{
-              background: "radial-gradient(circle, #5a1515, transparent)",
+              background: "radial-gradient(circle, var(--brand-red), transparent)",
             }}
           />
 
@@ -1242,7 +1247,7 @@ export default function Home() {
             <div className="grid md:grid-cols-2 gap-8 xl:gap-12 max-w-4xl mx-auto items-stretch">
               {/* Contact channels */}
               <AnimateIn delay={0.1} className="h-full">
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-slate-200/70 shadow-xl shadow-slate-200/50 p-8 xl:p-10 flex flex-col gap-3 h-full">
+                <div className="pcb-card bg-white/90 backdrop-blur-sm rounded-3xl border border-slate-200/70 shadow-xl shadow-slate-200/50 p-8 xl:p-10 flex flex-col gap-3 h-full">
                   <h3
                     className="text-display-md mb-2"
                     style={{ color: "var(--brand-navy)" }}
@@ -1357,7 +1362,7 @@ export default function Home() {
                   className="rounded-3xl p-8 xl:p-10 flex flex-col justify-between h-full relative overflow-hidden shadow-xl shadow-blue-950/20"
                   style={{
                     background:
-                      "linear-gradient(135deg, var(--brand-navy) 0%, #2a3f6f 60%, #5a1515 100%)",
+                      "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
                   }}
                 >
                   {/* Decorative rings */}
@@ -1439,7 +1444,10 @@ export default function Home() {
         </section>
 
         {/* ══ Footer ════════════════════════════════════════════════════ */}
-        <footer className="bg-slate-900 text-white pt-14 pb-10 px-6">
+        <footer
+          className="text-white pt-14 pb-10 px-6"
+          style={{ backgroundColor: "var(--brand-navy)" }}
+        >
           <div className="max-w-screen-2xl mx-auto">
             <div className="flex flex-col md:flex-row items-start justify-between gap-12 pb-12 border-b border-white/10">
               {/* Brand */}
@@ -1455,7 +1463,7 @@ export default function Home() {
                     />
                   </div>
                   <span className="font-bold text-[1.0625rem] tracking-[-0.02em]">
-                    kid<span style={{ color: "#e07070" }}>s</span>lab.lk
+                    kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
                   </span>
                 </div>
                 <p
@@ -1524,13 +1532,13 @@ export default function Home() {
               style={{ fontSize: "0.8125rem" }}
             >
               <p>
-                © 2026 kid<span style={{ color: "#e07070" }}>s</span>lab.lk —
+                © 2026 kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk —
                 All rights reserved.
               </p>
               <p className="flex items-center gap-1.5">
                 <GraduationCap
                   className="w-4 h-4"
-                  style={{ color: "#e07070" }}
+                  style={{ color: "var(--brand-red)" }}
                 />
                 Founded by University of Ruhuna Engineering Graduates
               </p>

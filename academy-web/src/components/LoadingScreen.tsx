@@ -45,7 +45,8 @@ export default function LoadingScreen() {
               transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
             />
             <motion.div
-              className="absolute inset-2 rounded-full border-4 border-transparent border-t-violet-500"
+              className="absolute inset-2 rounded-full border-4 border-transparent"
+              style={{ borderTopColor: "var(--brand-red)" }}
               animate={{ rotate: -360 }}
               transition={{ duration: 1.8, repeat: Infinity, ease: "linear" }}
             />
@@ -103,8 +104,12 @@ export default function LoadingScreen() {
           {/* Progress bar */}
           <div className="w-48 h-1 bg-slate-100 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full"
-              style={{ width: `${progress}%` }}
+              className="h-full rounded-full"
+              style={{
+                width: `${progress}%`,
+                background:
+                  "linear-gradient(to right, var(--brand-blue), var(--brand-red))",
+              }}
               transition={{ ease: "linear" }}
             />
           </div>

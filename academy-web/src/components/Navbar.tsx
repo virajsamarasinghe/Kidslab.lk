@@ -52,7 +52,7 @@ export default function Navbar() {
             <a
               key={link.href}
               href={link.href}
-              className="px-4 py-2 text-sm xl:text-base 2xl:text-lg font-medium text-slate-600 hover:text-[#1d2b52] hover:bg-blue-50 rounded-lg transition-all duration-150"
+              className="px-4 py-2 text-sm xl:text-base 2xl:text-lg font-medium text-slate-600 hover:text-[color:var(--brand-blue)] hover:bg-blue-50 rounded-lg transition-all duration-150"
             >
               {link.label}
             </a>
@@ -107,7 +107,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[#1d2b52] hover:bg-blue-50 rounded-lg"
+              className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[color:var(--brand-blue)] hover:bg-blue-50 rounded-lg"
             >
               {link.label}
             </a>

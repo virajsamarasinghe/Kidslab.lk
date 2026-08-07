@@ -98,7 +98,7 @@ export default function RegisterPage() {
         className="lg:w-[42%] xl:w-[40%] 2xl:w-[38%] flex flex-col justify-between relative overflow-hidden"
         style={{
           padding: "clamp(2rem, 4vw, 5rem)",
-          background: "linear-gradient(145deg, var(--brand-navy) 0%, #2a3f6f 55%, #5a1515 100%)",
+          background: "linear-gradient(145deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
         }}
       >
         {/* Decorative rings */}
@@ -137,7 +137,7 @@ export default function RegisterPage() {
               className="font-bold text-white tracking-tight"
               style={{ fontSize: "clamp(1rem, 1.4vw, 2rem)" }}
             >
-              kid<span style={{ color: "#e07070" }}>s</span>lab.lk
+              kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
             </span>
           </div>
 
@@ -336,8 +336,7 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="reg-btn w-full text-white shadow-md transition-all hover:opacity-90"
-              style={{ backgroundColor: "var(--brand-navy)" }}
+              className="reg-btn btn-brand-copper w-full text-white shadow-md transition-all"
             >
               {loading ? "Submitting…" : "Register for Free Seminar →"}
             </Button>
