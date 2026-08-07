@@ -32,8 +32,11 @@ export default function AdminSidebar() {
     >
       {/* Brand */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center shrink-0">
-          <Image src="/logo.png" alt="logo" width={32} height={32} className="object-contain" />
+        <div
+          className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center shrink-0 p-1"
+          style={{ border: "2px solid var(--brand-yellow)" }}
+        >
+          <Image src="/logo.png" alt="logo" width={32} height={32} className="w-full h-full object-contain rounded-sm" />
         </div>
         <div>
           <p

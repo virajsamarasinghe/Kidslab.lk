@@ -61,13 +61,20 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div
-            className="inline-flex w-16 h-16 rounded-2xl items-center justify-center shadow-lg mb-4 overflow-hidden"
+            className="inline-flex w-16 h-16 rounded-2xl items-center justify-center shadow-lg mb-4 p-2.5"
             style={{
               background:
                 "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
+              border: "2px solid var(--brand-yellow)",
             }}
           >
-            <Image src="/logo.png" alt="kidslab.lk" width={64} height={64} className="object-contain" />
+            <Image
+              src="/logo.png"
+              alt="kidslab.lk"
+              width={64}
+              height={64}
+              className="w-full h-full object-contain rounded-md"
+            />
           </div>
           <h1
             className="text-2xl font-bold text-slate-900 tracking-tight"
