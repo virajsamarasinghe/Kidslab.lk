@@ -26,27 +26,35 @@ export default function AdminDashboard() {
   }, []);
 
   const cards = [
-    { label: "Total Students",    value: stats?.totalUsers ?? "—",    icon: Users,        bg: "bg-blue-50",   color: "text-blue-600"   },
-    { label: "Total Courses",     value: stats?.totalCourses ?? "—",  icon: BookOpen,     bg: "bg-violet-50", color: "text-violet-600" },
-    { label: "Active Courses",    value: stats?.activeCourses ?? "—", icon: CheckCircle,  bg: "bg-green-50",  color: "text-green-600"  },
-    { label: "Growth",            value: "↑ Growing",                 icon: TrendingUp,   bg: "bg-amber-50",  color: "text-amber-600"  },
+    { label: "Total Students",    value: stats?.totalUsers ?? "—",    icon: Users,        bg: "rgba(15,36,24,0.06)",   color: "var(--brand-navy)" },
+    { label: "Total Courses",     value: stats?.totalCourses ?? "—",  icon: BookOpen,     bg: "rgba(224,138,60,0.12)", color: "var(--brand-red)"  },
+    { label: "Active Courses",    value: stats?.activeCourses ?? "—", icon: CheckCircle,  bg: "rgba(22,163,74,0.10)",  color: "#16a34a"           },
+    { label: "Growth",            value: "↑ Growing",                 icon: TrendingUp,   bg: "rgba(43,95,224,0.10)",  color: "var(--brand-blue)" },
   ];
 
   return (
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+        <h1
+          className="text-2xl font-bold text-slate-900 tracking-tight"
+          style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+        >
+          Dashboard
+        </h1>
         <p className="text-slate-500 text-sm mt-1">Welcome back, Admin · <span style={{ color: "var(--brand-navy)" }}>kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk</span></p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
         {cards.map(({ label, value, icon: Icon, bg, color }) => (
-          <Card key={label} className="border-slate-100 shadow-sm">
+          <Card key={label} className="pcb-card border-slate-100 shadow-sm">
             <CardContent className="p-6 flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl ${bg} flex items-center justify-center shrink-0`}>
-                <Icon className={`w-6 h-6 ${color}`} />
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: bg }}
+              >
+                <Icon className="w-6 h-6" style={{ color }} />
               </div>
               <div>
                 <p className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">{value}</p>
@@ -58,10 +66,14 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Registrations */}
-      <Card className="border-slate-100 shadow-sm">
+      <Card className="pcb-card border-slate-100 shadow-sm">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="font-semibold text-slate-900 text-sm">Recent Registrations</h2>
-          <a href="/admin/users" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+          <a
+            href="/admin/users"
+            className="text-xs font-semibold hover:underline flex items-center gap-1"
+            style={{ color: "var(--brand-red)" }}
+          >
             View all <ArrowRight className="w-3 h-3" />
           </a>
         </div>

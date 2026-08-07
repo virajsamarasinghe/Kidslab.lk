@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Sans_Sinhala, Space_Grotesk } from "next/font/google";
 import { SITE_URL, SITE_NAME } from "@/config/site";
 import "./globals.css";
 
@@ -18,6 +18,13 @@ const geistMono = Geist_Mono({
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+const notoSansSinhala = Noto_Sans_Sinhala({
+  variable: "--font-sinhala",
+  subsets: ["sinhala"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
 });
@@ -88,19 +95,19 @@ export const metadata: Metadata = {
     description:  DESCRIPTION,
     images: [
       {
-        url:    "/og-image.png",
-        width:  512,
-        height: 512,
-        alt:    "kidslab.lk — Robotics & AI Academy",
+        url:    "/og-cover.png",
+        width:  1200,
+        height: 630,
+        alt:    "kidslab.lk — Robotics & AI Academy for Kids, Galle, Sri Lanka",
       },
     ],
   },
 
   twitter: {
-    card:        "summary",
+    card:        "summary_large_image",
     title:       `${SITE_NAME} — Robotics & AI Academy for Kids`,
     description:  DESCRIPTION,
-    images:      ["/og-image.png"],
+    images:      ["/og-cover.png"],
   },
 
   alternates: {
@@ -122,7 +129,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${notoSansSinhala.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-white text-slate-900">

@@ -3,13 +3,14 @@
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
-  LayoutDashboard, Users, BookOpen, LogOut, Bot,
+  LayoutDashboard, Users, BookOpen, LogOut, Mail,
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard",       href: "/admin",         icon: LayoutDashboard },
-  { label: "Users",           href: "/admin/users",   icon: Users },
-  { label: "Courses",         href: "/admin/courses", icon: BookOpen },
+  { label: "Dashboard",       href: "/admin",             icon: LayoutDashboard },
+  { label: "Users",           href: "/admin/users",       icon: Users },
+  { label: "Courses",         href: "/admin/courses",     icon: BookOpen },
+  { label: "Subscribers",     href: "/admin/subscribers", icon: Mail },
 ];
 
 export default function AdminSidebar() {
@@ -22,17 +23,26 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-60 bg-slate-900 flex flex-col z-40">
+    <aside
+      className="fixed inset-y-0 left-0 w-60 flex flex-col z-40"
+      style={{
+        background:
+          "linear-gradient(180deg, var(--brand-navy) 0%, #123a2a 55%, #0d2560 100%)",
+      }}
+    >
       {/* Brand */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10">
-        <div className="w-8 h-8 rounded-lg overflow-hidden bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-lg overflow-hidden bg-white/10 backdrop-blur-sm flex items-center justify-center shrink-0">
           <Image src="/logo.png" alt="logo" width={32} height={32} className="object-contain" />
         </div>
         <div>
-          <p className="text-white font-bold text-sm leading-none tracking-tight">
-            kid<span style={{ color: "#e07070" }}>s</span>lab.lk
+          <p
+            className="text-white font-bold text-sm leading-none tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
           </p>
-          <p className="text-slate-500 text-[10px] mt-0.5 font-medium tracking-widest uppercase">Admin</p>
+          <p className="text-slate-500 text-[10px] mt-1 font-medium tracking-widest uppercase">Admin</p>
         </div>
       </div>
 
@@ -44,11 +54,12 @@ export default function AdminSidebar() {
             <a
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 active
-                  ? "bg-blue-600 text-white"
+                  ? "text-white"
                   : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
+              style={active ? { backgroundColor: "var(--brand-red)" } : undefined}
             >
               <Icon className="w-4 h-4 shrink-0" />
               {label}

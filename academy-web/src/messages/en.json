@@ -1,0 +1,164 @@
+{
+  "nav": {
+    "programs": "Programs",
+    "about": "About",
+    "team": "Team",
+    "contactMe": "Contact Me",
+    "register": "Register"
+  },
+  "hero": {
+    "badge": "REV. 2026 · ENROLMENTS OPEN",
+    "srText": "Where Kids Learn to Build Robots & AI — from circuit boards to real robots.",
+    "sentence1": {
+      "part1": "Where Kids Learn to ",
+      "highlight1": "Build Robots",
+      "part2": " & ",
+      "highlight2": "AI",
+      "part3": ""
+    },
+    "sentence2": {
+      "part1": "From ",
+      "highlight1": "Circuit Boards",
+      "part2": " to ",
+      "highlight2": "Real Robots",
+      "part3": ""
+    },
+    "subtitlePrefix": "Sri Lanka's leading Robotics & AI academy for children, conducted by ",
+    "subtitleBold": "Computer Engineers from the University of Ruhuna",
+    "subtitleSuffix": ", Faculty of Engineering.",
+    "ctaRegister": "Register for Free Seminar",
+    "ctaExplore": "Explore Programs",
+    "trust1": "Ages 8–18",
+    "trust2": "Hands-on Kits",
+    "trust3": "University Certified"
+  },
+  "stats": {
+    "labels": ["Young Innovators", "Expert Engineers", "Program", "Hands-on Learning"]
+  },
+  "universityBanner": {
+    "prefix": "Programs conducted by ",
+    "bold": "Computer Engineers · University of Ruhuna, Faculty of Engineering",
+    "location": "Hapugala, Galle, Sri Lanka"
+  },
+  "programs": {
+    "eyebrow": "Our Programs",
+    "headingStart": "Start Your ",
+    "headingHighlight": "Journey",
+    "subtitle": "Our flagship program — currently enrolling.",
+    "enrollingNow": "Enrolling Now",
+    "courseFee": "Course Fee",
+    "ctaRegister": "Register for Free Seminar",
+    "card": {
+      "title": "Robotics & AI",
+      "desc": "Build real robots and explore Artificial Intelligence hands-on. From mechanics and sensors to smart robotics — all in one exciting program.",
+      "levelLabel": "Age Range",
+      "level": "Ages 9–14",
+      "durationLabel": "Duration",
+      "duration": "3 Months",
+      "fee": "LKR 5,000",
+      "installment": "Pay in installments within 3 months",
+      "seminar": "Day 1 is a FREE seminar — intro to Robotics & AI, mindset building & motivation"
+    }
+  },
+  "about": {
+    "eyebrowStart": "Why kid",
+    "eyebrowMid": "s",
+    "eyebrowEnd": "lab.lk?",
+    "headingStart": "Learning Built for ",
+    "headingHighlight": "Young Minds",
+    "subtitle": "We believe every child can be a creator. Our approach combines university-level expertise with kid-friendly teaching.",
+    "cards": [
+      {
+        "title": "Project-Based Learning",
+        "desc": "Every lesson ends with a real build. Kids learn by doing, not just watching."
+      },
+      {
+        "title": "Industry Expert Educators",
+        "desc": "Curriculum designed and taught by Computer Engineering graduates from the University of Ruhuna, now industry professionals."
+      },
+      {
+        "title": "Small Class Sizes",
+        "desc": "Max 50 students per class ensures every child gets personal attention and guidance."
+      },
+      {
+        "title": "Real Lab Equipment",
+        "desc": "Actual robotics kits, sensors, microcontrollers — not simulations."
+      },
+      {
+        "title": "Age-Appropriate Tracks",
+        "desc": "Programs designed for ages 8–18, with difficulty scaling as they grow."
+      },
+      {
+        "title": "Fast, Fun & Engaging",
+        "desc": "Gamified challenges, team projects, and showcases keep kids excited to learn."
+      }
+    ]
+  },
+  "team": {
+    "eyebrow": "Meet the Founders",
+    "headingStart": "Built by Real ",
+    "headingHighlight": "Engineers",
+    "subtitle": "Computer Engineering graduates from the University of Ruhuna, specializing in AI & Robotics.",
+    "coFounder": "Co-Founder",
+    "university": "University of Ruhuna",
+    "linkedin": "LinkedIn Profile",
+    "role": "Software Engineer · AI Specialized",
+    "tags": ["AI & Machine Learning", "Robotics", "Embedded Systems"],
+    "universityStrip": "University of Ruhuna · Faculty of Engineering",
+    "location": "Hapugala, Galle, Sri Lanka"
+  },
+  "testimonials": {
+    "eyebrow": "Student & Parent Reviews",
+    "headingStart": "What They're ",
+    "headingHighlight": "Saying",
+    "cards": [
+      {
+        "role": "Parent · Galle",
+        "quote": "My daughter was nervous at first, but after the first class she couldn't stop talking about robots. The engineers make it so fun and easy to understand."
+      },
+      {
+        "role": "Student · Age 13",
+        "quote": "I built my first robot here! The teachers are from a real university and they explain everything step by step. I want to become an engineer now."
+      },
+      {
+        "role": "Parent · Matara",
+        "quote": "The quality is outstanding. Real university engineers teaching kids — I'm impressed by how much my son has learned in just 3 months."
+      }
+    ]
+  },
+  "contact": {
+    "eyebrow": "Get In Touch",
+    "headingStart": "Ready to ",
+    "headingHighlight": "Enrol Your Child?",
+    "subtitle": "Reach out via any channel below — we're happy to answer your questions and guide you through the process.",
+    "contactUsTitle": "Contact Us",
+    "whatsapp": "WhatsApp",
+    "facebook": "Facebook",
+    "facebookHandle": "kidslab.lk — Academy for Kids",
+    "email": "Email",
+    "location": "Location",
+    "locationValue": "Hapugala, Galle, Sri Lanka",
+    "ctaTitle": "Free Seminar — First Day",
+    "ctaDescPrefix": "Attend our ",
+    "ctaDescBold": "free introductory seminar",
+    "ctaDescSuffix": " — basic Robotics & AI, mindset building & motivation. No commitment required.",
+    "highlights": ["Ages 9–14", "3-Month Program", "LKR 5,000 · Pay in Installments"],
+    "registerCta": "Register for Free Seminar →",
+    "followFacebook": "Follow on Facebook"
+  },
+  "footer": {
+    "blurb": "Sri Lanka's leading AI & Robotics academy for young innovators — taught by University of Ruhuna graduates.",
+    "followFacebook": "Follow on Facebook",
+    "subscribeHeading": "Get Updates",
+    "subscribePlaceholder": "you@email.com",
+    "subscribeCta": "Subscribe",
+    "subscribeSuccess": "You're subscribed!",
+    "subscribeError": "Something went wrong. Try again.",
+    "programsHeading": "Programs",
+    "academyHeading": "Academy",
+    "programLinks": ["Robotics", "AI & ML", "IoT", "Autonomous Systems", "Coding"],
+    "academyLinks": ["About Us", "Our Team", "Enrol", "Contact"],
+    "copyright": "All rights reserved.",
+    "founded": "Founded by University of Ruhuna Engineering Graduates"
+  }
+}

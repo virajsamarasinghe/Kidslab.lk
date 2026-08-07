@@ -35,19 +35,51 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-violet-50/40 flex items-center justify-center px-4">
-      <div className="w-full max-w-[400px]">
+    <div
+      className="min-h-screen relative flex items-center justify-center px-4 overflow-hidden"
+      style={{ backgroundColor: "var(--brand-paper)" }}
+    >
+      {/* PCB layout grid — same signature backdrop as the marketing hero */}
+      <div
+        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        style={{
+          backgroundImage:
+            "linear-gradient(var(--brand-blue) 1px, transparent 1px), linear-gradient(90deg, var(--brand-blue) 1px, transparent 1px)",
+          backgroundSize: "34px 34px",
+        }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.08] pointer-events-none"
+        style={{
+          backgroundImage: "radial-gradient(var(--brand-red) 1.5px, transparent 1.5px)",
+          backgroundSize: "68px 68px",
+          backgroundPosition: "17px 17px",
+        }}
+      />
+
+      <div className="w-full max-w-[400px] relative z-10">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 items-center justify-center shadow-lg mb-4 overflow-hidden">
+          <div
+            className="inline-flex w-16 h-16 rounded-2xl items-center justify-center shadow-lg mb-4 overflow-hidden"
+            style={{
+              background:
+                "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
+            }}
+          >
             <Image src="/logo.png" alt="kidslab.lk" width={64} height={64} className="object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
+          <h1
+            className="text-2xl font-bold text-slate-900 tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            Admin Portal
+          </h1>
           <p className="text-slate-500 text-sm mt-1"><span style={{ color: "var(--brand-navy)" }}>kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk</span> · Management Dashboard</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+        <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/60 p-8">
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
@@ -99,7 +131,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-11 rounded-full text-sm tracking-[-0.01em] shadow-sm shadow-blue-200"
+              className="btn-brand-navy w-full text-white font-semibold h-11 rounded-full text-sm tracking-[-0.01em] shadow-sm"
             >
               {loading ? "Signing in…" : "Sign In to Dashboard"}
             </Button>

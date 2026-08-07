@@ -88,14 +88,14 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.6;
   }
 
   /* Display headings use the premium display font */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+    font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   }
 }
@@ -104,7 +104,7 @@
 
 /* Display — hero headings */
 .text-display-xl {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
   font-size: clamp(2.5rem, 3.6vw, 5.5rem);
   font-weight: 700;
   line-height: 1.05;
@@ -113,7 +113,7 @@
 
 /* Section headings */
 .text-display-lg {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
   font-size: clamp(1.875rem, 2.6vw, 4rem);
   font-weight: 700;
   line-height: 1.1;
@@ -122,7 +122,7 @@
 
 /* Card / sub-section titles */
 .text-display-md {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
   font-size: clamp(1.1rem, 1.2vw, 1.625rem);
   font-weight: 700;
   line-height: 1.3;
@@ -145,7 +145,7 @@
 
 /* Section label — set in mono, like a PCB silkscreen part number */
 .text-label {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), var(--font-sinhala), ui-monospace, monospace;
   font-size: clamp(0.68rem, 0.55vw, 0.8rem);
   font-weight: 500;
   letter-spacing: 0.08em;
@@ -238,7 +238,7 @@
    Replaces the generic rounded pill — one clipped corner, monospace
    label, like a component datasheet's revision stamp. */
 .pcb-stamp {
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-mono), var(--font-sinhala), ui-monospace, monospace;
   clip-path: polygon(0 0, 100% 0, 100% 70%, calc(100% - 10px) 100%, 0 100%);
 }
 

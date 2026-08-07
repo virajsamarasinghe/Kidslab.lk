@@ -107,12 +107,17 @@ export default function AdminCourses() {
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Courses</h1>
+          <h1
+            className="text-2xl font-bold text-slate-900 tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            Courses
+          </h1>
           <p className="text-slate-500 text-sm mt-1">{courses.length} course{courses.length !== 1 ? "s" : ""} total</p>
         </div>
         <Button
           onClick={() => setForm({ ...EMPTY })}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-semibold"
+          className="btn-brand-navy text-white rounded-full text-sm font-semibold"
         >
           <Plus className="w-4 h-4 mr-1.5" /> Add Course
         </Button>
@@ -124,13 +129,20 @@ export default function AdminCourses() {
         ) : courses.length === 0 ? (
           <div className="col-span-3 text-center py-16">
             <p className="text-slate-400 mb-4">No courses yet</p>
-            <Button onClick={() => setForm({ ...EMPTY })} className="bg-blue-600 hover:bg-blue-700 text-white rounded-full">
+            <Button onClick={() => setForm({ ...EMPTY })} className="btn-brand-navy text-white rounded-full">
               <Plus className="w-4 h-4 mr-1.5" /> Create First Course
             </Button>
           </div>
         ) : courses.map(c => (
-          <Card key={c._id} className="border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-            <div className={`h-1 ${c.isActive ? "bg-gradient-to-r from-blue-500 to-violet-500" : "bg-slate-200"}`} />
+          <Card key={c._id} className="pcb-card border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div
+              className="h-1"
+              style={{
+                background: c.isActive
+                  ? "linear-gradient(to right, var(--brand-navy), var(--brand-red))"
+                  : "#e2e8f0",
+              }}
+            />
             <div className="p-6">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <h3 className="font-bold text-slate-900 text-base leading-tight">{c.title}</h3>
@@ -158,7 +170,7 @@ export default function AdminCourses() {
                 <div className="flex-1" />
                 <button
                   onClick={() => setForm({ ...c })}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
@@ -213,7 +225,7 @@ export default function AdminCourses() {
             </div>
             <div className="px-6 pb-6 flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setForm(null)}>Cancel</Button>
-              <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={handleSave} disabled={saving}>
+              <Button className="btn-brand-navy flex-1 text-white" onClick={handleSave} disabled={saving}>
                 {saving ? "Saving…" : form._id ? "Update Course" : "Create Course"}
               </Button>
             </div>

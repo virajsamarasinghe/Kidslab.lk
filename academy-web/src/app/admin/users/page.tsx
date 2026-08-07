@@ -63,13 +63,18 @@ export default function AdminUsers() {
     <div className="p-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Users</h1>
+          <h1
+            className="text-2xl font-bold text-slate-900 tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            Users
+          </h1>
           <p className="text-slate-500 text-sm mt-1">{total} registered student{total !== 1 ? "s" : ""}</p>
         </div>
       </div>
 
       {/* Search */}
-      <Card className="border-slate-100 shadow-sm mb-6 p-4">
+      <Card className="pcb-card border-slate-100 shadow-sm mb-6 p-4">
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
@@ -82,7 +87,7 @@ export default function AdminUsers() {
       </Card>
 
       {/* Table */}
-      <Card className="border-slate-100 shadow-sm overflow-hidden">
+      <Card className="pcb-card border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -122,7 +127,7 @@ export default function AdminUsers() {
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => setEditUser(u)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -195,7 +200,7 @@ export default function AdminUsers() {
             </div>
             <div className="px-6 pb-6 flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setEditUser(null)}>Cancel</Button>
-              <Button className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={handleSave} disabled={saving}>
+              <Button className="btn-brand-navy flex-1 text-white" onClick={handleSave} disabled={saving}>
                 {saving ? "Saving…" : "Save Changes"}
               </Button>
             </div>
