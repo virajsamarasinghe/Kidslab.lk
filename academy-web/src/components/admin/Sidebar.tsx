@@ -33,10 +33,14 @@ export default function AdminSidebar() {
       {/* Brand */}
       <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10">
         <div
-          className="w-9 h-9 rounded-lg bg-white/10 backdrop-blur-sm flex items-center justify-center shrink-0 p-1"
-          style={{ border: "2px solid var(--brand-yellow)" }}
+          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 p-1.5"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
+            border: "2px solid var(--brand-yellow)",
+          }}
         >
-          <Image src="/logo.png" alt="logo" width={32} height={32} className="w-full h-full object-contain rounded-sm" />
+          <Image src="/logo.png" alt="logo" width={40} height={40} className="w-full h-full object-contain rounded-md" />
         </div>
         <div>
           <p
