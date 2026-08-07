@@ -7,8 +7,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 
-const SEEN_KEY = "kidslab_subscribe_seen";
-const SHOW_AFTER_MS = 8000;
+/* ── Popup timing, tuned to the common industry pattern ──
+   - Subscribing suppresses it permanently (SUBSCRIBED_KEY).
+   - Dismissing ("Maybe later" / ✕) suppresses it for a cooldown period,
+     not forever — the visitor is re-eligible after DISMISS_COOLDOWN_MS,
+     same as most exit-intent / newsletter tools (Mailchimp, OptinMonster
+     etc. default to a multi-day cooldown rather than "never again").
+   - Trigger: exit-intent (cursor leaves toward the top of the viewport)
+     is the primary trigger on desktop, since that's the standard for
+     this kind of popup — it catches someone about to leave instead of
+     interrupting them mid-read. A time-delay fallback covers touch
+     devices, where exit-intent can't fire. */
+const SUBSCRIBED_KEY = "kidslab_subscribed";
+const DISMISSED_UNTIL_KEY = "kidslab_subscribe_dismissed_until";
+const DISMISS_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const ARM_EXIT_INTENT_AFTER_MS = 4000; // let the visitor settle in first
+const FALLBACK_SHOW_AFTER_MS = 20000; // covers touch devices with no exit-intent
 
 export default function SubscribePopup() {
   const [open, setOpen] = useState(false);
@@ -19,14 +33,39 @@ export default function SubscribePopup() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (localStorage.getItem(SEEN_KEY)) return;
 
-    const id = setTimeout(() => setOpen(true), SHOW_AFTER_MS);
-    return () => clearTimeout(id);
+    if (localStorage.getItem(SUBSCRIBED_KEY)) return;
+    const dismissedUntil = Number(localStorage.getItem(DISMISSED_UNTIL_KEY) ?? 0);
+    if (dismissedUntil > Date.now()) return;
+
+    let shown = false;
+    const show = () => {
+      if (shown) return;
+      shown = true;
+      setOpen(true);
+    };
+
+    const fallbackId = setTimeout(show, FALLBACK_SHOW_AFTER_MS);
+
+    function onMouseOut(e: MouseEvent) {
+      if (e.relatedTarget !== null) return; // only true "leaving the window" events
+      if (e.clientY > 0) return; // only exits toward the top edge
+      show();
+    }
+
+    const armId = setTimeout(() => {
+      document.addEventListener("mouseout", onMouseOut);
+    }, ARM_EXIT_INTENT_AFTER_MS);
+
+    return () => {
+      clearTimeout(fallbackId);
+      clearTimeout(armId);
+      document.removeEventListener("mouseout", onMouseOut);
+    };
   }, []);
 
   function dismiss() {
-    localStorage.setItem(SEEN_KEY, "1");
+    localStorage.setItem(DISMISSED_UNTIL_KEY, String(Date.now() + DISMISS_COOLDOWN_MS));
     setOpen(false);
   }
 
@@ -42,7 +81,7 @@ export default function SubscribePopup() {
     const data = await res.json();
     setLoading(false);
     if (res.ok) {
-      localStorage.setItem(SEEN_KEY, "1");
+      localStorage.setItem(SUBSCRIBED_KEY, "1");
       setSuccess(true);
     } else {
       setError(data.error ?? "Something went wrong. Please try again.");

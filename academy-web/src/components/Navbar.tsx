@@ -41,17 +41,22 @@ export default function Navbar() {
           : "color-mix(in srgb, var(--brand-paper) 82%, transparent)",
       }}
     >
-      <div className="w-full max-w-[1920px] mx-auto px-[clamp(1.5rem,4vw,5rem)] h-16 flex items-center justify-between">
+      <div className="relative w-full max-w-[1920px] mx-auto px-[clamp(1.5rem,4vw,5rem)] h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
         {/* Logo */}
         <a href="#" className="flex items-center gap-2.5 opacity-100 hover:opacity-80 transition-opacity">
-          <Image
-            src="/logo.png"
-            alt="kidslab.lk logo"
-            width={52}
-            height={52}
-            className="rounded-lg object-contain w-10 h-10"
-            priority
-          />
+          <span
+            className="flex items-center justify-center rounded-lg p-0.5 shrink-0"
+            style={{ border: "2px solid var(--brand-yellow)" }}
+          >
+            <Image
+              src="/logo.png"
+              alt="kidslab.lk logo"
+              width={52}
+              height={52}
+              className="rounded-md object-contain w-9 h-9"
+              priority
+            />
+          </span>
           <span
             className="font-bold text-lg tracking-tight"
             style={{
@@ -64,7 +69,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center justify-center gap-1 md:absolute md:left-1/2 md:-translate-x-1/2">
           {links.map((link) => (
             <a
               key={link.href}
@@ -77,15 +82,15 @@ export default function Navbar() {
         </nav>
 
         {/* CTA */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-end gap-1.5">
           {/* Language toggle */}
           <div
-            className="hidden md:inline-flex items-center rounded-full p-0.5 text-xs font-semibold"
+            className="hidden md:inline-flex items-center rounded-full p-0.5 text-xs font-semibold shrink-0"
             style={{ backgroundColor: "#f0f1f5", border: "1px solid #dde1ea" }}
           >
             <button
               onClick={() => setLocale("en")}
-              className="px-2.5 py-1 rounded-full transition-colors"
+              className="px-2 py-1 rounded-full transition-colors"
               style={
                 locale === "en"
                   ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
@@ -97,7 +102,7 @@ export default function Navbar() {
             </button>
             <button
               onClick={() => setLocale("si")}
-              className="px-2.5 py-1 rounded-full transition-colors"
+              className="px-2 py-1 rounded-full transition-colors"
               style={
                 locale === "si"
                   ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
@@ -108,19 +113,19 @@ export default function Navbar() {
               සිං
             </button>
           </div>
-          <a href="#contact" className="hidden md:block">
+          <a href="#contact" className="hidden md:block shrink-0">
             <Button
               variant="outline"
-              size="lg"
-              className="gap-2 rounded-full border-slate-200 font-semibold hover:border-slate-300 hover:bg-slate-50 transition-all"
+              size="sm"
+              className="gap-1.5 rounded-full border-slate-200 font-semibold hover:border-slate-300 hover:bg-slate-50 transition-all whitespace-nowrap"
               style={{ color: "var(--brand-navy)" }}
             >
-              <Phone className="size-4" />
+              <Phone className="size-3.5" />
               {t("contactMe")}
             </Button>
           </a>
           <motion.div
-            className="hidden md:block rounded-full"
+            className="hidden md:block rounded-full shrink-0"
             animate={{
               boxShadow: [
                 "0 0 0 0px rgba(224,138,60,0.45)",
@@ -131,12 +136,12 @@ export default function Navbar() {
             transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
           >
             <Button
-              size="lg"
               onClick={openRegisterModal}
-              className="btn-register btn-brand-copper gap-2 rounded-full text-white font-semibold shadow-sm"
+              size="sm"
+              className="btn-register btn-brand-copper gap-1.5 rounded-full text-white font-semibold shadow-sm whitespace-nowrap"
             >
               {t("register")}
-              <ArrowRight className="size-4" />
+              <ArrowRight className="size-3.5" />
             </Button>
           </motion.div>
           {/* Mobile toggle */}
