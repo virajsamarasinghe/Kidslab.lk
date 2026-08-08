@@ -32,20 +32,19 @@ See [`RELEASE_NOTES.md`](./RELEASE_NOTES.md) for the full v1.0.0 feature breakdo
 ## Project structure
 
 ```
-academy-web/
-├─ src/
-│  ├─ app/              # Routes (App Router)
-│  │  ├─ admin/         # Admin dashboard (users, courses, subscribers)
-│  │  ├─ api/           # Route handlers (auth, register, courses, webhooks, ...)
-│  │  ├─ login/         # Admin login
-│  │  └─ register/      # Public seminar registration page
-│  ├─ components/       # UI components (Navbar, RegisterModal, admin/*, ui/*)
-│  ├─ config/           # Site constants (name, URL, cookie names)
-│  ├─ lib/              # DB connection, auth helpers, Brevo client, contexts
-│  ├─ messages/         # i18n strings (en.json, si.json)
-│  ├─ models/           # Mongoose schemas (User, Course, Subscriber)
-│  └─ proxy.ts          # Clerk session + admin route protection (Next 16's middleware)
-└─ .env.example         # Required environment variables
+src/
+├─ app/              # Routes (App Router)
+│  ├─ admin/         # Admin dashboard (users, courses, subscribers)
+│  ├─ api/           # Route handlers (auth, register, courses, webhooks, ...)
+│  ├─ login/         # Admin login
+│  └─ register/      # Public seminar registration page
+├─ components/       # UI components (Navbar, RegisterModal, admin/*, ui/*)
+├─ config/           # Site constants (name, URL, cookie names)
+├─ lib/              # DB connection, auth helpers, Brevo client, contexts
+├─ messages/         # i18n strings (en.json, si.json)
+├─ models/           # Mongoose schemas (User, Course, Subscriber)
+└─ proxy.ts          # Clerk session + admin route protection (Next 16's middleware)
+.env.example         # Required environment variables
 ```
 
 ## Getting started
@@ -60,7 +59,6 @@ academy-web/
 ### Setup
 
 ```bash
-cd academy-web
 npm install
 cp .env.example .env.local   # fill in the values below
 npm run dev

@@ -40,7 +40,7 @@ Initial public release of the kidslab.lk website: a marketing site for the Robot
 | `CLERK_WEBHOOK_SIGNING_SECRET` | Verifies Clerk → `/api/webhooks` requests |
 | `BREVO_API_KEY` / `BREVO_SENDER_EMAIL` / `BREVO_SENDER_NAME` | Welcome emails |
 
-See `academy-web/.env.example` for the full template. Production deployments need their own **live** Clerk keys and a **production** Clerk webhook endpoint — the values used locally are test-mode only.
+See `.env.example` for the full template. Production deployments need their own **live** Clerk keys and a **production** Clerk webhook endpoint — the values used locally are test-mode only.
 
 ### Known follow-ups
 - Clerk is currently running in development/test mode; switching kidslab.lk to production requires verifying the domain in the Clerk dashboard and issuing live keys.
