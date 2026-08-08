@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
-import { Menu, PanelLeftClose, PanelLeftOpen, ChevronDown, UserCog, LogOut, ShieldCheck } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight, UserCog, LogOut, ShieldCheck } from "lucide-react";
 import { useAdminProfile } from "./AdminProfileContext";
+import { breadcrumbFor } from "./nav-config";
 
 export default function AdminNavbar({
   collapsed,
@@ -17,9 +18,11 @@ export default function AdminNavbar({
   onOpenMobile: () => void;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const profile = useAdminProfile();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const trail = breadcrumbFor(pathname);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -56,7 +59,27 @@ export default function AdminNavbar({
         {collapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
       </button>
 
-      <div className="flex-1" />
+      <nav aria-label="Breadcrumb" className="hidden sm:flex flex-1 items-center gap-1.5 text-sm min-w-0">
+        <a href="/admin" className="text-slate-400 hover:text-slate-700 transition-colors shrink-0 font-medium">
+          Admin
+        </a>
+        {trail.map((crumb, i) => {
+          const isLast = i === trail.length - 1;
+          return (
+            <span key={crumb.href} className="flex items-center gap-1.5 min-w-0">
+              <ChevronRight className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+              {isLast ? (
+                <span className="text-slate-800 font-semibold truncate">{crumb.label}</span>
+              ) : (
+                <a href={crumb.href} className="text-slate-400 hover:text-slate-700 transition-colors truncate font-medium">
+                  {crumb.label}
+                </a>
+              )}
+            </span>
+          );
+        })}
+      </nav>
+      <div className="flex-1 sm:hidden" />
 
       <div className="relative" ref={menuRef}>
         <button

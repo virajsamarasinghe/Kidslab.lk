@@ -1,61 +1,73 @@
 "use client";
 
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  LayoutDashboard, Users, BookOpen, Mail, UserRound,
-  Settings, ChevronDown, Send, BrainCircuit, Layers3,
-  Contact2, KanbanSquare, Megaphone, X, type LucideIcon,
+  ChevronDown, X, Search, UserCog, LogOut, ShieldCheck, type LucideIcon,
 } from "lucide-react";
+import { navItems, navGroups, type NavItemDef, type NavGroupDef, type SummaryKey } from "./nav-config";
+import { useAdminProfile } from "./AdminProfileContext";
 
-const navItems = [
-  { label: "Dashboard",       href: "/admin",              icon: LayoutDashboard },
-  { label: "Users",           href: "/admin/users",        icon: Users },
-  { label: "Courses",         href: "/admin/courses",      icon: BookOpen },
-  { label: "Instructors",     href: "/admin/instructors",  icon: UserRound },
-  { label: "Subscribers",     href: "/admin/subscribers",  icon: Mail },
-];
+type Summary = Partial<Record<SummaryKey, number>>;
 
-interface NavGroupDef {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  basePath: string;
-  items: { label: string; href: string; icon: LucideIcon }[];
+function Badge({ count }: { count: number }) {
+  if (!count) return null;
+  return (
+    <span
+      className="relative z-10 ml-auto inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[10px] font-bold text-white"
+      style={{ backgroundColor: "var(--brand-yellow)", color: "var(--brand-navy)" }}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
 }
 
-const navGroups: NavGroupDef[] = [
-  {
-    id: "crm",
-    label: "CRM",
-    icon: Contact2,
-    basePath: "/admin/crm",
-    items: [
-      { label: "Contacts",       href: "/admin/crm/contacts",  icon: Contact2 },
-      { label: "Pipeline",       href: "/admin/crm/pipeline",  icon: KanbanSquare },
-      { label: "Email Marketing", href: "/admin/crm/campaigns", icon: Megaphone },
-    ],
-  },
-  {
-    id: "settings",
-    label: "Settings",
-    icon: Settings,
-    basePath: "/admin/settings",
-    items: [
-      { label: "Brevo Email",     href: "/admin/settings/brevo",     icon: Send },
-      { label: "LLM Config",      href: "/admin/settings/llm",       icon: BrainCircuit },
-      { label: "Embedding Model", href: "/admin/settings/embedding", icon: Layers3 },
-    ],
-  },
-];
+function NavLink({ item, active, collapsed, summary }: { item: NavItemDef; active: boolean; collapsed: boolean; summary: Summary }) {
+  const Icon = item.icon;
+  const count = item.countKey ? summary[item.countKey] ?? 0 : 0;
+  return (
+    <a
+      href={item.href}
+      title={collapsed ? item.label : undefined}
+      className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
+        collapsed ? "lg:justify-center" : ""
+      } ${active ? "text-white" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"}`}
+    >
+      {active && (
+        <motion.span
+          layoutId="admin-nav-active"
+          transition={{ type: "spring", stiffness: 420, damping: 34 }}
+          className="absolute inset-0 rounded-xl shadow-[0_4px_16px_-2px_rgba(224,138,60,0.5)]"
+          style={{ backgroundColor: "var(--brand-red)" }}
+        />
+      )}
+      <span
+        className={`relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
+          active ? "bg-white/15" : "bg-white/5"
+        }`}
+      >
+        <Icon className="w-3.5 h-3.5" />
+      </span>
+      <span className={`relative z-10 truncate ${collapsed ? "lg:hidden" : ""}`}>{item.label}</span>
+      {!collapsed && <Badge count={count} />}
+      {collapsed && count > 0 && (
+        <span
+          className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full lg:block hidden"
+          style={{ backgroundColor: "var(--brand-yellow)" }}
+        />
+      )}
+    </a>
+  );
+}
 
-function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname: string; collapsed: boolean }) {
+function NavGroup({ group, pathname, collapsed, summary }: { group: NavGroupDef; pathname: string; collapsed: boolean; summary: Summary }) {
   const inGroup = pathname.startsWith(group.basePath);
   const [open, setOpen] = useState(inGroup);
   const [flyoutOpen, setFlyoutOpen] = useState(false);
   const Icon = group.icon;
+  const groupCount = group.items.reduce((sum, i) => sum + (i.countKey ? summary[i.countKey] ?? 0 : 0), 0);
 
   if (collapsed) {
     return (
@@ -78,6 +90,12 @@ function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname
           <span className="relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0">
             <Icon className="w-3.5 h-3.5" />
           </span>
+          {groupCount > 0 && (
+            <span
+              className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+              style={{ backgroundColor: "var(--brand-yellow)" }}
+            />
+          )}
         </button>
 
         <AnimatePresence>
@@ -93,18 +111,20 @@ function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname
               <p className="px-3 pb-1.5 text-[10px] font-bold tracking-[0.18em] uppercase text-slate-500">
                 {group.label}
               </p>
-              {group.items.map(({ label, href, icon: ItemIcon }) => {
-                const active = pathname === href;
+              {group.items.map(item => {
+                const active = pathname === item.href;
+                const count = item.countKey ? summary[item.countKey] ?? 0 : 0;
                 return (
                   <a
-                    key={href}
-                    href={href}
+                    key={item.href}
+                    href={item.href}
                     className={`flex items-center gap-2.5 mx-2 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
                       active ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                     }`}
                   >
-                    <ItemIcon className="w-3.5 h-3.5 shrink-0" />
-                    {label}
+                    <item.icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                    <Badge count={count} />
                   </a>
                 );
               })}
@@ -120,9 +140,7 @@ function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname
       <button
         onClick={() => setOpen(o => !o)}
         className={`w-full relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
-          inGroup && !open
-            ? "text-white"
-            : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+          inGroup && !open ? "text-white" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
         }`}
       >
         {inGroup && !open && (
@@ -141,8 +159,9 @@ function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname
           <Icon className="w-3.5 h-3.5" />
         </span>
         <span className="relative z-10">{group.label}</span>
+        {!open && <Badge count={groupCount} />}
         <ChevronDown
-          className={`relative z-10 ml-auto w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`relative z-10 ${open ? "" : "ml-auto"} w-3.5 h-3.5 transition-transform duration-200 ${open ? "rotate-180 ml-auto" : ""}`}
         />
       </button>
 
@@ -156,20 +175,20 @@ function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname
             className="overflow-hidden pl-3"
           >
             <div className="border-l border-white/10 ml-4 pl-3 py-1 space-y-0.5">
-              {group.items.map(({ label, href, icon: ItemIcon }) => {
-                const active = pathname === href;
+              {group.items.map(item => {
+                const active = pathname === item.href;
+                const count = item.countKey ? summary[item.countKey] ?? 0 : 0;
                 return (
                   <a
-                    key={href}
-                    href={href}
+                    key={item.href}
+                    href={item.href}
                     className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
-                      active
-                        ? "text-white bg-white/10"
-                        : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                      active ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                     }`}
                   >
-                    <ItemIcon className="w-3.5 h-3.5 shrink-0" />
-                    {label}
+                    <item.icon className="w-3.5 h-3.5 shrink-0" />
+                    <span className="truncate">{item.label}</span>
+                    <Badge count={count} />
                   </a>
                 );
               })}
@@ -178,6 +197,26 @@ function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+/** Flat search result row, used only while the search box has a query. */
+function SearchResultRow({ item, active, icon: Icon }: { item: { label: string; href: string; group?: string }; active: boolean; icon: LucideIcon }) {
+  return (
+    <a
+      href={item.href}
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+        active ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+      }`}
+    >
+      <span className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-white/5">
+        <Icon className="w-3.5 h-3.5" />
+      </span>
+      <span className="flex flex-col min-w-0">
+        <span className="truncate">{item.label}</span>
+        {item.group && <span className="text-[10px] text-slate-500 truncate">{item.group}</span>}
+      </span>
+    </a>
   );
 }
 
@@ -191,6 +230,53 @@ export default function AdminSidebar({
   onCloseMobile: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const profile = useAdminProfile();
+  const [query, setQuery] = useState("");
+  const [summary, setSummary] = useState<Summary>({});
+  const [footerFlyoutOpen, setFooterFlyoutOpen] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSummary() {
+      try {
+        const res = await fetch("/api/admin/sidebar-summary");
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled) setSummary(data);
+      } catch {
+        // badges are a non-critical enhancement — fail silently
+      }
+    }
+    loadSummary();
+    const interval = setInterval(loadSummary, 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const searchResults = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return null;
+    const flat: { label: string; href: string; group?: string; icon: LucideIcon }[] = [];
+    for (const item of navItems) {
+      if (item.label.toLowerCase().includes(q)) flat.push({ ...item });
+    }
+    for (const group of navGroups) {
+      for (const item of group.items) {
+        if (item.label.toLowerCase().includes(q) || group.label.toLowerCase().includes(q)) {
+          flat.push({ ...item, group: group.label });
+        }
+      }
+    }
+    return flat;
+  }, [query]);
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+  }
 
   return (
     <>
@@ -250,53 +336,129 @@ export default function AdminSidebar({
           />
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 pt-6 pb-4 space-y-1 overflow-y-auto overflow-x-visible">
-          <p className={`px-3 mb-2 text-[10px] font-bold tracking-[0.18em] uppercase text-slate-500 ${collapsed ? "lg:hidden" : ""}`}>
-            Menu
-          </p>
-          {navItems.map(({ label, href, icon: Icon }) => {
-            const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
-            return (
-              <a
-                key={href}
-                href={href}
-                title={collapsed ? label : undefined}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
-                  collapsed ? "lg:justify-center" : ""
-                } ${
-                  active
-                    ? "text-white"
-                    : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-                }`}
-              >
-                {active && (
-                  <motion.span
-                    layoutId="admin-nav-active"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                    className="absolute inset-0 rounded-xl shadow-[0_4px_16px_-2px_rgba(224,138,60,0.5)]"
-                    style={{ backgroundColor: "var(--brand-red)" }}
-                  />
-                )}
-                <span
-                  className={`relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
-                    active ? "bg-white/15" : "bg-white/5"
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </span>
-                <span className={`relative z-10 ${collapsed ? "lg:hidden" : ""}`}>{label}</span>
-                {active && (
-                  <span className={`relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-white ${collapsed ? "lg:hidden" : ""}`} />
-                )}
-              </a>
-            );
-          })}
+        {/* Search */}
+        {!collapsed && (
+          <div className="px-3 pt-4 shrink-0">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+              <input
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                type="text"
+                placeholder="Search menu…"
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-3 py-2 text-[13px] text-white placeholder:text-slate-500 focus:outline-none focus:border-white/25 transition-colors"
+              />
+            </div>
+          </div>
+        )}
 
-          {navGroups.map(group => (
-            <NavGroup key={group.id} group={group} pathname={pathname} collapsed={collapsed} />
-          ))}
+        {/* Navigation */}
+        <nav className="flex-1 px-3 pt-4 pb-4 space-y-1 overflow-y-auto overflow-x-visible">
+          {searchResults ? (
+            searchResults.length > 0 ? (
+              searchResults.map(item => (
+                <SearchResultRow key={item.href} item={item} active={pathname === item.href} icon={item.icon} />
+              ))
+            ) : (
+              <p className="px-3 py-4 text-[13px] text-slate-500 text-center">No matches for &ldquo;{query}&rdquo;</p>
+            )
+          ) : (
+            <>
+              <p className={`px-3 mb-2 text-[10px] font-bold tracking-[0.18em] uppercase text-slate-500 ${collapsed ? "lg:hidden" : ""}`}>
+                Menu
+              </p>
+              {navItems.map(item => {
+                const active = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
+                return <NavLink key={item.href} item={item} active={active} collapsed={collapsed} summary={summary} />;
+              })}
+              {navGroups.map(group => (
+                <NavGroup key={group.id} group={group} pathname={pathname} collapsed={collapsed} summary={summary} />
+              ))}
+            </>
+          )}
         </nav>
+
+        {/* Footer: profile + quick actions */}
+        <div
+          className="shrink-0 border-t border-white/10 p-3 relative"
+          onMouseEnter={() => collapsed && setFooterFlyoutOpen(true)}
+          onMouseLeave={() => collapsed && setFooterFlyoutOpen(false)}
+        >
+          {collapsed ? (
+            <button
+              className="w-full flex items-center justify-center py-1"
+              aria-label="Account"
+            >
+              <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}>
+                {profile.avatar ? (
+                  <Image src={profile.avatar} alt={profile.name} width={32} height={32} className="w-full h-full object-cover" />
+                ) : (
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                )}
+              </span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2.5 px-1 py-1">
+              <span className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}>
+                {profile.avatar ? (
+                  <Image src={profile.avatar} alt={profile.name} width={36} height={36} className="w-full h-full object-cover" />
+                ) : (
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-white truncate">{profile.name || "Administrator"}</p>
+                <p className="text-[11px] text-slate-500 truncate">{profile.email}</p>
+              </div>
+              <a
+                href="/admin/profile"
+                title="Edit profile"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors shrink-0"
+              >
+                <UserCog className="w-3.5 h-3.5" />
+              </a>
+              <button
+                onClick={logout}
+                title="Sign out"
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-400 hover:bg-white/[0.06] transition-colors shrink-0"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          <AnimatePresence>
+            {collapsed && footerFlyoutOpen && (
+              <motion.div
+                initial={{ opacity: 0, x: -6 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -6 }}
+                transition={{ duration: 0.12 }}
+                className="absolute left-full bottom-0 ml-2 w-52 rounded-xl border border-white/10 shadow-xl py-2 z-50"
+                style={{ backgroundColor: "var(--brand-navy)" }}
+              >
+                <div className="px-3 pb-2 mb-1 border-b border-white/10">
+                  <p className="text-sm font-semibold text-white truncate">{profile.name || "Administrator"}</p>
+                  <p className="text-[11px] text-slate-500 truncate">{profile.email}</p>
+                </div>
+                <a
+                  href="/admin/profile"
+                  className="flex items-center gap-2.5 mx-2 px-2.5 py-2 rounded-lg text-[13px] font-medium text-slate-400 hover:text-white hover:bg-white/[0.06] transition-colors"
+                >
+                  <UserCog className="w-3.5 h-3.5 shrink-0" />
+                  Edit Profile
+                </a>
+                <button
+                  onClick={logout}
+                  className="w-[calc(100%-1rem)] flex items-center gap-2.5 mx-2 px-2.5 py-2 rounded-lg text-[13px] font-medium text-red-400 hover:bg-white/[0.06] transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5 shrink-0" />
+                  Sign Out
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </aside>
     </>
   );
