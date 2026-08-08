@@ -317,7 +317,7 @@ export default function RegisterPage() {
                   City / District
                 </Label>
                 <Input
-                  placeholder="Ex: Galle"
+                  placeholder="Ex: Matara"
                   className="reg-input border-slate-200 w-full"
                   value={form.city} onChange={set("city")}
                 />

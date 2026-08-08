@@ -60,6 +60,18 @@ export const countedRoutes: { href: string; countKey: SummaryKey }[] = [
   ...navGroups.flatMap(g => g.items.filter((i): i is NavItemDef & { countKey: SummaryKey } => !!i.countKey)),
 ];
 
+export interface FlatNavEntry extends NavItemDef {
+  group?: string;
+}
+
+/** Every navigable destination as one flat list — used by search and the command palette. */
+export function flattenNav(): FlatNavEntry[] {
+  return [
+    ...navItems.map(item => ({ ...item })),
+    ...navGroups.flatMap(group => group.items.map(item => ({ ...item, group: group.label }))),
+  ];
+}
+
 /** Flat href -> breadcrumb trail (group label omitted for top-level items). */
 export function breadcrumbFor(pathname: string): { label: string; href: string }[] {
   if (pathname.startsWith("/admin/profile")) {

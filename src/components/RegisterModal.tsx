@@ -271,7 +271,7 @@ export default function RegisterModal() {
                       City / District
                     </Label>
                     <Input
-                      placeholder="Ex: Galle"
+                      placeholder="Ex: Matara"
                       className="border-slate-200 w-full h-10 text-sm"
                       value={form.city} onChange={set("city")}
                     />

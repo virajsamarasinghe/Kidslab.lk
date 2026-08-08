@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import AdminSidebar from "./Sidebar";
 import AdminNavbar from "./Navbar";
 import { AdminProfileProvider, type AdminProfile } from "./AdminProfileContext";
+import { AdminSummaryProvider } from "./AdminSummaryContext";
 
 const COLLAPSE_STORAGE_KEY = "kidslab_admin_sidebar_collapsed";
 
@@ -26,17 +27,19 @@ export default function AdminShell({ children, profile }: { children: ReactNode;
 
   return (
     <AdminProfileProvider initial={profile}>
-      <div className="min-h-screen" style={{ backgroundColor: "var(--brand-paper)" }}>
-        <AdminSidebar collapsed={collapsed} mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
-        <div className={`flex flex-col min-h-screen transition-[margin] duration-200 ease-out ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
-          <AdminNavbar
-            collapsed={collapsed}
-            onToggleCollapsed={toggleCollapsed}
-            onOpenMobile={() => setMobileOpen(true)}
-          />
-          <main className="flex-1">{children}</main>
+      <AdminSummaryProvider>
+        <div className="min-h-screen" style={{ backgroundColor: "var(--brand-paper)" }}>
+          <AdminSidebar collapsed={collapsed} mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
+          <div className={`flex flex-col min-h-screen transition-[margin] duration-200 ease-out ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
+            <AdminNavbar
+              collapsed={collapsed}
+              onToggleCollapsed={toggleCollapsed}
+              onOpenMobile={() => setMobileOpen(true)}
+            />
+            <main className="flex-1">{children}</main>
+          </div>
         </div>
-      </div>
+      </AdminSummaryProvider>
     </AdminProfileProvider>
   );
 }

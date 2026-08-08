@@ -1,34 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronDown, X, Search, UserCog, LogOut, ShieldCheck, type LucideIcon,
 } from "lucide-react";
-import { navItems, navGroups, countedRoutes, type NavItemDef, type NavGroupDef, type SummaryKey } from "./nav-config";
+import { navItems, navGroups, flattenNav, type NavItemDef, type NavGroupDef } from "./nav-config";
 import { useAdminProfile } from "./AdminProfileContext";
-
-type Summary = Partial<Record<SummaryKey, number>>;
-type SeenMap = Partial<Record<SummaryKey, number>>;
-
-const SEEN_STORAGE_KEY = "kidslab_admin_badge_seen";
-const SUMMARY_KEYS: SummaryKey[] = ["users", "subscribers", "leads"];
-
-function readSeenMap(): SeenMap {
-  if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(localStorage.getItem(SEEN_STORAGE_KEY) ?? "{}");
-  } catch {
-    return {};
-  }
-}
-
-function writeSeenMap(map: SeenMap) {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(SEEN_STORAGE_KEY, JSON.stringify(map));
-}
+import { useAdminSummary, type Summary } from "./AdminSummaryContext";
 
 function Badge({ count }: { count: number }) {
   if (!count) return null;
@@ -250,78 +231,16 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const profile = useAdminProfile();
+  const summary = useAdminSummary();
   const [query, setQuery] = useState("");
-  const [summary, setSummary] = useState<Summary>({});
   const [footerFlyoutOpen, setFooterFlyoutOpen] = useState(false);
-  // Establish a "seen as of" checkpoint per badge on first load, so a fresh
-  // browser doesn't render existing totals as if they were all brand new.
-  const [seenMap, setSeenMap] = useState<SeenMap>(() => {
-    const stored = readSeenMap();
-    let changed = false;
-    for (const key of SUMMARY_KEYS) {
-      if (stored[key] == null) {
-        stored[key] = Date.now();
-        changed = true;
-      }
-    }
-    if (changed) writeSeenMap(stored);
-    return stored;
-  });
-
-  useEffect(() => {
-    if (Object.keys(seenMap).length === 0) return;
-    let cancelled = false;
-    async function loadSummary() {
-      try {
-        const params = new URLSearchParams();
-        for (const key of SUMMARY_KEYS) {
-          if (seenMap[key] != null) params.set(key, String(seenMap[key]));
-        }
-        const res = await fetch(`/api/admin/sidebar-summary?${params.toString()}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (!cancelled) setSummary(data);
-      } catch {
-        // badges are a non-critical enhancement — fail silently
-      }
-    }
-    loadSummary();
-    const interval = setInterval(loadSummary, 60_000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, [seenMap]);
-
-  // Visiting a badged section marks it seen: clears its badge and resets
-  // the "new since" checkpoint to now.
-  useEffect(() => {
-    const hit = countedRoutes.find(r => pathname.startsWith(r.href));
-    if (!hit) return;
-    setSeenMap(prev => {
-      if (prev[hit.countKey] != null && Date.now() - prev[hit.countKey]! < 2000) return prev;
-      const next = { ...prev, [hit.countKey]: Date.now() };
-      writeSeenMap(next);
-      return next;
-    });
-    setSummary(prev => ({ ...prev, [hit.countKey]: 0 }));
-  }, [pathname]);
 
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return null;
-    const flat: { label: string; href: string; group?: string; icon: LucideIcon }[] = [];
-    for (const item of navItems) {
-      if (item.label.toLowerCase().includes(q)) flat.push({ ...item });
-    }
-    for (const group of navGroups) {
-      for (const item of group.items) {
-        if (item.label.toLowerCase().includes(q) || group.label.toLowerCase().includes(q)) {
-          flat.push({ ...item, group: group.label });
-        }
-      }
-    }
-    return flat;
+    return flattenNav().filter(
+      item => item.label.toLowerCase().includes(q) || (item.group ?? "").toLowerCase().includes(q)
+    );
   }, [query]);
 
   async function logout() {

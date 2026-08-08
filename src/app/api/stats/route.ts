@@ -7,6 +7,7 @@ import Subscriber from "@/models/Subscriber";
 import Instructor from "@/models/Instructor";
 import Contact, { PIPELINE_STAGES } from "@/models/Contact";
 import Campaign from "@/models/Campaign";
+import { resolveCity, districtName } from "@/lib/sri-lanka-locations";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TREND_DAYS = 14;
@@ -58,7 +59,6 @@ export async function GET() {
       { $match: { role: "user", city: { $nin: [null, ""] } } },
       { $group: { _id: "$city", count: { $sum: 1 } } },
       { $sort: { count: -1 } },
-      { $limit: 5 },
     ]),
     User.aggregate([
       { $match: { role: "user", interestedCourse: { $nin: [null, ""] } } },
@@ -99,6 +99,30 @@ export async function GET() {
   const countsByStage = new Map(pipelineByStageRaw.map((s: { _id: string; count: number }) => [s._id, s.count]));
   const pipeline = PIPELINE_STAGES.map(stage => ({ stage, count: countsByStage.get(stage) ?? 0 }));
 
+  // Resolve free-text city entries against the Sri Lanka district/town
+  // lookup so registrations can be plotted on the map. Unresolved spellings
+  // are counted separately rather than guessed at.
+  const districtCounts = new Map<string, number>();
+  const cityPoints = new Map<string, { name: string; lat: number; lon: number; count: number }>();
+  let unmatchedCities = 0;
+  for (const c of topCitiesRaw as { _id: string; count: number }[]) {
+    const match = resolveCity(c._id);
+    if (!match) {
+      unmatchedCities += c.count;
+      continue;
+    }
+    districtCounts.set(match.district, (districtCounts.get(match.district) ?? 0) + c.count);
+    const existing = cityPoints.get(match.label);
+    if (existing) existing.count += c.count;
+    else cityPoints.set(match.label, { name: match.label, lat: match.lat, lon: match.lon, count: c.count });
+  }
+  const mapDistricts = Array.from(districtCounts.entries()).map(([key, count]) => ({
+    "hc-key": key,
+    name: districtName(key),
+    value: count,
+  }));
+  const mapCities = Array.from(cityPoints.values()).sort((a, b) => b.count - a.count);
+
   return NextResponse.json({
     totalUsers,
     totalCourses,
@@ -110,7 +134,10 @@ export async function GET() {
     weeklyGrowth,
     recentUsers,
     signupTrend,
-    topCities: topCitiesRaw.map((c: { _id: string; count: number }) => ({ city: c._id, count: c.count })),
+    topCities: topCitiesRaw.slice(0, 5).map((c: { _id: string; count: number }) => ({ city: c._id, count: c.count })),
+    mapDistricts,
+    mapCities,
+    unmatchedCities,
     topCourses: topCoursesRaw.map((c: { _id: string; count: number }) => ({ course: c._id, count: c.count })),
     totalInstructors,
     totalContacts,

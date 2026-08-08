@@ -107,7 +107,7 @@ const whyUs = [
 const testimonials = [
   {
     name: "Kavisha Fernando",
-    role: "Parent · Galle",
+    role: "Parent · Matara",
     quote:
       "My daughter was nervous at first, but after the first class she couldn't stop talking about robots. The engineers make it so fun and easy to understand.",
     stars: 5,

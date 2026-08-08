@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Users, BookOpen, CheckCircle, Mail, ArrowRight, ArrowUpRight, ArrowDownRight,
-  GraduationCap, Contact2, Send, Filter,
+  GraduationCap, Contact2, Send, Award, MapPin, TrendingUp,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -15,6 +16,12 @@ import {
   ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig,
 } from "@/components/ui/chart";
 import type { PipelineStage } from "@/types/crm";
+import type { MapDistrict, MapCity } from "@/components/admin/SriLankaMap";
+
+const SriLankaMap = dynamic(() => import("@/components/admin/SriLankaMap"), {
+  ssr: false,
+  loading: () => <div className="h-[380px] flex items-center justify-center text-slate-400 text-sm">Loading map…</div>,
+});
 
 interface Stats {
   totalUsers: number;
@@ -35,6 +42,9 @@ interface Stats {
   }>;
   signupTrend: Array<{ date: string; signups: number }>;
   topCities: Array<{ city: string; count: number }>;
+  mapDistricts: MapDistrict[];
+  mapCities: MapCity[];
+  unmatchedCities: number;
   topCourses: Array<{ course: string; count: number }>;
   totalInstructors: number;
   totalContacts: number;
@@ -109,7 +119,7 @@ export default function AdminDashboard() {
     {
       label: "Enrolled → Alumni",
       value: stats ? stats.pipeline.find(p => p.stage === "enrolled")?.count ?? 0 : "—",
-      icon: Filter,
+      icon: Award,
       bg: "rgba(22,163,74,0.10)",
       color: "#16a34a",
     },
@@ -127,6 +137,13 @@ export default function AdminDashboard() {
 
   const growth = stats?.weeklyGrowth ?? 0;
   const isPositive = growth >= 0;
+
+  const alumniCount = stats?.pipeline.find(p => p.stage === "alumni")?.count ?? 0;
+  const enrolledCount = stats?.pipeline.find(p => p.stage === "enrolled")?.count ?? 0;
+  const conversionRate =
+    stats && pipelineTotal > 0 ? Math.round(((enrolledCount + alumniCount) / pipelineTotal) * 100) : 0;
+
+  const mappedRegistrations = stats ? stats.mapCities.reduce((sum, c) => sum + c.count, 0) : 0;
 
   return (
     <div className="p-8">
@@ -257,6 +274,28 @@ export default function AdminDashboard() {
         </Card>
       </div>
 
+      {/* Sri Lanka map */}
+      <Card className="pcb-card border-slate-100 shadow-sm mb-6">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div>
+            <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5" style={{ color: "var(--brand-red)" }} />
+              Registrations Across Sri Lanka
+            </CardTitle>
+            <p className="text-xs text-slate-400 mt-1">
+              {mappedRegistrations} plotted{stats && stats.unmatchedCities > 0 ? ` · ${stats.unmatchedCities} unmatched city entries` : ""}
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent className="pb-4">
+          <SriLankaMap
+            districts={stats?.mapDistricts ?? []}
+            cities={stats?.mapCities ?? []}
+            loading={!stats}
+          />
+        </CardContent>
+      </Card>
+
       {/* Breakdown row */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-6">
         <Card className="pcb-card border-slate-100 shadow-sm">
@@ -311,13 +350,24 @@ export default function AdminDashboard() {
               <CardTitle className="text-sm font-semibold text-slate-900">Enrollment Pipeline</CardTitle>
               <p className="text-xs text-slate-400 mt-1">{stats?.totalContacts ?? 0} contacts across all stages</p>
             </div>
-            <a
-              href="/admin/crm/pipeline"
-              className="text-xs font-semibold hover:underline flex items-center gap-1"
-              style={{ color: "var(--brand-red)" }}
-            >
-              Open board <ArrowRight className="w-3 h-3" />
-            </a>
+            <div className="flex items-center gap-3">
+              {stats && (
+                <span
+                  className="flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full text-green-700 bg-green-50"
+                  title="Contacts that reached Enrolled or Alumni"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  {conversionRate}% conversion
+                </span>
+              )}
+              <a
+                href="/admin/crm/pipeline"
+                className="text-xs font-semibold hover:underline flex items-center gap-1"
+                style={{ color: "var(--brand-red)" }}
+              >
+                Open board <ArrowRight className="w-3 h-3" />
+              </a>
+            </div>
           </CardHeader>
           <CardContent className="pb-5">
             {stats ? (
