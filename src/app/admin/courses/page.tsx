@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Trash2, Pencil, X, ToggleLeft, ToggleRight, Check, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Pencil, X, ToggleLeft, ToggleRight, Check, AlertTriangle, RefreshCw, Users, Clock, GraduationCap, Wallet, Calendar, UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -215,12 +215,12 @@ export default function AdminCourses() {
               </div>
               <p className="text-slate-500 text-sm leading-relaxed mb-4 line-clamp-2">{c.description || "No description"}</p>
               <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-4">
-                <span>👥 Ages: {c.ageRange}</span>
-                <span>⏱ {c.duration || "—"}</span>
-                <span className="col-span-2 truncate">👨‍🏫 {c.instructors.length ? c.instructors.map(i => i.name).join(", ") : "—"}</span>
-                <span>💰 LKR {c.price.toLocaleString()}</span>
-                <span>📅 {c.schedule || "—"}</span>
-                <span className="col-span-2">🎓 {c.enrolledCount}/{c.maxStudents} students</span>
+                <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 shrink-0" /> Ages: {c.ageRange}</span>
+                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 shrink-0" /> {c.duration || "—"}</span>
+                <span className="col-span-2 flex items-center gap-1.5 truncate"><UserCog className="w-3.5 h-3.5 shrink-0" /> {c.instructors.length ? c.instructors.map(i => i.name).join(", ") : "—"}</span>
+                <span className="flex items-center gap-1.5"><Wallet className="w-3.5 h-3.5 shrink-0" /> LKR {c.price.toLocaleString()}</span>
+                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 shrink-0" /> {c.schedule || "—"}</span>
+                <span className="col-span-2 flex items-center gap-1.5"><GraduationCap className="w-3.5 h-3.5 shrink-0" /> {c.enrolledCount}/{c.maxStudents} students</span>
               </div>
               <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
                 <button

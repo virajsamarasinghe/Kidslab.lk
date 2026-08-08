@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { logActivity } from "@/lib/activity-log";
-import type { LLMConfig } from "@/models/Settings";
+import type { ISettings, LLMConfig } from "@/models/Settings";
 
 const SECTIONS = ["brevo", "llm", "embedding"] as const;
 type Section = (typeof SECTIONS)[number];
@@ -13,8 +13,25 @@ function maskSecret(value: string) {
   return `${value.slice(0, 4)}••••${value.slice(-4)}`;
 }
 
-function maskLLM(entry: LLMConfig) {
-  return { ...entry, apiKey: maskSecret(entry.apiKey) };
+/**
+ * Builds the client-safe view of the settings doc.
+ *
+ * `toObject()` is essential here: `settings.brevo` / `settings.embedding` /
+ * each `settings.llm` entry are Mongoose subdocuments, and spreading one
+ * yields its internals (`_doc`, `$__`, `$__parent`) instead of its fields —
+ * which both dropped every non-`apiKey` field from the response and leaked
+ * the whole unmasked settings doc through `$__parent`.
+ */
+function serialize(settings: ISettings) {
+  const { brevo, llm, embedding } = settings.toObject<
+    Pick<ISettings, "brevo" | "llm" | "embedding">
+  >();
+
+  return {
+    brevo: { ...brevo, apiKey: maskSecret(brevo.apiKey) },
+    llm: llm.map((entry: LLMConfig) => ({ ...entry, apiKey: maskSecret(entry.apiKey) })),
+    embedding: { ...embedding, apiKey: maskSecret(embedding.apiKey) },
+  };
 }
 
 export async function GET() {
@@ -22,11 +39,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const settings = await getSettings();
-  return NextResponse.json({
-    brevo: { ...settings.brevo, apiKey: maskSecret(settings.brevo.apiKey) },
-    llm: settings.llm.map(maskLLM),
-    embedding: { ...settings.embedding, apiKey: maskSecret(settings.embedding.apiKey) },
-  });
+  return NextResponse.json(serialize(settings));
 }
 
 export async function PUT(req: NextRequest) {
@@ -75,7 +88,7 @@ export async function PUT(req: NextRequest) {
     settings.markModified("llm");
     await settings.save();
     logActivity(session, "updated", "settings", "llm");
-    return NextResponse.json(settings.llm.map(maskLLM));
+    return NextResponse.json(serialize(settings).llm);
   }
 
   const incoming = (body.data ?? {}) as Record<string, string>;
@@ -106,6 +119,6 @@ export async function PUT(req: NextRequest) {
   await settings.save();
   logActivity(session, "updated", "settings", section);
 
-  const saved = section === "brevo" ? settings.brevo : settings.embedding;
-  return NextResponse.json({ ...saved, apiKey: maskSecret(saved.apiKey) });
+  const saved = serialize(settings);
+  return NextResponse.json(section === "brevo" ? saved.brevo : saved.embedding);
 }

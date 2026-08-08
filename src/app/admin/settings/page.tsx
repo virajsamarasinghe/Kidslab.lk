@@ -18,16 +18,19 @@ interface SettingsSnapshot {
 
 function isConfigured(key: (typeof sections)[number]["key"], data: SettingsSnapshot | null): boolean | null {
   if (!data) return null;
-  if (key === "brevo") return Boolean(data.brevo.apiKey && data.brevo.senderEmail);
-  if (key === "llm") return data.llm.some(entry => entry.apiKey && entry.model);
-  return Boolean(data.embedding.apiKey && data.embedding.model);
+  if (key === "brevo") return Boolean(data.brevo?.apiKey && data.brevo?.senderEmail);
+  if (key === "llm") return (data.llm ?? []).some(entry => entry.apiKey && entry.model);
+  return Boolean(data.embedding?.apiKey && data.embedding?.model);
 }
 
 export default function AdminSettingsOverview() {
   const [data, setData] = useState<SettingsSnapshot | null>(null);
 
   useEffect(() => {
-    fetch("/api/settings").then(r => r.json()).then(setData).catch(() => {});
+    fetch("/api/settings")
+      .then(r => (r.ok ? r.json() : null))
+      .then(setData)
+      .catch(() => {});
   }, []);
 
   return (

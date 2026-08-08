@@ -180,6 +180,13 @@ export default function AdminDashboard() {
 
   const mappedRegistrations = stats ? stats.mapCities.reduce((sum, c) => sum + c.count, 0) : 0;
 
+  // Districts that actually have registrations, biggest first — the map only
+  // shows intensity, so the list gives exact counts per district.
+  const registeredDistricts = stats
+    ? [...stats.mapDistricts].sort((a, b) => b.value - a.value)
+    : [];
+  const topDistrictCount = registeredDistricts[0]?.value ?? 0;
+
   const activeShare =
     stats && stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0;
 
@@ -356,16 +363,60 @@ export default function AdminDashboard() {
               Registrations Across Sri Lanka
             </CardTitle>
             <p className="text-xs text-slate-400 mt-1">
-              {mappedRegistrations} plotted{stats && stats.unmatchedCities > 0 ? ` · ${stats.unmatchedCities} unmatched city entries` : ""}
+              {mappedRegistrations} plotted across {registeredDistricts.length} district{registeredDistricts.length === 1 ? "" : "s"}
+              {stats && stats.unmatchedCities > 0 ? ` · ${stats.unmatchedCities} unmatched city entries` : ""}
             </p>
           </div>
         </CardHeader>
         <CardContent className="pb-4">
-          <SriLankaMap
-            districts={stats?.mapDistricts ?? []}
-            cities={stats?.mapCities ?? []}
-            loading={!stats}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-5">
+            <SriLankaMap
+              districts={stats?.mapDistricts ?? []}
+              cities={stats?.mapCities ?? []}
+              loading={!stats}
+            />
+
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-baseline justify-between mb-2">
+                <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wide">
+                  Registered Districts
+                </h3>
+                <span className="text-xs text-slate-400">{registeredDistricts.length}</span>
+              </div>
+
+              {!stats ? (
+                <div className="flex-1 min-h-[200px] flex items-center justify-center text-slate-400 text-sm">
+                  Loading…
+                </div>
+              ) : registeredDistricts.length === 0 ? (
+                <div className="flex-1 min-h-[200px] flex items-center justify-center text-slate-400 text-sm">
+                  No districts yet
+                </div>
+              ) : (
+                <ul className="flex-1 lg:max-h-[340px] overflow-y-auto pr-1 divide-y divide-slate-100">
+                  {registeredDistricts.map(d => (
+                    <li key={d["hc-key"]} className="py-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-slate-600 truncate">{d.name}</span>
+                        <span className="text-xs font-semibold text-slate-900 tabular-nums shrink-0">
+                          {d.value}
+                        </span>
+                      </div>
+                      <div className="mt-1 h-1 rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${topDistrictCount > 0 ? (d.value / topDistrictCount) * 100 : 0}%`,
+                            backgroundColor: "var(--brand-red)",
+                          }}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
