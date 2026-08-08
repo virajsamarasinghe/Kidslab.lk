@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
+import { createSmtpTransport } from "@/lib/brevo";
 
 const SECTIONS = ["brevo", "llm", "embedding"] as const;
 type Section = (typeof SECTIONS)[number];
@@ -16,17 +17,20 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
   }
 }
 
-async function testBrevo(apiKey: string) {
-  if (!apiKey) return { success: false, message: "No API key provided" };
-  const res = await fetchWithTimeout("https://api.brevo.com/v3/account", {
-    headers: { Accept: "application/json", "api-key": apiKey },
-  });
-  if (!res.ok) {
-    const body = await res.text();
-    return { success: false, message: `Brevo responded ${res.status}: ${body.slice(0, 200)}` };
+/** Verifies the Brevo SMTP relay — the transport `sendEmail` actually uses. */
+async function testBrevo(smtp: { host: string; port: number; user: string; key: string } | null) {
+  if (!smtp) return { success: false, message: "SMTP login and key are required" };
+
+  const transport = createSmtpTransport(smtp);
+  try {
+    await transport.verify();
+    return { success: true, message: `SMTP relay reachable — authenticated as ${smtp.user} on ${smtp.host}:${smtp.port}` };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "SMTP connection failed";
+    return { success: false, message: `SMTP error: ${message}` };
+  } finally {
+    transport.close();
   }
-  const data = await res.json();
-  return { success: true, message: `Connected as ${data.email ?? data.companyName ?? "account"}` };
 }
 
 async function testAnthropic(baseUrl: string, apiKey: string, model: string) {
@@ -106,7 +110,6 @@ export async function POST(req: NextRequest) {
   const incoming = (body.data ?? {}) as Record<string, string | number>;
   const settings = await getSettings();
   const storedApiKey =
-    section === "brevo" ? settings.brevo.apiKey :
     section === "llm" ? (settings.llm[Number(incoming.index)]?.apiKey ?? "") :
     settings.embedding.apiKey;
 
@@ -120,7 +123,22 @@ export async function POST(req: NextRequest) {
   try {
     let result;
     if (section === "brevo") {
-      result = await testBrevo(apiKey);
+      const smtpKeyIn = incoming.smtpKey as string | undefined;
+      const smtpKey =
+        typeof smtpKeyIn === "string" && smtpKeyIn.includes("••••")
+          ? settings.brevo.smtpKey
+          : smtpKeyIn ?? settings.brevo.smtpKey;
+      const smtpUser = (incoming.smtpUser as string) || settings.brevo.smtpUser;
+      result = await testBrevo(
+        smtpUser && smtpKey
+          ? {
+              host: (incoming.smtpHost as string) || settings.brevo.smtpHost || "smtp-relay.brevo.com",
+              port: Number(incoming.smtpPort || settings.brevo.smtpPort) || 587,
+              user: smtpUser,
+              key: smtpKey,
+            }
+          : null
+      );
     } else if (section === "llm") {
       result = await testLLM(
         (incoming.providerId as string) ?? "",

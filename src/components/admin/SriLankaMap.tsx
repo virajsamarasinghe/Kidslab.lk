@@ -4,19 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import HighchartsReact from "highcharts-react-official";
 import Highcharts from "highcharts/highmaps";
 import proj4 from "proj4";
+import type { MapDistrict, MapCity } from "@/types/dashboard";
 
-export interface MapDistrict {
-  "hc-key": string;
-  name: string;
-  value: number;
-}
-
-export interface MapCity {
-  name: string;
-  lat: number;
-  lon: number;
-  count: number;
-}
+export type { MapDistrict, MapCity };
 
 const TOPOLOGY_URL = "/maps/lk-all.geo.json";
 

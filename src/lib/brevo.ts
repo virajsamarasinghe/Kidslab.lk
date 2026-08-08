@@ -1,47 +1,102 @@
+import nodemailer, { type Transporter } from "nodemailer";
 import { SITE_NAME, SITE_URL } from "@/config/site";
 import { getSettings } from "@/lib/settings";
 
-const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+const DEFAULT_SMTP_HOST = "smtp-relay.brevo.com";
+const DEFAULT_SMTP_PORT = 587;
 
-interface BrevoCredentials {
-  apiKey: string;
+export interface BrevoCredentials {
   senderEmail: string;
   senderName: string;
+  smtp: BrevoSmtpCredentials;
+}
+
+export interface BrevoSmtpCredentials {
+  host: string;
+  port: number;
+  user: string;
+  key: string;
 }
 
 export async function getBrevoCredentials(): Promise<BrevoCredentials | null> {
   const settings = await getSettings();
-  const apiKey = settings.brevo.apiKey || process.env.BREVO_API_KEY;
   const senderEmail = settings.brevo.senderEmail || process.env.BREVO_SENDER_EMAIL;
   const senderName = settings.brevo.senderName || process.env.BREVO_SENDER_NAME || SITE_NAME;
-  if (!apiKey || !senderEmail) return null;
-  return { apiKey, senderEmail, senderName };
+  const smtp = resolveSmtp(settings.brevo);
+
+  if (!senderEmail || !smtp) return null;
+  return { senderEmail, senderName, smtp };
 }
 
-/** Sends a single transactional/marketing email via Brevo using saved (or env) credentials. */
+function resolveSmtp(brevo: {
+  smtpUser?: string;
+  smtpKey?: string;
+  smtpHost?: string;
+  smtpPort?: number;
+}): BrevoSmtpCredentials | null {
+  const user = brevo.smtpUser || process.env.BREVO_SMTP_USER;
+  const key = brevo.smtpKey || process.env.BREVO_SMTP_KEY;
+  if (!user || !key) return null;
+  return {
+    host: brevo.smtpHost || process.env.BREVO_SMTP_HOST || DEFAULT_SMTP_HOST,
+    port: Number(brevo.smtpPort || process.env.BREVO_SMTP_PORT || DEFAULT_SMTP_PORT),
+    user,
+    key,
+  };
+}
+
+/**
+ * Builds a Brevo SMTP transporter.
+ *
+ * SMTP is the only transport here, deliberately. Brevo's "authorised IPs"
+ * security setting applies to its HTTP API only, so REST calls from an
+ * unlisted server IP are rejected with a 401 `unauthorized` even when the key
+ * is perfectly valid — unworkable on hosts with rotating outbound IPs. The
+ * SMTP relay isn't subject to that restriction.
+ *
+ * Port 587 is STARTTLS (`secure: false` — nodemailer upgrades the connection);
+ * only port 465 is implicit TLS.
+ */
+export function createSmtpTransport(smtp: BrevoSmtpCredentials): Transporter {
+  return nodemailer.createTransport({
+    host: smtp.host,
+    port: smtp.port,
+    secure: smtp.port === 465,
+    auth: { user: smtp.user, pass: smtp.key },
+    // Pooled so a campaign blast reuses connections instead of opening a
+    // fresh TCP+TLS handshake per recipient.
+    pool: true,
+    maxConnections: 3,
+  });
+}
+
+/**
+ * Cached per credential set — `sendEmail` is called once per recipient, and
+ * building a new pool each time would defeat the pooling entirely.
+ */
+const transportCache = new Map<string, Transporter>();
+
+function getSmtpTransport(smtp: BrevoSmtpCredentials): Transporter {
+  const cacheKey = `${smtp.host}:${smtp.port}:${smtp.user}:${smtp.key}`;
+  let transport = transportCache.get(cacheKey);
+  if (!transport) {
+    transport = createSmtpTransport(smtp);
+    transportCache.set(cacheKey, transport);
+  }
+  return transport;
+}
+
+/** Sends a single transactional/marketing email through the Brevo SMTP relay. */
 export async function sendEmail(
   creds: BrevoCredentials,
   { to, name, subject, html }: { to: string; name?: string; subject: string; html: string }
 ) {
-  const res = await fetch(BREVO_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      "api-key": creds.apiKey,
-    },
-    body: JSON.stringify({
-      sender: { name: creds.senderName, email: creds.senderEmail },
-      to: [{ email: to, name: name || to }],
-      subject,
-      htmlContent: html,
-    }),
+  await getSmtpTransport(creds.smtp).sendMail({
+    from: { name: creds.senderName, address: creds.senderEmail },
+    to: name ? { name, address: to } : to,
+    subject,
+    html,
   });
-
-  if (!res.ok) {
-    const errorBody = await res.text();
-    throw new Error(`Brevo API error (${res.status}): ${errorBody}`);
-  }
 }
 
 interface SendWelcomeEmailParams {

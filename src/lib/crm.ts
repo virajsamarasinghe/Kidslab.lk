@@ -111,6 +111,63 @@ export const getUnifiedContacts = unstable_cache(fetchUnifiedContacts, ["unified
   tags: [UNIFIED_CONTACTS_TAG],
 });
 
+/**
+ * Number of unified contacts sitting in the `lead` stage that are newer than
+ * `since` — the sidebar badge count.
+ *
+ * This deliberately avoids {@link getUnifiedContacts}: that merge pulls every
+ * field of every User, Subscriber and Contact document, and the sidebar polls
+ * this on every admin page load plus every 60s. Here the same merge runs over
+ * three narrow projections instead, so the wire payload is a fraction of the
+ * size while the stage resolution stays identical.
+ */
+async function countLeadsSince(sinceMs: number): Promise<number> {
+  await connectDB();
+  const since = new Date(sinceMs);
+
+  const [users, subscribers, overlays] = await Promise.all([
+    User.find({ role: "user" }).select("email createdAt").lean(),
+    Subscriber.find().select("email createdAt").lean(),
+    Contact.find().select("email stage createdAt").lean(),
+  ]);
+
+  const overlayStageByEmail = new Map(overlays.map(o => [o.email.toLowerCase(), o.stage]));
+  const seen = new Set<string>();
+  let leads = 0;
+
+  // Users default to "registered", so one only counts as a lead when an overlay
+  // explicitly put it back in that stage.
+  for (const u of users) {
+    const email = u.email.toLowerCase();
+    seen.add(email);
+    const stage = overlayStageByEmail.get(email) ?? "registered";
+    if (stage === "lead" && u.createdAt > since) leads++;
+  }
+
+  for (const s of subscribers) {
+    const email = s.email.toLowerCase();
+    if (seen.has(email)) continue;
+    seen.add(email);
+    const stage = overlayStageByEmail.get(email) ?? "lead";
+    if (stage === "lead" && s.createdAt > since) leads++;
+  }
+
+  for (const o of overlays) {
+    const email = o.email.toLowerCase();
+    if (seen.has(email)) continue;
+    seen.add(email);
+    if (o.stage === "lead" && o.createdAt > since) leads++;
+  }
+
+  return leads;
+}
+
+/** Cached alongside the unified-contacts view so CRM writes invalidate both. */
+export const getLeadCountSince = unstable_cache(countLeadsSince, ["unified-lead-count"], {
+  revalidate: 30,
+  tags: [UNIFIED_CONTACTS_TAG],
+});
+
 /** Resolves a campaign audience segment into a list of {email, name} recipients. */
 export async function resolveSegment(segment: CampaignSegment): Promise<{ email: string; name: string }[]> {
   await connectDB();

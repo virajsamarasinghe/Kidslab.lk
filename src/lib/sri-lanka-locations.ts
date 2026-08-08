@@ -155,12 +155,24 @@ const CITY_ENTRIES: [string[], Omit<CityEntry, "label"> & { label: string }][] =
   [["warakapola"], { district: "lk-ke", lat: 7.2264, lon: 80.1972, label: "Warakapola" }],
 ];
 
+// Normalizes free-text input so trivial formatting differences (extra
+// spaces, hyphens vs. spaces, a trailing "city"/"town") don't land in
+// "unmatched" for a town that's actually in the lookup. Applied to both
+// the alias keys and the incoming raw value so they stay comparable.
+function normalize(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/[-_]/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+(city|town)$/, "");
+}
+
 const CITY_LOOKUP = new Map<string, CityEntry>();
 for (const [aliases, entry] of CITY_ENTRIES) {
-  for (const alias of aliases) CITY_LOOKUP.set(alias, entry);
+  for (const alias of aliases) CITY_LOOKUP.set(normalize(alias), entry);
 }
 
 export function resolveCity(raw: string): CityEntry | null {
-  const key = raw.trim().toLowerCase();
-  return CITY_LOOKUP.get(key) ?? null;
+  return CITY_LOOKUP.get(normalize(raw)) ?? null;
 }

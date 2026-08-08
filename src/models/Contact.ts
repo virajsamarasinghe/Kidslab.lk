@@ -39,6 +39,8 @@ const ContactSchema = new Schema<IContact>(
 );
 
 ContactSchema.index({ stage: 1 });
+// Sidebar lead badge and CRM listing both filter/sort on recency.
+ContactSchema.index({ createdAt: -1 });
 
 export default mongoose.models.Contact as mongoose.Model<IContact> ||
   mongoose.model<IContact>("Contact", ContactSchema);

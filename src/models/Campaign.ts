@@ -35,5 +35,9 @@ const CampaignSchema = new Schema<ICampaign>(
   { timestamps: true }
 );
 
+// The campaigns list and the dashboard's "recent campaigns" panel both sort by
+// newest first.
+CampaignSchema.index({ createdAt: -1 });
+
 export default mongoose.models.Campaign as mongoose.Model<ICampaign> ||
   mongoose.model<ICampaign>("Campaign", CampaignSchema);

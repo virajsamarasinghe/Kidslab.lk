@@ -1,9 +1,14 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 interface BrevoConfig {
-  apiKey: string;
   senderEmail: string;
   senderName: string;
+  /** SMTP relay login — the account email shown in Brevo → SMTP & API → SMTP. */
+  smtpUser: string;
+  /** SMTP relay key (`xsmtpsib-…`) — not the `xkeysib-…` REST API key. */
+  smtpKey: string;
+  smtpHost: string;
+  smtpPort: number;
 }
 
 export interface LLMConfig {
@@ -30,9 +35,12 @@ export interface ISettings extends Document {
 
 const BrevoSchema = new Schema<BrevoConfig>(
   {
-    apiKey:      { type: String, default: "" },
     senderEmail: { type: String, default: "" },
     senderName:  { type: String, default: "" },
+    smtpUser:    { type: String, default: "" },
+    smtpKey:     { type: String, default: "" },
+    smtpHost:    { type: String, default: "" },
+    smtpPort:    { type: Number, default: 587 },
   },
   { _id: false }
 );

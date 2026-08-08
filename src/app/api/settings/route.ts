@@ -28,7 +28,7 @@ function serialize(settings: ISettings) {
   >();
 
   return {
-    brevo: { ...brevo, apiKey: maskSecret(brevo.apiKey) },
+    brevo: { ...brevo, smtpKey: maskSecret(brevo.smtpKey) },
     llm: llm.map((entry: LLMConfig) => ({ ...entry, apiKey: maskSecret(entry.apiKey) })),
     embedding: { ...embedding, apiKey: maskSecret(embedding.apiKey) },
   };
@@ -93,19 +93,26 @@ export async function PUT(req: NextRequest) {
 
   const incoming = (body.data ?? {}) as Record<string, string>;
 
-  // If the apiKey field still contains the masked placeholder, the admin
-  // didn't touch it — keep the stored secret rather than overwriting it.
-  const currentApiKey = section === "brevo" ? settings.brevo.apiKey : settings.embedding.apiKey;
+  // If a secret field still contains the masked placeholder, the admin didn't
+  // touch it — keep the stored secret rather than overwriting it.
   const nextApiKey =
     typeof incoming.apiKey === "string" && incoming.apiKey.includes("••••")
-      ? currentApiKey
+      ? settings.embedding.apiKey
       : incoming.apiKey;
 
   if (section === "brevo") {
+    const nextSmtpKey =
+      typeof incoming.smtpKey === "string" && incoming.smtpKey.includes("••••")
+        ? settings.brevo.smtpKey
+        : incoming.smtpKey;
+
     settings.brevo = {
-      apiKey: nextApiKey ?? settings.brevo.apiKey,
       senderEmail: incoming.senderEmail ?? settings.brevo.senderEmail,
       senderName: incoming.senderName ?? settings.brevo.senderName,
+      smtpUser: incoming.smtpUser ?? settings.brevo.smtpUser,
+      smtpKey: nextSmtpKey ?? settings.brevo.smtpKey,
+      smtpHost: incoming.smtpHost ?? settings.brevo.smtpHost,
+      smtpPort: Number(incoming.smtpPort) || settings.brevo.smtpPort || 587,
     };
   } else {
     settings.embedding = {
