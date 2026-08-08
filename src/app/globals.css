@@ -101,6 +101,12 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     scrollbar-width: none;
+    /* Decorative blobs and off-canvas rings are positioned past the
+       viewport edge; without this any one of them can hand a phone a
+       horizontal scrollbar. `clip` (not `hidden`) keeps position:sticky
+       working inside. */
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
   }
 
   html::-webkit-scrollbar {
@@ -113,10 +119,46 @@
     font-size: 16px;
     line-height: 1.6;
     scrollbar-width: none;
+    overflow-x: clip;
+    /* Kill the grey flash on tapped links/buttons — the single biggest
+       tell that a site is a desktop page being used on a phone. */
+    -webkit-tap-highlight-color: transparent;
   }
 
   body::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Nothing may push the page sideways on a phone. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  /* iOS Safari force-zooms the page whenever a focused input's text is
+     under 16px, then leaves it zoomed. Every form on the site uses
+     text-sm (14px), so this applied everywhere. */
+  @media (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+
+  /* Visible keyboard focus without a permanent ring on mouse/touch. */
+  :focus-visible {
+    outline: 2px solid var(--brand-blue);
+    outline-offset: 2px;
+  }
+
+  /* Comfortable minimum hit area for icon-only controls. */
+  button,
+  [role="button"],
+  a {
+    touch-action: manipulation;
   }
 
   /* Display headings use the premium display font */
@@ -126,30 +168,37 @@
   }
 }
 
-/* ── Premium type utility classes ── */
+/* ── Premium type utility classes ──
+   Every size interpolates over a 375px → 1440px viewport using a
+   `calc(rem + vw)` middle term. A vw-only middle term (what these used
+   to be) collapses below ~1024px, which pinned every size to its floor
+   for the whole phone/tablet range — the type scale only came alive on
+   desktop. The rem part keeps it scaling from the smallest phone up. */
 
 /* Display — hero headings */
 .text-display-xl {
   font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
-  font-size: clamp(2.5rem, 3.6vw, 5.5rem);
+  font-size: clamp(2rem, calc(0.77rem + 5.26vw), 5.5rem);
   font-weight: 700;
-  line-height: 1.05;
+  line-height: 1.08;
   letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
 /* Section headings */
 .text-display-lg {
   font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
-  font-size: clamp(1.875rem, 2.6vw, 4rem);
+  font-size: clamp(1.625rem, calc(0.88rem + 3.2vw), 3.75rem);
   font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  line-height: 1.14;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
 }
 
 /* Card / sub-section titles */
 .text-display-md {
   font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
-  font-size: clamp(1.1rem, 1.2vw, 1.625rem);
+  font-size: clamp(1.0625rem, calc(0.86rem + 0.85vw), 1.625rem);
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: -0.02em;
@@ -157,25 +206,59 @@
 
 /* Body lead — hero subtitles */
 .text-body-xl {
-  font-size: clamp(1rem, 1.05vw, 1.375rem);
+  font-size: clamp(0.9375rem, calc(0.78rem + 0.66vw), 1.375rem);
   line-height: 1.7;
   letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+
+/* Prominent body — FAQ questions, list leads */
+.text-body-lg {
+  font-size: clamp(1rem, calc(0.91rem + 0.38vw), 1.25rem);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
 }
 
 /* Standard body */
 .text-body-md {
-  font-size: clamp(0.875rem, 0.85vw, 1.125rem);
+  font-size: clamp(0.9375rem, calc(0.87rem + 0.28vw), 1.125rem);
   line-height: 1.65;
   letter-spacing: 0em;
+  text-wrap: pretty;
 }
 
 /* Section label — set in mono, like a PCB silkscreen part number */
 .text-label {
   font-family: var(--font-mono), var(--font-sinhala), ui-monospace, monospace;
-  font-size: clamp(0.68rem, 0.55vw, 0.8rem);
+  font-size: clamp(0.6875rem, calc(0.65rem + 0.17vw), 0.8rem);
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/* ── Fluid section rhythm ──
+   Replaces the fixed `py-28 px-6` on marketing sections: 112px of
+   vertical padding is desktop rhythm applied to a 375px phone, where it
+   reads as dead space and pushes every section below the fold. */
+.section-y {
+  padding-block: clamp(3.5rem, calc(2.2rem + 5.5vw), 9rem);
+}
+.section-x {
+  padding-inline: clamp(1.25rem, calc(0.85rem + 2vw), 3rem);
+}
+
+/* Hero headline reserve — the typewriter grows and shrinks the string,
+   so the box is sized for the tallest wrap up front. Without this the
+   whole hero jitters vertically on every keystroke, worst on mobile
+   where the line count is highest. */
+.hero-headline {
+  min-height: 3.4em;
+}
+@media (min-width: 640px) {
+  .hero-headline { min-height: 2.6em; }
+}
+@media (min-width: 1024px) {
+  .hero-headline { min-height: 2.15em; }
 }
 
 /* ── Register button highlight ── */
@@ -281,36 +364,69 @@
   border-radius: inherit;
 }
 
-/* ── Register page fluid sizing ── */
+/* ── Register page fluid sizing ──
+   Same `calc(rem + vw)` treatment as the type scale above. These classes
+   are unlayered, so they also override the base-layer 16px input floor —
+   hence `.reg-input`'s explicit 1rem minimum, without which iOS Safari
+   zooms the whole page the moment a field is focused. */
 .reg-panel-heading {
-  font-size: clamp(2.25rem, 5vw, 7rem);
+  font-size: clamp(2rem, calc(0.24rem + 7.51vw), 7rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
 }
 .reg-form-heading {
-  font-size: clamp(1.75rem, 3.5vw, 5.5rem);
+  font-size: clamp(1.625rem, calc(0.26rem + 5.82vw), 5.5rem);
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.03em;
 }
 .reg-body {
-  font-size: clamp(0.875rem, 1.15vw, 1.5rem);
+  font-size: clamp(0.9375rem, calc(0.74rem + 0.85vw), 1.5rem);
   line-height: 1.6;
 }
 .reg-label {
-  font-size: clamp(0.65rem, 0.7vw, 0.95rem);
+  font-size: clamp(0.6875rem, calc(0.6rem + 0.39vw), 0.95rem);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 .reg-input {
-  height: clamp(2.75rem, 3.8vw, 5rem);
-  font-size: clamp(0.875rem, 1.1vw, 1.375rem);
+  height: clamp(2.875rem, calc(2.13rem + 3.19vw), 5rem);
+  font-size: clamp(1rem, calc(0.87rem + 0.56vw), 1.375rem);
 }
 .reg-btn {
-  height: clamp(3rem, 4.2vw, 5.5rem);
-  font-size: clamp(0.9rem, 1.2vw, 1.5rem);
+  height: clamp(3rem, calc(2.12rem + 3.76vw), 5.5rem);
+  font-size: clamp(1rem, calc(0.82rem + 0.75vw), 1.5rem);
   font-weight: 700;
   border-radius: 9999px;
+}
+
+/* ── Mobile action bar ──
+   The register CTA only existed inside the hero and the program card, so
+   on a phone it scrolls out of reach for most of the page. This docks it
+   to the bottom edge below md, over the home-indicator safe area. */
+.mobile-cta-bar {
+  padding-bottom: calc(0.625rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Reserve room so the footer's last line is never sitting under the bar. */
+@media (max-width: 767px) {
+  .has-mobile-cta {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Respect the OS "reduce motion" setting for the page's ambient loops
+   (pulsing CTA halos, shimmer, blinking cursor). Motion-driven ones are
+   handled in JS; these are the CSS animations. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

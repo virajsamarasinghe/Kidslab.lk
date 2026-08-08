@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { ArrowRight, ArrowUpRight, ArrowDownRight, MapPin, TrendingUp } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ArrowDownRight, MapPin, TrendingUp, AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid,
@@ -52,7 +53,7 @@ interface Stats {
     _id: string;
     subject: string;
     segment: string;
-    status: "draft" | "sending" | "sent" | "failed";
+    status: "draft" | "sending" | "sent" | "partial" | "failed";
     recipientCount: number;
     sentCount: number;
     createdAt: string;
@@ -79,6 +80,7 @@ const CAMPAIGN_STATUS_STYLES: Record<string, string> = {
   draft: "bg-slate-50 text-slate-500 border-slate-200",
   sending: "bg-blue-50 text-blue-600 border-blue-200",
   sent: "bg-green-50 text-green-700 border-green-200",
+  partial: "bg-amber-50 text-amber-700 border-amber-200",
   failed: "bg-red-50 text-red-600 border-red-200",
 };
 
@@ -143,10 +145,20 @@ function KpiTile({ label, value, hint, accent, delta }: Kpi) {
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetch("/api/stats").then(r => r.json()).then(setStats);
+  const loadStats = useCallback(() => {
+    setError(null);
+    fetch("/api/stats")
+      .then(r => {
+        if (!r.ok) throw new Error(`Request failed (${r.status})`);
+        return r.json();
+      })
+      .then(setStats)
+      .catch(e => setError(e instanceof Error ? e.message : "Failed to load dashboard data"));
   }, []);
+
+  useEffect(() => { loadStats(); }, [loadStats]);
 
   const pipeline = stats?.pipeline ?? [];
   const pipelineTotal = pipeline.reduce((sum, p) => sum + p.count, 0);
@@ -235,6 +247,16 @@ export default function AdminDashboard() {
         </h1>
         <p className="text-slate-500 text-sm mt-1">Welcome back, Admin · <span style={{ color: "var(--brand-navy)" }}>kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk</span></p>
       </div>
+
+      {error && (
+        <div className="flex items-center gap-3 text-sm px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-600 mb-6">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span className="flex-1">Couldn&apos;t load dashboard data: {error}</span>
+          <Button variant="outline" size="sm" onClick={loadStats} className="gap-1.5 shrink-0">
+            <RefreshCw className="w-3.5 h-3.5" /> Retry
+          </Button>
+        </div>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">

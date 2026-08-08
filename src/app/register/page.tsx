@@ -259,6 +259,8 @@ export default function RegisterPage() {
               </Label>
               <Input
                 placeholder="Ex: Kavindu Perera"
+                autoComplete="name"
+                autoCapitalize="words"
                 className="reg-input border-slate-200 w-full"
                 value={form.name} onChange={set("name")} required
               />
@@ -271,6 +273,9 @@ export default function RegisterPage() {
                   Phone <span style={{ color: "var(--brand-red)" }}>*</span>
                 </Label>
                 <Input
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
                   placeholder="Ex: 077 123 4567"
                   className="reg-input border-slate-200 w-full"
                   value={form.phone} onChange={set("phone")} required
@@ -281,7 +286,7 @@ export default function RegisterPage() {
                   Student Age <span style={{ color: "var(--brand-red)" }}>*</span>
                 </Label>
                 <Input
-                  type="number" placeholder="Ex: 12" min={5} max={20}
+                  type="number" inputMode="numeric" placeholder="Ex: 12" min={5} max={20}
                   className="reg-input border-slate-200 w-full"
                   value={form.age} onChange={set("age")} required
                 />
@@ -294,7 +299,7 @@ export default function RegisterPage() {
                 Email Address
               </Label>
               <Input
-                type="email" placeholder="Ex: kavindu@gmail.com"
+                type="email" inputMode="email" autoComplete="email" autoCapitalize="none" spellCheck={false} placeholder="Ex: kavindu@gmail.com"
                 className="reg-input border-slate-200 w-full"
                 value={form.email} onChange={set("email")}
               />
@@ -307,7 +312,7 @@ export default function RegisterPage() {
                   Parent / Guardian
                 </Label>
                 <Input
-                  placeholder="Ex: Sunil Perera"
+                  autoComplete="name" autoCapitalize="words" placeholder="Ex: Sunil Perera"
                   className="reg-input border-slate-200 w-full"
                   value={form.parentName} onChange={set("parentName")}
                 />
@@ -317,7 +322,7 @@ export default function RegisterPage() {
                   City / District
                 </Label>
                 <Input
-                  placeholder="Ex: Matara"
+                  autoComplete="address-level2" autoCapitalize="words" placeholder="Ex: Matara"
                   className="reg-input border-slate-200 w-full"
                   value={form.city} onChange={set("city")}
                 />

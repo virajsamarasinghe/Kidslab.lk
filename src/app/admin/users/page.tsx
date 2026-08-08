@@ -1,49 +1,33 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Search, Trash2, Pencil, X, Check, UserCheck, UserX } from "lucide-react";
+import { useState } from "react";
+import { Trash2, Pencil, X, Check, UserCheck, UserX, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DataTable } from "@/components/admin/DataTable";
+import { useListResource } from "@/hooks/useCrudResource";
 import type { User } from "@/types/user";
 
 export default function AdminUsers() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [total, setTotal] = useState(0);
-  const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const {
+    items: users, total, page, setPage, totalPages, search, setSearch, loading, error, reload,
+  } = useListResource<User>("/api/users", { itemsKey: "users" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [saving, setSaving] = useState(false);
-
-  const loadUsers = useCallback(async (q = "") => {
-    setLoading(true);
-    const res = await fetch(`/api/users?search=${encodeURIComponent(q)}`);
-    const data = await res.json();
-    setUsers(data.users ?? []);
-    setTotal(data.total ?? 0);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { loadUsers(); }, [loadUsers]);
-
-  useEffect(() => {
-    const t = setTimeout(() => loadUsers(search), 350);
-    return () => clearTimeout(t);
-  }, [search, loadUsers]);
 
   async function handleDelete() {
     if (!deleteId) return;
     await fetch(`/api/users/${deleteId}`, { method: "DELETE" });
     setDeleteId(null);
-    loadUsers(search);
+    reload();
   }
 
   async function handleSave() {
@@ -56,7 +40,7 @@ export default function AdminUsers() {
     });
     setSaving(false);
     setEditUser(null);
-    loadUsers(search);
+    reload();
   }
 
   return (
@@ -73,21 +57,26 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* Search */}
-      <Card className="pcb-card border-slate-100 shadow-sm mb-6 p-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder="Search by name or email…"
-            className="pl-9 bg-slate-50 border-slate-200 text-sm"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-      </Card>
-
-      {/* Table */}
-      <Card className="pcb-card border-slate-100 shadow-sm overflow-hidden">
+      <DataTable
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by name or email…"
+        total={total}
+        itemLabel="student"
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        loading={loading}
+        error={error}
+        onRetry={reload}
+        actions={
+          <a href="/api/export/users" download>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </Button>
+          </a>
+        }
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -144,7 +133,7 @@ export default function AdminUsers() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </DataTable>
 
       {/* Edit Drawer */}
       {editUser && (

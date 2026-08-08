@@ -180,6 +180,32 @@ function SectionLabel({
   );
 }
 
+/* ── University credit strip ──
+   Shared by the hero's desktop parallax banner and its in-flow mobile
+   counterpart, so the copy can never drift between the two. */
+function UniversityBannerContent() {
+  const t = useTranslations();
+  return (
+    <div className="max-w-screen-2xl mx-auto flex items-start sm:items-center justify-center gap-2.5">
+      <GraduationCap className="w-4 h-4 text-blue-200 shrink-0 mt-0.5 sm:mt-0" />
+      <p
+        className="text-center text-[0.75rem] sm:text-[0.8125rem] leading-relaxed"
+        style={{
+          color: "rgba(255,255,255,0.8)",
+          letterSpacing: "0.01em",
+        }}
+      >
+        {t("universityBanner.prefix")}
+        <span className="font-bold text-white">{t("universityBanner.bold")}</span>
+        <span className="text-blue-300 mx-1.5 sm:mx-2">·</span>
+        <span className="inline-flex items-center gap-1 text-blue-100 whitespace-nowrap">
+          <MapPin className="w-3 h-3 shrink-0" /> {t("universityBanner.location")}
+        </span>
+      </p>
+    </div>
+  );
+}
+
 /* ── Footer newsletter form ──
    Same /api/subscribers endpoint as the popup, condensed to a single
    inline input + button for the footer. */
@@ -502,14 +528,14 @@ function HomeContent({
         {/* ══ Hero ══════════════════════════════════════════════════════ */}
         <section
           ref={heroRef}
-          className="relative min-h-svh lg:h-svh flex items-center pt-16 pb-4 overflow-hidden"
+          className="relative lg:min-h-svh lg:h-svh flex items-center pt-16 pb-0 lg:pb-4 overflow-hidden"
         >
           <div
             className="absolute inset-0"
             style={{ backgroundColor: "var(--brand-paper)" }}
           />
           <div
-            className="absolute top-0 right-0 w-[700px] h-[700px] opacity-20"
+            className="absolute top-0 right-0 w-[700px] h-[700px] opacity-20 max-w-full"
             style={{
               background:
                 "radial-gradient(circle at 65% 35%, #dbe6ff 0%, transparent 55%), radial-gradient(circle at 80% 75%, #f3ddc3 0%, transparent 50%)",
@@ -536,7 +562,7 @@ function HomeContent({
 
           <motion.div
             style={{ y: heroY }}
-            className="relative z-10 max-w-screen-xl mx-auto px-6 lg:px-10 xl:px-16 w-full py-8 lg:py-10 xl:py-14 2xl:py-20"
+            className="relative z-10 max-w-screen-xl mx-auto px-5 sm:px-6 lg:px-10 xl:px-16 w-full py-7 sm:py-9 lg:py-10 xl:py-14 2xl:py-20"
           >
             <div className="max-w-3xl mx-auto text-center">
               <motion.div
@@ -546,7 +572,7 @@ function HomeContent({
                 className="flex justify-center"
               >
                 <span
-                  className="pcb-stamp inline-flex items-center gap-2 pl-4 pr-5 py-1.5 text-label mb-4 lg:mb-5"
+                  className="pcb-stamp inline-flex items-center gap-2 pl-3.5 pr-4 sm:pl-4 sm:pr-5 py-1.5 text-label mb-4 lg:mb-5 max-w-full text-center"
                   style={{
                     backgroundColor: "var(--brand-navy)",
                     color: "var(--brand-paper)",
@@ -561,8 +587,7 @@ function HomeContent({
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1 }}
-                className="text-display-xl text-slate-900"
-                style={{ minHeight: "2.15em" }}
+                className="text-display-xl hero-headline text-slate-900"
               >
                 <TypingHeadline srText={t("hero.srText")} sentences={heroSentences} />
               </motion.h1>
@@ -584,10 +609,10 @@ function HomeContent({
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="mt-6 lg:mt-7 flex flex-wrap justify-center gap-3"
+                className="mt-6 lg:mt-7 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3"
               >
                 <motion.div
-                  className="rounded-full"
+                  className="rounded-full w-full sm:w-auto"
                   animate={{
                     boxShadow: [
                       "0 0 0 0px rgba(224,138,60,0.45)",
@@ -604,17 +629,17 @@ function HomeContent({
                   <Button
                     size="lg"
                     onClick={openRegisterModal}
-                    className="btn-register btn-brand-copper text-white font-semibold px-8 xl:px-10 h-12 xl:h-14 2xl:h-16 rounded-full text-[15px] xl:text-base 2xl:text-lg tracking-[-0.01em] shadow-md"
+                    className="btn-register btn-brand-copper w-full sm:w-auto text-white font-semibold px-6 sm:px-8 xl:px-10 h-12 xl:h-14 2xl:h-16 rounded-full text-[15px] xl:text-base 2xl:text-lg tracking-[-0.01em] shadow-md"
                   >
                     {t("hero.ctaRegister")}
-                    <ArrowRight className="ml-2 w-4 h-4" />
+                    <ArrowRight className="ml-2 w-4 h-4 shrink-0" />
                   </Button>
                 </motion.div>
-                <a href="#programs">
+                <a href="#programs" className="w-full sm:w-auto">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="border-slate-200 text-slate-700 hover:bg-slate-50 px-8 xl:px-10 h-12 xl:h-14 2xl:h-16 rounded-full text-[15px] xl:text-base 2xl:text-lg tracking-[-0.01em] font-medium transition-all"
+                    className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 px-6 sm:px-8 xl:px-10 h-12 xl:h-14 2xl:h-16 rounded-full text-[15px] xl:text-base 2xl:text-lg tracking-[-0.01em] font-medium transition-all"
                   >
                     {t("hero.ctaExplore")}
                   </Button>
@@ -625,14 +650,17 @@ function HomeContent({
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.44 }}
-                className="mt-5 lg:mt-7 flex flex-wrap justify-center gap-5"
+                /* Two tidy columns on a phone — free-wrapping these four
+                   chips produced a ragged 3-line block that read as
+                   overflow rather than a list. */
+                className="mt-6 lg:mt-7 grid grid-cols-2 gap-x-4 gap-y-2.5 text-left sm:flex sm:flex-wrap sm:justify-center sm:gap-5 sm:text-center"
               >
                 {[t("hero.trust1"), t("hero.trust2"), t("hero.trust3"), t("hero.trust4")].map(
                   (label) => (
                     <div
                       key={label}
-                      className="flex items-center gap-2 text-slate-500"
-                      style={{ fontSize: "0.875rem" }}
+                      className="flex items-center gap-2 text-slate-500 min-w-0"
+                      style={{ fontSize: "0.8125rem" }}
                     >
                       <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
                       <span className="font-medium">{label}</span>
@@ -647,7 +675,7 @@ function HomeContent({
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.58 }}
-              className="mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 xl:gap-6 max-w-4xl mx-auto"
+              className="mt-9 sm:mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 xl:gap-6 max-w-4xl mx-auto"
             >
               {stats.map(({ value, label }, i) => (
                 <div
@@ -674,41 +702,31 @@ function HomeContent({
             </motion.div>
           </motion.div>
 
-          {/* ══ University Banner — pinned to hero's bottom edge, drifts up on scroll ══ */}
+          {/* ══ University Banner — pinned to hero's bottom edge, drifts up on
+              scroll. Desktop only: absolutely positioning it over a hero
+              whose content is taller than the viewport (which is every
+              phone) meant it sat on top of the stats cards. On mobile the
+              same strip is rendered in flow, just below the hero. ══ */}
           <motion.div
             style={{ y: bannerY }}
-            className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-blue-700 to-violet-700 py-4 px-6"
+            className="hidden lg:block absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-blue-700 to-violet-700 py-4 px-6"
           >
-            <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2.5">
-              <GraduationCap className="w-4 h-4 text-blue-200 shrink-0" />
-              <p
-                className="text-center"
-                style={{
-                  fontSize: "0.8125rem",
-                  color: "rgba(255,255,255,0.8)",
-                  letterSpacing: "0.01em",
-                }}
-              >
-                {t("universityBanner.prefix")}
-                <span className="font-bold text-white">
-                  {t("universityBanner.bold")}
-                </span>
-                <span className="text-blue-300 mx-1.5 sm:mx-2">·</span>
-                <span className="inline-flex items-center gap-1 text-blue-100">
-                  <MapPin className="w-3 h-3" /> {t("universityBanner.location")}
-                </span>
-              </p>
-            </div>
+            <UniversityBannerContent />
           </motion.div>
         </section>
+
+        {/* Mobile counterpart of the hero's university banner */}
+        <div className="lg:hidden bg-gradient-to-r from-blue-700 to-violet-700 py-3.5 px-5">
+          <UniversityBannerContent />
+        </div>
 
         {/* ══ Programs ══════════════════════════════════════════════════ */}
         <section
           id="programs"
-          className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-slate-50"
+          className="scroll-mt-20 section-y section-x bg-slate-50"
         >
           <div className="max-w-screen-2xl mx-auto">
-            <AnimateIn className="text-center mb-16">
+            <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
               <SectionLabel>{t("programs.eyebrow")}</SectionLabel>
               <h2 className="text-display-lg text-slate-900">
                 {t("programs.headingStart")}
@@ -765,16 +783,21 @@ function HomeContent({
                       >
                         {/* Datasheet corner stamp — echoes the hero's REV. 2026 badge */}
                         <span
-                          className="pcb-stamp absolute top-0 right-6 z-10 px-4 py-1.5 text-white text-[11px] font-semibold tracking-widest uppercase inline-flex items-center gap-1.5"
+                          className="pcb-stamp absolute top-0 right-3 sm:right-6 z-10 px-3 sm:px-4 py-1.5 text-white text-[10px] sm:text-[11px] font-semibold tracking-widest uppercase inline-flex items-center gap-1.5"
                           style={{ backgroundColor: "var(--brand-red)" }}
                         >
                           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
                           {card.badgeText}
                         </span>
 
-                        <div className="grid md:grid-cols-[1.35fr_1fr]">
+                        {/* Three blocks, not two columns: on a phone the
+                            spec sheet (with the fee) has to come before the
+                            CTA, while on desktop it belongs in its own
+                            column beside both. Explicit grid placement gets
+                            both orders out of one DOM order. */}
+                        <div className="flex flex-col md:grid md:grid-cols-[1.35fr_1fr] md:grid-rows-[1fr_auto]">
                           {/* Left — the story */}
-                          <div className="p-8 xl:p-10 pt-12 flex flex-col gap-5">
+                          <div className="md:col-start-1 md:row-start-1 p-5 sm:p-8 xl:p-10 pt-11 sm:pt-12 flex flex-col gap-4 sm:gap-5">
                             <div>
                               <h3
                                 className="text-display-md"
@@ -810,10 +833,13 @@ function HomeContent({
                                 {card.instructorNames}
                               </p>
                             )}
+                          </div>
 
-                            {/* CTA */}
+                          {/* CTA — last on mobile (after the fee), bottom of
+                              the left column on desktop */}
+                          <div className="order-last md:order-none md:col-start-1 md:row-start-2 px-5 pb-5 pt-5 sm:px-8 sm:pb-8 xl:px-10 xl:pb-10 md:pt-0">
                             <motion.div
-                              className="rounded-full mt-auto"
+                              className="rounded-full"
                               animate={{
                                 boxShadow: [
                                   "0 0 0 0px rgba(224,138,60,0.4)",
@@ -829,7 +855,7 @@ function HomeContent({
                             >
                               <button
                                 onClick={openRegisterModal}
-                                className="btn-register btn-brand-copper w-full text-white font-semibold h-11 rounded-full text-[14px] tracking-[-0.01em]"
+                                className="btn-register btn-brand-copper w-full text-white font-semibold h-12 md:h-11 rounded-full text-[15px] md:text-[14px] tracking-[-0.01em]"
                               >
                                 {card.ctaLabel}
                               </button>
@@ -838,7 +864,7 @@ function HomeContent({
 
                           {/* Right — spec sheet */}
                           <div
-                            className="p-8 xl:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100"
+                            className="md:col-start-2 md:row-start-1 md:row-span-2 px-5 py-2 sm:p-8 xl:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100"
                             style={{ backgroundColor: "var(--brand-paper)" }}
                           >
                             {[
@@ -851,19 +877,26 @@ function HomeContent({
                                 : []),
                               { label: t("programs.courseFee"), value: card.feeLabel, note: card.installmentNote },
                             ].map((row, ri, arr) => (
+                              /* Label and value share a line on mobile —
+                                 stacked, four of these rows ran the card
+                                 an extra screen long. */
                               <div
                                 key={row.label}
-                                className={`py-4 ${ri < arr.length - 1 ? "border-b border-slate-200/70" : ""}`}
+                                className={`py-3 sm:py-4 ${ri < arr.length - 1 ? "border-b border-slate-200/70" : ""}`}
                               >
-                                <p className="text-label text-slate-400">{row.label}</p>
-                                <p
-                                  className="font-bold mt-1"
-                                  style={{ color: "var(--brand-navy)", fontSize: "1.0625rem" }}
-                                >
-                                  {row.value}
-                                </p>
+                                <div className="flex items-baseline justify-between gap-3 sm:block">
+                                  <p className="text-label text-slate-400 shrink-0">
+                                    {row.label}
+                                  </p>
+                                  <p
+                                    className="font-bold text-right sm:text-left sm:mt-1 text-[0.9375rem] sm:text-[1.0625rem]"
+                                    style={{ color: "var(--brand-navy)" }}
+                                  >
+                                    {row.value}
+                                  </p>
+                                </div>
                                 {row.note && (
-                                  <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">
+                                  <p className="text-[12px] text-slate-500 mt-1 sm:mt-0.5 leading-snug text-right sm:text-left">
                                     {row.note}
                                   </p>
                                 )}
@@ -919,9 +952,9 @@ function HomeContent({
         </section>
 
         {/* ══ Why kidslab.lk ════════════════════════════════════════════ */}
-        <section id="about" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white">
+        <section id="about" className="scroll-mt-20 section-y section-x bg-white">
           <div className="max-w-screen-2xl mx-auto">
-            <AnimateIn className="text-center mb-16">
+            <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
               <SectionLabel>
                 <span style={{ color: "var(--brand-navy)" }}>
                   {t("about.eyebrowStart")}
@@ -940,10 +973,10 @@ function HomeContent({
               </p>
             </AnimateIn>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 items-stretch">
               {whyUs.map((item, i) => (
                 <AnimateIn key={item.title} delay={i * 0.07} className="h-full">
-                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
+                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 xl:p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
                     <h4 className="text-display-md text-slate-900 mb-2">
                       {t(`about.cards.${i}.title`)}
                     </h4>
@@ -960,7 +993,10 @@ function HomeContent({
         {/* ══ Team / Founders ════════════════════════════════════════════ */}
         <section
           id="team"
-          className="scroll-mt-20 py-10 px-6 xl:py-14 xl:px-12 relative overflow-hidden min-h-[calc(100vh-5rem)] flex flex-col justify-center"
+          /* The full-viewport minimum is desktop-only: on a phone this
+             section's content is several screens tall, and `100vh` there
+             is the pre-collapse URL-bar height, which overshoots. */
+          className="scroll-mt-20 py-14 section-x xl:py-14 relative overflow-hidden lg:min-h-[calc(100svh-5rem)] flex flex-col justify-center"
           style={{
             background:
               "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
@@ -1137,10 +1173,10 @@ function HomeContent({
         {/* ══ Parent safety / supervision ═══════════════════════════════ */}
         <section
           id="safety"
-          className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white"
+          className="scroll-mt-20 section-y section-x bg-white"
         >
           <div className="max-w-screen-2xl mx-auto">
-            <AnimateIn className="text-center mb-16">
+            <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
               <SectionLabel className="text-blue-600">
                 {t("safety.eyebrow")}
               </SectionLabel>
@@ -1155,10 +1191,10 @@ function HomeContent({
               </p>
             </AnimateIn>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 items-stretch">
               {[Video, Eye, ShieldCheck, Lock].map((Icon, i) => (
                 <AnimateIn key={i} delay={i * 0.07} className="h-full">
-                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
+                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-6 xl:p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
                     <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
                       <Icon className="w-5 h-5 text-blue-600" />
                     </div>
@@ -1176,9 +1212,9 @@ function HomeContent({
         </section>
 
         {/* ══ Testimonials ══════════════════════════════════════════════ */}
-        <section className="py-28 px-6 xl:py-36 xl:px-12 bg-slate-50">
+        <section className="section-y section-x bg-slate-50">
           <div className="max-w-6xl mx-auto">
-            <AnimateIn className="text-center mb-16">
+            <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
               <SectionLabel className="text-green-600">
                 {t("testimonials.eyebrow")}
               </SectionLabel>
@@ -1190,10 +1226,10 @@ function HomeContent({
               </h2>
             </AnimateIn>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5 items-stretch">
               {displayTestimonials.map((item, i) => (
                 <AnimateIn key={`${item.name}-${i}`} delay={i * 0.1} className="h-full">
-                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-8 flex flex-col gap-5 h-full hover:shadow-md transition-shadow duration-300">
+                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-5 sm:p-7 xl:p-8 flex flex-col gap-4 sm:gap-5 h-full hover:shadow-md transition-shadow duration-300">
                     <div className="flex gap-1">
                       {Array.from({ length: item.stars }).map((_, s) => (
                         <Star
@@ -1264,9 +1300,9 @@ function HomeContent({
         </section>
 
         {/* ══ FAQ ═══════════════════════════════════════════════════════ */}
-        <section id="faq" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white">
+        <section id="faq" className="scroll-mt-20 section-y section-x bg-white">
           <div className="max-w-3xl mx-auto">
-            <AnimateIn className="text-center mb-16">
+            <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
               <SectionLabel>{t("faq.eyebrow")}</SectionLabel>
               <h2 className="text-display-lg text-slate-900">
                 {t("faq.headingStart")}
@@ -1301,7 +1337,7 @@ function HomeContent({
 
         {/* ══ Contact ═══════════════════════════════════════════════════ */}
         <section
-          className="py-28 px-6 xl:py-36 xl:px-12 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden"
+          className="section-y section-x bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden"
         >
           {/* Decorative blobs */}
           <div
@@ -1318,7 +1354,7 @@ function HomeContent({
           />
 
           <div id="contact" className="max-w-screen-2xl mx-auto relative z-10 scroll-mt-24">
-            <AnimateIn className="text-center mb-14">
+            <AnimateIn className="text-center mb-10 sm:mb-12 xl:mb-14">
               <SectionLabel>{t("contact.eyebrow")}</SectionLabel>
               <h2 className="text-display-lg text-slate-900">
                 {t("contact.headingStart")}
@@ -1337,13 +1373,13 @@ function HomeContent({
               </p>
             </AnimateIn>
 
-            <div className="grid md:grid-cols-2 gap-8 xl:gap-12 max-w-4xl mx-auto items-stretch">
+            <div className="grid md:grid-cols-2 gap-5 sm:gap-8 xl:gap-12 max-w-4xl mx-auto items-stretch">
               {/* Contact channels — presented as a 4-pin connector header,
                   echoing the site's circuit-board signature instead of a
                   generic icon-list card. */}
               <AnimateIn delay={0.1} className="h-full">
                 <div className="bg-white rounded-3xl border border-slate-200/70 shadow-xl shadow-slate-200/50 h-full flex flex-col overflow-hidden">
-                  <div className="px-8 pt-8 xl:px-10 xl:pt-10 pb-6 flex items-baseline justify-between gap-3">
+                  <div className="px-5 pt-6 sm:px-8 sm:pt-8 xl:px-10 xl:pt-10 pb-4 sm:pb-6 flex items-baseline justify-between gap-3">
                     <h3
                       className="text-display-md"
                       style={{ color: "var(--brand-navy)" }}
@@ -1417,7 +1453,7 @@ function HomeContent({
                         href={c.href}
                         target={c.external ? "_blank" : undefined}
                         rel={c.external ? "noopener noreferrer" : undefined}
-                        className={`group relative flex flex-col gap-3 p-6 border-slate-100 ${c.hoverBg} transition-colors duration-200 ${
+                        className={`group relative flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-6 border-slate-100 ${c.hoverBg} transition-colors duration-200 ${
                           i % 2 === 0 ? "border-r" : ""
                         } ${i < 2 ? "border-b" : ""}`}
                       >
@@ -1456,7 +1492,7 @@ function HomeContent({
 
                   {/* edge-connector strip — gold pads, like the PCB card
                       accents used elsewhere on the page */}
-                  <div className="flex gap-1.5 px-8 xl:px-10 py-3 border-t border-slate-100 bg-slate-50/60">
+                  <div className="flex gap-1.5 px-5 sm:px-8 xl:px-10 py-3 border-t border-slate-100 bg-slate-50/60">
                     {Array.from({ length: 8 }).map((_, i) => (
                       <span
                         key={i}
@@ -1471,7 +1507,7 @@ function HomeContent({
               {/* CTA card */}
               <AnimateIn delay={0.18} className="h-full">
                 <div
-                  className="rounded-3xl p-8 xl:p-10 flex flex-col justify-between h-full relative overflow-hidden shadow-xl shadow-blue-950/20"
+                  className="rounded-3xl p-6 sm:p-8 xl:p-10 flex flex-col justify-between h-full relative overflow-hidden shadow-xl shadow-blue-950/20"
                   style={{
                     background:
                       "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
@@ -1542,13 +1578,13 @@ function HomeContent({
 
         {/* ══ Footer ════════════════════════════════════════════════════ */}
         <footer
-          className="text-white pt-14 pb-10 px-[clamp(1rem,2vw,2.5rem)]"
+          className="text-white pt-12 sm:pt-14 pb-8 sm:pb-10 px-[clamp(1.25rem,2vw,2.5rem)]"
           style={{ backgroundColor: "var(--brand-navy)" }}
         >
           <div className="w-full">
-            <div className="flex flex-col md:flex-row items-start justify-between gap-12 pb-12 border-b border-white/10">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-9 md:gap-12 pb-9 md:pb-12 border-b border-white/10">
               {/* Brand */}
-              <div className="max-w-[300px]">
+              <div className="w-full max-w-none md:max-w-[300px]">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="bg-white rounded-xl p-1.5 flex-shrink-0">
                     <Image
@@ -1596,14 +1632,14 @@ function HomeContent({
               </div>
 
               {/* Link columns */}
-              <div className="grid grid-cols-2 gap-x-8 sm:gap-x-16 gap-y-3">
+              <div className="w-full md:w-auto grid grid-cols-2 gap-x-6 sm:gap-x-16 gap-y-3">
                 <div>
                   <p className="text-label text-slate-500 mb-4">{t("footer.programsHeading")}</p>
                   {(t.raw("footer.programLinks") as string[]).map((l) => (
                     <a
                       key={l}
                       href="#programs"
-                      className="block text-slate-400 hover:text-white mb-2.5 transition-colors"
+                      className="block text-slate-400 hover:text-white py-1.5 md:py-0 md:mb-2.5 transition-colors"
                       style={{ fontSize: "0.875rem" }}
                     >
                       {l}
@@ -1616,7 +1652,7 @@ function HomeContent({
                     <a
                       key={l}
                       href="#"
-                      className="block text-slate-400 hover:text-white mb-2.5 transition-colors"
+                      className="block text-slate-400 hover:text-white py-1.5 md:py-0 md:mb-2.5 transition-colors"
                       style={{ fontSize: "0.875rem" }}
                     >
                       {l}
@@ -1644,7 +1680,7 @@ function HomeContent({
             </div>
 
             <p
-              className="text-center text-slate-500/70 mt-4"
+              className="text-center text-slate-500/70 mt-4 has-mobile-cta"
               style={{ fontSize: "0.75rem" }}
             >
               {t("footer.company")}
@@ -1653,17 +1689,44 @@ function HomeContent({
         </footer>
       </motion.main>
 
-      {/* ── Floating WhatsApp button ── */}
+      {/* ── Floating WhatsApp button — desktop only; on mobile it lives in
+             the action bar below so the two don't stack in one corner ── */}
       <a
         href="https://wa.me/94703906478"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-5 right-5 xl:bottom-6 xl:right-6 z-50 flex items-center justify-center w-11 h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
+        className="hidden md:flex fixed bottom-5 right-5 xl:bottom-6 xl:right-6 z-50 items-center justify-center w-11 h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
         style={{ backgroundColor: "#25D366" }}
       >
         <WhatsAppIcon className="w-5 h-5 text-white" />
       </a>
+
+      {/* ── Mobile action bar ──
+             The register CTA otherwise appears only in the hero and the
+             program card, so it is off-screen for most of a phone scroll.
+             Docked here it stays one thumb-reach away throughout. */}
+      {/* z-30, below the nav sheet's backdrop (z-40) and any dialog (z-50),
+          so an open overlay dims this bar instead of it punching through. */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 mobile-cta-bar bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 pt-2.5 flex items-center gap-2.5 shadow-[0_-4px_16px_rgba(15,36,24,0.08)]">
+        <button
+          onClick={openRegisterModal}
+          className="btn-register btn-brand-copper flex-1 min-w-0 h-12 rounded-full text-white font-semibold text-[15px] tracking-[-0.01em] shadow-sm flex items-center justify-center gap-2"
+        >
+          <span className="truncate">{t("hero.ctaRegister")}</span>
+          <ArrowRight className="w-4 h-4 shrink-0" />
+        </button>
+        <a
+          href="https://wa.me/94703906478"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+          className="shrink-0 flex items-center justify-center w-12 h-12 rounded-full active:scale-95 transition-transform"
+          style={{ backgroundColor: "#25D366" }}
+        >
+          <WhatsAppIcon className="w-5 h-5 text-white" />
+        </a>
+      </div>
     </>
   );
 }

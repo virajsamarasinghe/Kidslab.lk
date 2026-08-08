@@ -31,7 +31,7 @@ export interface Campaign {
   subject: string;
   body: string;
   segment: CampaignSegment;
-  status: "draft" | "sending" | "sent" | "failed";
+  status: "draft" | "sending" | "sent" | "partial" | "failed";
   recipientCount: number;
   sentCount: number;
   failedCount: number;

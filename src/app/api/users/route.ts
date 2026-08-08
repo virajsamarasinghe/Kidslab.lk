@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import User from "@/models/User";
+import type { QueryFilter } from "mongoose";
+import type { IUser } from "@/models/User";
+import { escapeRegex } from "@/lib/utils";
 
 export async function GET(req: NextRequest) {
   const session = await getAdminSession();
@@ -9,17 +12,22 @@ export async function GET(req: NextRequest) {
 
   await connectDB();
   const search = req.nextUrl.searchParams.get("search") ?? "";
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const query: Record<string, any> = { role: "user" };
+  const page = Math.max(1, Number(req.nextUrl.searchParams.get("page") ?? "1"));
+  const limit = Math.min(100, Math.max(1, Number(req.nextUrl.searchParams.get("limit") ?? "20")));
+
+  const query: QueryFilter<IUser> = { role: "user" };
   if (search) {
+    const safe = escapeRegex(search);
     query.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
+      { name: { $regex: safe, $options: "i" } },
+      { email: { $regex: safe, $options: "i" } },
     ];
   }
 
-  const users = await User.find(query).select("-password").sort({ createdAt: -1 }).lean();
-  const total = await User.countDocuments({ role: "user" });
+  const [users, total] = await Promise.all([
+    User.find(query).select("-password").sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+    User.countDocuments(query),
+  ]);
 
   return NextResponse.json({ users, total });
 }

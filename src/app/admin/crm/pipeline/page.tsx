@@ -125,7 +125,7 @@ export default function CrmPipelinePage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/crm/contacts");
+    const res = await fetch("/api/crm/contacts?limit=1000");
     const data = await res.json();
     setColumns(groupByStage(data.contacts ?? []));
     setLoading(false);
@@ -202,7 +202,9 @@ export default function CrmPipelinePage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stage: container }),
-      });
+      }).then(res => {
+        if (!res.ok) load(); // revert the optimistic move by re-syncing from the server
+      }).catch(() => load());
     }
   }
 

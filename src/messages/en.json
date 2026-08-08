@@ -7,7 +7,11 @@
     "contactMe": "Contact Me",
     "signIn": "Sign In",
     "signUp": "Sign Up",
-    "account": "Account"
+    "account": "Account",
+    "register": "Register",
+    "registerFree": "Register — Free Seminar",
+    "menu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "hero": {
     "badge": "REV. 2026 · ENROLMENTS OPEN",

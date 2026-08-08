@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Sinhala, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/next";
@@ -126,6 +126,20 @@ export const metadata: Metadata = {
   },
 
   category: "education",
+};
+
+/* Mobile chrome. `viewportFit: "cover"` lets the sticky mobile CTA bar
+   paint into the home-indicator area (it pads itself back off with
+   env(safe-area-inset-bottom)). maximumScale is deliberately left
+   unset — capping zoom breaks pinch-to-zoom for low-vision users. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f5ee" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f2418" },
+  ],
 };
 
 export default function RootLayout({

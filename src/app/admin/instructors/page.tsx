@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Plus, Trash2, Pencil, X, Mail, UserRound, Camera, Loader2 } from "lucide-react";
+import { Plus, Trash2, Pencil, X, Mail, UserRound, Camera, Loader2, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,14 +26,23 @@ export default function AdminInstructors() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/instructors");
-    const data = await res.json();
-    setInstructors(data.instructors ?? []);
-    setLoading(false);
+    setError(null);
+    try {
+      const res = await fetch("/api/instructors");
+      if (!res.ok) throw new Error("Failed to load instructors");
+      const data = await res.json();
+      setInstructors(data.instructors ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load instructors");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -41,22 +50,27 @@ export default function AdminInstructors() {
   async function handleSave() {
     if (!form?.name) return;
     setSaving(true);
-    if (form._id) {
-      await fetch(`/api/instructors/${form._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-    } else {
-      await fetch("/api/instructors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+    setActionError("");
+    try {
+      const res = form._id
+        ? await fetch(`/api/instructors/${form._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+          })
+        : await fetch("/api/instructors", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(form),
+          });
+      if (!res.ok) throw new Error("Failed to save instructor");
+      setForm(null);
+      load();
+    } catch {
+      setActionError("Couldn't save the instructor — try again.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setForm(null);
-    load();
   }
 
   async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -82,9 +96,15 @@ export default function AdminInstructors() {
 
   async function handleDelete() {
     if (!deleteId) return;
-    await fetch(`/api/instructors/${deleteId}`, { method: "DELETE" });
-    setDeleteId(null);
-    load();
+    setActionError("");
+    try {
+      const res = await fetch(`/api/instructors/${deleteId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete instructor");
+      setDeleteId(null);
+      load();
+    } catch {
+      setActionError("Couldn't remove the instructor — try again.");
+    }
   }
 
   const field = (key: keyof Instructor, label: string, multiline = false) => (
@@ -129,6 +149,22 @@ export default function AdminInstructors() {
         </Button>
       </div>
 
+      {actionError && (
+        <div className="flex items-center gap-2.5 text-sm px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-600 mb-6">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
+
+      {error ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <AlertTriangle className="w-6 h-6 text-red-400" />
+          <p className="text-sm text-slate-500">{error}</p>
+          <Button variant="outline" size="sm" onClick={load} className="gap-1.5">
+            <RefreshCw className="w-3.5 h-3.5" /> Retry
+          </Button>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading ? (
           <p className="text-slate-400 text-sm col-span-3 text-center py-12">Loading…</p>
@@ -186,6 +222,7 @@ export default function AdminInstructors() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Add / Edit Panel */}
       {form && (

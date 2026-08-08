@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { Search, X, MessageSquarePlus, Send } from "lucide-react";
+import { useState } from "react";
+import { X, MessageSquarePlus, Send, Download, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { DataTable } from "@/components/admin/DataTable";
+import { useListResource } from "@/hooks/useCrudResource";
 import type { Contact, PipelineStage } from "@/types/crm";
 
 const STAGE_LABELS: Record<PipelineStage, string> = {
@@ -31,57 +33,54 @@ const SOURCE_LABELS: Record<Contact["source"], string> = {
 };
 
 export default function CrmContactsPage() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const {
+    items: contacts, setItems: setContacts, total, page, setPage, totalPages,
+    search, setSearch, loading, error, reload,
+  } = useListResource<Contact>("/api/crm/contacts", { itemsKey: "contacts" });
   const [active, setActive] = useState<Contact | null>(null);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const [savingStage, setSavingStage] = useState(false);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const res = await fetch("/api/crm/contacts");
-    const data = await res.json();
-    setContacts(data.contacts ?? []);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return contacts;
-    return contacts.filter(c =>
-      c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
-    );
-  }, [contacts, search]);
+  const [stageError, setStageError] = useState("");
 
   async function updateStage(email: string, stage: PipelineStage) {
     setSavingStage(true);
-    await fetch(`/api/crm/contacts/${encodeURIComponent(email)}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stage }),
-    });
-    setSavingStage(false);
-    if (active?.email === email) setActive(a => a ? { ...a, stage } : a);
-    setContacts(cs => cs.map(c => c.email === email ? { ...c, stage } : c));
+    setStageError("");
+    try {
+      const res = await fetch(`/api/crm/contacts/${encodeURIComponent(email)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage }),
+      });
+      if (!res.ok) throw new Error("Failed to update stage");
+      if (active?.email === email) setActive(a => a ? { ...a, stage } : a);
+      setContacts(cs => cs.map(c => c.email === email ? { ...c, stage } : c));
+    } catch {
+      setStageError("Couldn't update the stage — try again.");
+    } finally {
+      setSavingStage(false);
+    }
   }
 
   async function addNote() {
     if (!active || !noteText.trim()) return;
     setSavingNote(true);
-    const res = await fetch(`/api/crm/contacts/${encodeURIComponent(active.email)}/notes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: noteText.trim() }),
-    });
-    const updated = await res.json();
-    setNoteText("");
-    setSavingNote(false);
-    setActive(a => a ? { ...a, notes: updated.notes } : a);
-    setContacts(cs => cs.map(c => c.email === active.email ? { ...c, notes: updated.notes } : c));
+    try {
+      const res = await fetch(`/api/crm/contacts/${encodeURIComponent(active.email)}/notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: noteText.trim() }),
+      });
+      if (!res.ok) throw new Error("Failed to add note");
+      const updated = await res.json();
+      setNoteText("");
+      setActive(a => a ? { ...a, notes: updated.notes } : a);
+      setContacts(cs => cs.map(c => c.email === active.email ? { ...c, notes: updated.notes } : c));
+    } catch {
+      setStageError("Couldn't save the note — try again.");
+    } finally {
+      setSavingNote(false);
+    }
   }
 
   return (
@@ -95,24 +94,38 @@ export default function CrmContactsPage() {
             Contacts
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            {contacts.length} contact{contacts.length !== 1 ? "s" : ""} · students & subscribers unified
+            {total} contact{total !== 1 ? "s" : ""} · students & subscribers unified
           </p>
         </div>
       </div>
 
-      <Card className="pcb-card border-slate-100 shadow-sm mb-6 p-4">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder="Search by name or email…"
-            className="pl-9 bg-slate-50 border-slate-200 text-sm"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      {stageError && (
+        <div className="flex items-center gap-2.5 text-sm px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-600 mb-6">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{stageError}</span>
         </div>
-      </Card>
+      )}
 
-      <Card className="pcb-card border-slate-100 shadow-sm overflow-hidden">
+      <DataTable
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by name or email…"
+        total={total}
+        itemLabel="contact"
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        loading={loading}
+        error={error}
+        onRetry={reload}
+        actions={
+          <a href="/api/export/contacts" download>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </Button>
+          </a>
+        }
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -127,9 +140,9 @@ export default function CrmContactsPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">Loading…</td></tr>
-              ) : filtered.length === 0 ? (
+              ) : contacts.length === 0 ? (
                 <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No contacts found</td></tr>
-              ) : filtered.map(c => (
+              ) : contacts.map(c => (
                 <tr key={c.email} className="border-b border-slate-50 hover:bg-slate-50/70 transition-colors">
                   <td className="px-5 py-3.5 font-semibold text-slate-900 whitespace-nowrap">{c.name || "—"}</td>
                   <td className="px-5 py-3.5 text-slate-500">{c.email}</td>
@@ -162,7 +175,7 @@ export default function CrmContactsPage() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </DataTable>
 
       {/* Contact drawer */}
       {active && (

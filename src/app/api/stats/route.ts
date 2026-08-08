@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_cache } from "next/cache";
 import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import User from "@/models/User";
@@ -16,6 +17,21 @@ export async function GET() {
   const session = await getAdminSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const stats = await getCachedStats();
+  return NextResponse.json(stats);
+}
+
+/**
+ * The dashboard's 17-query aggregation is identical for every admin viewing
+ * it within the same window, so it's cached for a short TTL instead of
+ * re-running on every page load.
+ */
+const getCachedStats = unstable_cache(computeStats, ["admin-stats"], {
+  revalidate: 60,
+  tags: ["admin-stats"],
+});
+
+async function computeStats() {
   await connectDB();
 
   const now = new Date();
@@ -123,7 +139,7 @@ export async function GET() {
   }));
   const mapCities = Array.from(cityPoints.values()).sort((a, b) => b.count - a.count);
 
-  return NextResponse.json({
+  return {
     totalUsers,
     totalCourses,
     activeCourses,
@@ -145,5 +161,5 @@ export async function GET() {
     totalCampaigns,
     campaignsSent,
     recentCampaigns,
-  });
+  };
 }

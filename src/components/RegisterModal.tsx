@@ -212,20 +212,27 @@ export default function RegisterModal() {
                     </Label>
                     <Input
                       placeholder="Ex: Kavindu Perera"
-                      className="border-slate-200 w-full h-10 text-sm"
+                      autoComplete="name"
+                      autoCapitalize="words"
+                      className="border-slate-200 w-full h-11 sm:h-10 text-sm"
                       value={form.name} onChange={set("name")} required
                     />
                   </div>
 
-                  {/* Phone + Age */}
+                  {/* Phone + Age — both short enough to share a row even on
+                      the narrowest phone. `inputMode` is what gets a phone
+                      to open the numeric keypad instead of the full QWERTY. */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 block mb-1">
                         Phone <span style={{ color: "var(--brand-red)" }}>*</span>
                       </Label>
                       <Input
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
                         placeholder="Ex: 077 123 4567"
-                        className="border-slate-200 w-full h-10 text-sm"
+                        className="border-slate-200 w-full h-11 sm:h-10 text-sm"
                         value={form.phone} onChange={set("phone")} required
                       />
                     </div>
@@ -234,22 +241,29 @@ export default function RegisterModal() {
                         Student Age <span style={{ color: "var(--brand-red)" }}>*</span>
                       </Label>
                       <Input
-                        type="number" placeholder="Ex: 12" min={5} max={20}
-                        className="border-slate-200 w-full h-10 text-sm"
+                        type="number" inputMode="numeric" placeholder="Ex: 12" min={5} max={20}
+                        className="border-slate-200 w-full h-11 sm:h-10 text-sm"
                         value={form.age} onChange={set("age")} required
                       />
                     </div>
                   </div>
 
-                  {/* Email + Parent (paired to save a row) */}
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Email + Parent — stacked on mobile. Side by side, an
+                      email field is ~150px wide and the address scrolls
+                      inside it while you type. */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 block mb-1">
                         Email Address
                       </Label>
                       <Input
-                        type="email" placeholder="Ex: kavindu@gmail.com"
-                        className="border-slate-200 w-full h-10 text-sm"
+                        type="email"
+                        inputMode="email"
+                        autoComplete="email"
+                        autoCapitalize="none"
+                        spellCheck={false}
+                        placeholder="Ex: kavindu@gmail.com"
+                        className="border-slate-200 w-full h-11 sm:h-10 text-sm"
                         value={form.email} onChange={set("email")}
                       />
                     </div>
@@ -259,7 +273,9 @@ export default function RegisterModal() {
                       </Label>
                       <Input
                         placeholder="Ex: Sunil Perera"
-                        className="border-slate-200 w-full h-10 text-sm"
+                        autoComplete="name"
+                        autoCapitalize="words"
+                        className="border-slate-200 w-full h-11 sm:h-10 text-sm"
                         value={form.parentName} onChange={set("parentName")}
                       />
                     </div>
@@ -272,7 +288,9 @@ export default function RegisterModal() {
                     </Label>
                     <Input
                       placeholder="Ex: Matara"
-                      className="border-slate-200 w-full h-10 text-sm"
+                      autoComplete="address-level2"
+                      autoCapitalize="words"
+                      className="border-slate-200 w-full h-11 sm:h-10 text-sm"
                       value={form.city} onChange={set("city")}
                     />
                   </div>

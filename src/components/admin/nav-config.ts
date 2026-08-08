@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, BookOpen, Mail, UserRound,
   Settings, Send, BrainCircuit, Layers3,
-  Contact2, KanbanSquare, Megaphone, type LucideIcon,
+  Contact2, KanbanSquare, Megaphone, History, type LucideIcon,
 } from "lucide-react";
 
 export type SummaryKey = "users" | "subscribers" | "leads";
@@ -27,6 +27,7 @@ export const navItems: NavItemDef[] = [
   { label: "Courses",     href: "/admin/courses",     icon: BookOpen },
   { label: "Instructors", href: "/admin/instructors", icon: UserRound },
   { label: "Subscribers", href: "/admin/subscribers", icon: Mail,     countKey: "subscribers" },
+  { label: "Activity",    href: "/admin/activity",    icon: History },
 ];
 
 export const navGroups: NavGroupDef[] = [

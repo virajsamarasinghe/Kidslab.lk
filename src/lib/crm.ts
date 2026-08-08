@@ -1,8 +1,19 @@
+import { unstable_cache, revalidateTag } from "next/cache";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import Subscriber from "@/models/Subscriber";
 import Contact, { type PipelineStage } from "@/models/Contact";
 import type { CampaignSegment } from "@/models/Campaign";
+
+export const UNIFIED_CONTACTS_TAG = "unified-contacts";
+
+/** Call after any write that changes a User/Subscriber/Contact so the next read is fresh. */
+export function invalidateUnifiedContacts() {
+  // { expire: 0 } forces immediate expiration so a stage/note change is
+  // visible on the very next read, instead of the deprecated single-arg
+  // behavior or the stale-while-revalidate "max" profile.
+  revalidateTag(UNIFIED_CONTACTS_TAG, { expire: 0 });
+}
 
 export interface UnifiedContact {
   email: string;
@@ -18,7 +29,7 @@ export interface UnifiedContact {
 }
 
 /** Merges Users, Subscribers, and manual Contact entries into one CRM view, keyed by email. */
-export async function getUnifiedContacts(): Promise<UnifiedContact[]> {
+async function fetchUnifiedContacts(): Promise<UnifiedContact[]> {
   await connectDB();
 
   const [users, subscribers, overlays] = await Promise.all([
@@ -87,6 +98,18 @@ export async function getUnifiedContacts(): Promise<UnifiedContact[]> {
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }
+
+/**
+ * Cached view of {@link fetchUnifiedContacts} — this merge does three unbounded
+ * collection scans and is hit every ~60s by the sidebar summary poll plus every
+ * CRM page load, so a short TTL cuts that down substantially. Call
+ * {@link invalidateUnifiedContacts} after any write that should be reflected
+ * immediately (stage change, note added, contact created).
+ */
+export const getUnifiedContacts = unstable_cache(fetchUnifiedContacts, ["unified-contacts"], {
+  revalidate: 30,
+  tags: [UNIFIED_CONTACTS_TAG],
+});
 
 /** Resolves a campaign audience segment into a list of {email, name} recipients. */
 export async function resolveSegment(segment: CampaignSegment): Promise<{ email: string; name: string }[]> {

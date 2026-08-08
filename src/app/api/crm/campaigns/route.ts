@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import { getBrevoCredentials, sendEmail } from "@/lib/brevo";
 import { resolveSegment } from "@/lib/crm";
+import { logActivity } from "@/lib/activity-log";
 import Campaign, { CAMPAIGN_SEGMENTS, type CampaignSegment } from "@/models/Campaign";
 
 const BATCH_SIZE = 5;
@@ -12,7 +13,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   await connectDB();
-  const campaigns = await Campaign.find().sort({ createdAt: -1 }).lean();
+  const campaigns = await Campaign.find().sort({ createdAt: -1 }).limit(200).lean();
   return NextResponse.json({ campaigns });
 }
 
@@ -64,11 +65,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  campaign.status = failedCount === 0 ? "sent" : sentCount === 0 ? "failed" : "sent";
+  campaign.status = failedCount === 0 ? "sent" : sentCount === 0 ? "failed" : "partial";
   campaign.sentCount = sentCount;
   campaign.failedCount = failedCount;
   campaign.sentAt = new Date();
   await campaign.save();
 
+  logActivity(session, "sent", "campaign", String(campaign._id), {
+    subject, segment, sentCount, failedCount, recipientCount: recipients.length,
+  });
   return NextResponse.json(campaign, { status: 201 });
 }

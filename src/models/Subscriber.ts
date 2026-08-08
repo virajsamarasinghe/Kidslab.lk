@@ -14,5 +14,7 @@ const SubscriberSchema = new Schema<ISubscriber>(
   { timestamps: true }
 );
 
+SubscriberSchema.index({ createdAt: -1 });
+
 export default mongoose.models.Subscriber as mongoose.Model<ISubscriber> ||
   mongoose.model<ISubscriber>("Subscriber", SubscriberSchema);

@@ -1,37 +1,28 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Mail, Trash2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { Mail, Trash2, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DataTable } from "@/components/admin/DataTable";
+import { useListResource } from "@/hooks/useCrudResource";
 import type { Subscriber } from "@/types/subscriber";
 
 export default function AdminSubscribers() {
-  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: subscribers, total, page, setPage, totalPages, search, setSearch, loading, error, reload,
+  } = useListResource<Subscriber>("/api/subscribers", { itemsKey: "subscribers" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    const res = await fetch("/api/subscribers");
-    const data = await res.json();
-    setSubscribers(data.subscribers ?? []);
-    setTotal(data.total ?? 0);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
 
   async function handleDelete() {
     if (!deleteId) return;
     await fetch(`/api/subscribers/${deleteId}`, { method: "DELETE" });
     setDeleteId(null);
-    load();
+    reload();
   }
 
   return (
@@ -46,7 +37,26 @@ export default function AdminSubscribers() {
         <p className="text-slate-500 text-sm mt-1">{total} email{total !== 1 ? "s" : ""} collected from the site popup</p>
       </div>
 
-      <Card className="pcb-card border-slate-100 shadow-sm overflow-hidden">
+      <DataTable
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by email…"
+        total={total}
+        itemLabel="subscriber"
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+        loading={loading}
+        error={error}
+        onRetry={reload}
+        actions={
+          <a href="/api/export/subscribers" download>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Download className="w-3.5 h-3.5" /> Export CSV
+            </Button>
+          </a>
+        }
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -88,7 +98,7 @@ export default function AdminSubscribers() {
             </tbody>
           </table>
         </div>
-      </Card>
+      </DataTable>
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>

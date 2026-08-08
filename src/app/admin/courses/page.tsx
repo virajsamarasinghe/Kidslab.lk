@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Trash2, Pencil, X, ToggleLeft, ToggleRight, Check } from "lucide-react";
+import { Plus, Trash2, Pencil, X, ToggleLeft, ToggleRight, Check, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,18 +38,27 @@ export default function AdminCourses() {
   const [form, setForm] = useState<Partial<Course> | null>(null);
   const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [coursesRes, instructorsRes] = await Promise.all([
-      fetch("/api/courses"),
-      fetch("/api/instructors"),
-    ]);
-    const coursesData = await coursesRes.json();
-    const instructorsData = await instructorsRes.json();
-    setCourses(coursesData.courses ?? []);
-    setInstructors(instructorsData.instructors ?? []);
-    setLoading(false);
+    setError(null);
+    try {
+      const [coursesRes, instructorsRes] = await Promise.all([
+        fetch("/api/courses"),
+        fetch("/api/instructors"),
+      ]);
+      if (!coursesRes.ok || !instructorsRes.ok) throw new Error("Failed to load courses");
+      const coursesData = await coursesRes.json();
+      const instructorsData = await instructorsRes.json();
+      setCourses(coursesData.courses ?? []);
+      setInstructors(instructorsData.instructors ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load courses");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -68,39 +77,56 @@ export default function AdminCourses() {
   async function handleSave() {
     if (!form) return;
     setSaving(true);
-    const payload = { ...form, instructors: selectedInstructorIds };
-    if (form._id) {
-      await fetch(`/api/courses/${form._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-    } else {
-      await fetch("/api/courses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+    setActionError("");
+    try {
+      const payload = { ...form, instructors: selectedInstructorIds };
+      const res = form._id
+        ? await fetch(`/api/courses/${form._id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        : await fetch("/api/courses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+      if (!res.ok) throw new Error("Failed to save course");
+      setForm(null);
+      load();
+    } catch {
+      setActionError("Couldn't save the course — try again.");
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    setForm(null);
-    load();
   }
 
   async function handleToggle(c: Course) {
-    await fetch(`/api/courses/${c._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !c.isActive }),
-    });
-    load();
+    setActionError("");
+    try {
+      const res = await fetch(`/api/courses/${c._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !c.isActive }),
+      });
+      if (!res.ok) throw new Error("Failed to update course");
+      load();
+    } catch {
+      setActionError("Couldn't update the course — try again.");
+    }
   }
 
   async function handleDelete() {
     if (!deleteId) return;
-    await fetch(`/api/courses/${deleteId}`, { method: "DELETE" });
-    setDeleteId(null);
-    load();
+    setActionError("");
+    try {
+      const res = await fetch(`/api/courses/${deleteId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete course");
+      setDeleteId(null);
+      load();
+    } catch {
+      setActionError("Couldn't delete the course — try again.");
+    }
   }
 
   const field = (key: keyof Course, label: string, type = "text", multiline = false, placeholder?: string) => (
@@ -146,6 +172,22 @@ export default function AdminCourses() {
         </Button>
       </div>
 
+      {actionError && (
+        <div className="flex items-center gap-2.5 text-sm px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-600 mb-6">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{actionError}</span>
+        </div>
+      )}
+
+      {error ? (
+        <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+          <AlertTriangle className="w-6 h-6 text-red-400" />
+          <p className="text-sm text-slate-500">{error}</p>
+          <Button variant="outline" size="sm" onClick={load} className="gap-1.5">
+            <RefreshCw className="w-3.5 h-3.5" /> Retry
+          </Button>
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
         {loading ? (
           <p className="text-slate-400 text-sm col-span-3 text-center py-12">Loading…</p>
@@ -208,6 +250,7 @@ export default function AdminCourses() {
           </Card>
         ))}
       </div>
+      )}
 
       {/* Add / Edit Panel */}
       {form && (

@@ -38,5 +38,7 @@ const ContactSchema = new Schema<IContact>(
   { timestamps: true }
 );
 
+ContactSchema.index({ stage: 1 });
+
 export default mongoose.models.Contact as mongoose.Model<IContact> ||
   mongoose.model<IContact>("Contact", ContactSchema);

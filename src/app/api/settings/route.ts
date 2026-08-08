@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
+import { logActivity } from "@/lib/activity-log";
 import type { LLMConfig } from "@/models/Settings";
 
 const SECTIONS = ["brevo", "llm", "embedding"] as const;
@@ -73,6 +74,7 @@ export async function PUT(req: NextRequest) {
 
     settings.markModified("llm");
     await settings.save();
+    logActivity(session, "updated", "settings", "llm");
     return NextResponse.json(settings.llm.map(maskLLM));
   }
 
@@ -102,6 +104,7 @@ export async function PUT(req: NextRequest) {
   }
 
   await settings.save();
+  logActivity(session, "updated", "settings", section);
 
   const saved = section === "brevo" ? settings.brevo : settings.embedding;
   return NextResponse.json({ ...saved, apiKey: maskSecret(saved.apiKey) });

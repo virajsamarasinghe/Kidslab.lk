@@ -13,7 +13,7 @@ export interface ICampaign extends Document {
   subject: string;
   body: string;
   segment: CampaignSegment;
-  status: "draft" | "sending" | "sent" | "failed";
+  status: "draft" | "sending" | "sent" | "partial" | "failed";
   recipientCount: number;
   sentCount: number;
   failedCount: number;
@@ -26,7 +26,7 @@ const CampaignSchema = new Schema<ICampaign>(
     subject:        { type: String, required: true, trim: true },
     body:           { type: String, required: true },
     segment:        { type: String, enum: CAMPAIGN_SEGMENTS, default: "all_contacts" },
-    status:         { type: String, enum: ["draft", "sending", "sent", "failed"], default: "draft" },
+    status:         { type: String, enum: ["draft", "sending", "sent", "partial", "failed"], default: "draft" },
     recipientCount: { type: Number, default: 0 },
     sentCount:      { type: Number, default: 0 },
     failedCount:    { type: Number, default: 0 },

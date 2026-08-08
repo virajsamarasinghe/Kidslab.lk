@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Send, Loader2, CheckCircle2, XCircle, Megaphone } from "lucide-react";
+import { Send, Loader2, CheckCircle2, XCircle, Megaphone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Campaign, CampaignSegment } from "@/types/crm";
 
 const SEGMENTS: { value: CampaignSegment; label: string }[] = [
@@ -22,6 +27,7 @@ const STATUS_COLORS: Record<Campaign["status"], string> = {
   draft: "bg-slate-100 text-slate-500 border-slate-200",
   sending: "bg-amber-50 text-amber-700 border-amber-200",
   sent: "bg-green-50 text-green-700 border-green-200",
+  partial: "bg-amber-50 text-amber-700 border-amber-200",
   failed: "bg-red-50 text-red-600 border-red-200",
 };
 
@@ -36,35 +42,62 @@ export default function CrmCampaignsPage() {
   const [segment, setSegment] = useState<CampaignSegment>("all_contacts");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [confirmCount, setConfirmCount] = useState<number | null>(null);
+  const [countLoading, setCountLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/crm/campaigns");
-    const data = await res.json();
-    setCampaigns(data.campaigns ?? []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/crm/campaigns");
+      const data = await res.json();
+      setCampaigns(data.campaigns ?? []);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  async function handleSend() {
+  async function openConfirm() {
     if (!subject.trim() || !body.trim()) return;
+    setError("");
+    setCountLoading(true);
+    try {
+      const res = await fetch(`/api/crm/segment-count?segment=${segment}`);
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Failed to resolve audience size");
+        return;
+      }
+      setConfirmCount(data.count);
+    } finally {
+      setCountLoading(false);
+    }
+  }
+
+  async function handleSend() {
+    setConfirmCount(null);
     setSending(true);
     setError("");
-    const res = await fetch("/api/crm/campaigns", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ subject, body, segment }),
-    });
-    const data = await res.json();
-    setSending(false);
-    if (!res.ok) {
-      setError(data.error ?? "Failed to send campaign");
-      return;
+    try {
+      const res = await fetch("/api/crm/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, body, segment }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Failed to send campaign");
+        return;
+      }
+      setSubject("");
+      setBody("");
+      load();
+    } catch {
+      setError("Failed to send campaign");
+    } finally {
+      setSending(false);
     }
-    setSubject("");
-    setBody("");
-    load();
   }
 
   return (
@@ -122,12 +155,12 @@ export default function CrmCampaignsPage() {
             )}
 
             <Button
-              onClick={handleSend}
-              disabled={sending || !subject.trim() || !body.trim()}
+              onClick={openConfirm}
+              disabled={sending || countLoading || !subject.trim() || !body.trim()}
               className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
             >
-              {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-              {sending ? "Sending…" : "Send Campaign"}
+              {sending || countLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {sending ? "Sending…" : countLoading ? "Checking audience…" : "Send Campaign"}
             </Button>
           </div>
         </Card>
@@ -171,6 +204,7 @@ export default function CrmCampaignsPage() {
                   <td className="px-5 py-3.5">
                     <Badge className={`text-xs ${STATUS_COLORS[c.status]}`}>
                       {c.status === "sent" && <CheckCircle2 className="w-3 h-3 mr-1" />}
+                      {c.status === "partial" && <AlertTriangle className="w-3 h-3 mr-1" />}
                       {c.status === "failed" && <XCircle className="w-3 h-3 mr-1" />}
                       {c.status}
                     </Badge>
@@ -188,6 +222,24 @@ export default function CrmCampaignsPage() {
           </table>
         </div>
       </Card>
+
+      <AlertDialog open={confirmCount !== null} onOpenChange={open => !open && setConfirmCount(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send to {confirmCount ?? 0} recipient{confirmCount === 1 ? "" : "s"}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This sends &quot;{subject}&quot; to everyone in {SEGMENTS.find(s => s.value === segment)?.label ?? segment} right
+              now. There&apos;s no scheduling or undo — emails go out immediately via your connected Brevo account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="btn-brand-navy text-white" onClick={handleSend}>
+              Send Campaign
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

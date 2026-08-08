@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import User from "@/models/User";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession();
@@ -36,6 +37,7 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
 
   await connectDB();
   const { id } = await params;
-  await User.findByIdAndDelete(id);
+  const user = await User.findByIdAndDelete(id);
+  if (user) logActivity(session, "deleted", "user", id, { name: user.name, email: user.email });
   return NextResponse.json({ success: true });
 }

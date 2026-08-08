@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
+import { invalidateUnifiedContacts } from "@/lib/crm";
+import { logActivity } from "@/lib/activity-log";
 import Contact, { PIPELINE_STAGES } from "@/models/Contact";
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ email: string }> }) {
@@ -23,5 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ em
     { upsert: true, new: true }
   ).lean();
 
+  invalidateUnifiedContacts();
+  if (update.stage) logActivity(session, "moved-stage", "contact", contact.email, { stage: update.stage });
   return NextResponse.json(contact);
 }
