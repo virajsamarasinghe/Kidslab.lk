@@ -3,6 +3,10 @@ import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import User from "@/models/User";
 import Course from "@/models/Course";
+import Subscriber from "@/models/Subscriber";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const TREND_DAYS = 14;
 
 export async function GET() {
   const session = await getAdminSession();
@@ -10,12 +14,83 @@ export async function GET() {
 
   await connectDB();
 
-  const [totalUsers, totalCourses, activeCourses, recentUsers] = await Promise.all([
+  const now = new Date();
+  const trendStart = new Date(now.getTime() - (TREND_DAYS - 1) * DAY_MS);
+  trendStart.setHours(0, 0, 0, 0);
+  const weekAgo = new Date(now.getTime() - 7 * DAY_MS);
+  const twoWeeksAgo = new Date(now.getTime() - 14 * DAY_MS);
+
+  const [
+    totalUsers,
+    totalCourses,
+    activeCourses,
+    totalSubscribers,
+    activeUsers,
+    inactiveUsers,
+    recentUsers,
+    signupsByDay,
+    topCitiesRaw,
+    topCoursesRaw,
+    usersThisWeek,
+    usersLastWeek,
+  ] = await Promise.all([
     User.countDocuments({ role: "user" }),
     Course.countDocuments(),
     Course.countDocuments({ isActive: true }),
+    Subscriber.countDocuments(),
+    User.countDocuments({ role: "user", status: "active" }),
+    User.countDocuments({ role: "user", status: "inactive" }),
     User.find({ role: "user" }).select("-password").sort({ createdAt: -1 }).limit(5).lean(),
+    User.aggregate([
+      { $match: { role: "user", createdAt: { $gte: trendStart } } },
+      { $group: { _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }, count: { $sum: 1 } } },
+    ]),
+    User.aggregate([
+      { $match: { role: "user", city: { $nin: [null, ""] } } },
+      { $group: { _id: "$city", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]),
+    User.aggregate([
+      { $match: { role: "user", interestedCourse: { $nin: [null, ""] } } },
+      { $group: { _id: "$interestedCourse", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]),
+    User.countDocuments({ role: "user", createdAt: { $gte: weekAgo } }),
+    User.countDocuments({ role: "user", createdAt: { $gte: twoWeeksAgo, $lt: weekAgo } }),
   ]);
 
-  return NextResponse.json({ totalUsers, totalCourses, activeCourses, recentUsers });
+  // Fill every day in the trend window, including days with zero signups
+  const countsByDate = new Map(signupsByDay.map((d: { _id: string; count: number }) => [d._id, d.count]));
+  const signupTrend = Array.from({ length: TREND_DAYS }, (_, i) => {
+    const date = new Date(trendStart.getTime() + i * DAY_MS);
+    const key = date.toISOString().slice(0, 10);
+    return {
+      date: date.toLocaleDateString("en-GB", { day: "2-digit", month: "short" }),
+      signups: countsByDate.get(key) ?? 0,
+    };
+  });
+
+  const weeklyGrowth =
+    usersLastWeek === 0
+      ? usersThisWeek > 0
+        ? 100
+        : 0
+      : Math.round(((usersThisWeek - usersLastWeek) / usersLastWeek) * 100);
+
+  return NextResponse.json({
+    totalUsers,
+    totalCourses,
+    activeCourses,
+    totalSubscribers,
+    activeUsers,
+    inactiveUsers,
+    usersThisWeek,
+    weeklyGrowth,
+    recentUsers,
+    signupTrend,
+    topCities: topCitiesRaw.map((c: { _id: string; count: number }) => ({ city: c._id, count: c.count })),
+    topCourses: topCoursesRaw.map((c: { _id: string; count: number }) => ({ course: c._id, count: c.count })),
+  });
 }

@@ -1012,7 +1012,7 @@ function HomeContent() {
         {/* ══ Programs ══════════════════════════════════════════════════ */}
         <section
           id="programs"
-          className="py-28 px-6 xl:py-36 xl:px-12 bg-slate-50"
+          className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-slate-50"
         >
           <div className="max-w-screen-2xl mx-auto">
             <AnimateIn className="text-center mb-16">
@@ -1160,7 +1160,7 @@ function HomeContent() {
         </section>
 
         {/* ══ Why kidslab.lk ════════════════════════════════════════════ */}
-        <section id="about" className="py-28 px-6 xl:py-36 xl:px-12 bg-white">
+        <section id="about" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white">
           <div className="max-w-screen-2xl mx-auto">
             <AnimateIn className="text-center mb-16">
               <SectionLabel>
@@ -1201,7 +1201,7 @@ function HomeContent() {
         {/* ══ Team / Founders ════════════════════════════════════════════ */}
         <section
           id="team"
-          className="py-28 px-6 xl:py-36 xl:px-12 relative overflow-hidden"
+          className="scroll-mt-20 py-10 px-6 xl:py-14 xl:px-12 relative overflow-hidden min-h-[calc(100vh-5rem)] flex flex-col justify-center"
           style={{
             background:
               "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
@@ -1223,7 +1223,7 @@ function HomeContent() {
 
           <div className="max-w-screen-2xl mx-auto relative z-10">
             {/* Header */}
-            <AnimateIn className="text-center mb-16 xl:mb-20">
+            <AnimateIn className="text-center mb-5 xl:mb-7">
               <SectionLabel
                 style={{
                   color: "color-mix(in srgb, var(--brand-red) 70%, white)",
@@ -1243,46 +1243,46 @@ function HomeContent() {
                   {t("team.headingHighlight")}
                 </span>
               </h2>
-              <p className="text-body-xl text-slate-400 mt-5 max-w-xl mx-auto">
+              <p className="text-body-xl text-slate-400 mt-2 max-w-xl mx-auto">
                 {t("team.subtitle")}
               </p>
             </AnimateIn>
 
             {/* Founder cards — standard avatar layout */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 xl:gap-8 max-w-xl xl:max-w-2xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:gap-6 max-w-xl xl:max-w-2xl mx-auto">
               {founders.map((f, i) => (
                 <AnimateIn key={f.name} delay={i * 0.15} className="h-full">
-                  <div className="h-full flex flex-col items-center text-center gap-4 rounded-2xl bg-white/[0.04] border border-white/10 px-6 py-8 hover:bg-white/[0.06] transition-colors duration-300">
+                  <div className="h-full flex flex-col items-center text-center gap-2 rounded-2xl bg-white/[0.04] border border-white/10 px-5 py-4 xl:py-5 hover:bg-white/[0.06] transition-colors duration-300">
                     {/* Avatar */}
-                    <div className="relative w-24 h-24 xl:w-28 xl:h-28 rounded-full overflow-hidden ring-2 ring-blue-400/40 shrink-0">
+                    <div className="relative w-16 h-16 xl:w-20 xl:h-20 rounded-full overflow-hidden ring-2 ring-blue-400/40 shrink-0">
                       <Image
                         src={f.photo}
                         alt={f.name}
                         fill
                         className="object-cover object-top"
-                        sizes="112px"
+                        sizes="80px"
                       />
                     </div>
 
                     {/* Co-Founder badge */}
-                    <span className="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-300 border border-blue-400/30 font-bold rounded-full px-3 py-1 text-[11px] tracking-widest uppercase">
+                    <span className="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-300 border border-blue-400/30 font-bold rounded-full px-3 py-0.5 text-[10px] tracking-widest uppercase">
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                       {t("team.coFounder")}
                     </span>
 
                     {/* Name + role */}
                     <div>
-                      <h3 className="text-white font-extrabold tracking-tight text-lg xl:text-xl">
+                      <h3 className="text-white font-extrabold tracking-tight text-base xl:text-lg">
                         {f.name}
                       </h3>
-                      <p className="text-blue-300 font-medium text-sm mt-1">
+                      <p className="text-blue-300 font-medium text-xs xl:text-sm mt-0.5">
                         {t("team.role")}
                       </p>
                     </div>
 
                     {/* University */}
-                    <div className="flex items-center gap-2 text-slate-400 text-xs xl:text-sm">
-                      <GraduationCap className="w-3.5 h-3.5 xl:w-4 xl:h-4 shrink-0 text-blue-400" />
+                    <div className="flex items-center gap-1.5 text-slate-400 text-xs">
+                      <GraduationCap className="w-3.5 h-3.5 shrink-0 text-blue-400" />
                       {t("team.university")}
                     </div>
 
@@ -1303,7 +1303,7 @@ function HomeContent() {
                       href={f.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-auto inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[#0A66C2]/50 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/50 text-[#93c5fd] hover:text-white transition-all duration-200 font-semibold text-sm"
+                      className="mt-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0A66C2]/50 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/50 text-[#93c5fd] hover:text-white transition-all duration-200 font-semibold text-sm"
                     >
                       <LinkedInIcon className="w-3.5 h-3.5 shrink-0" />
                       {t("team.linkedin")}
@@ -1314,23 +1314,23 @@ function HomeContent() {
             </div>
 
             {/* University strip */}
-            <AnimateIn delay={0.3} className="mt-10 xl:mt-14">
-              <div className="max-w-3xl xl:max-w-5xl mx-auto bg-white/[0.04] border border-white/8 rounded-2xl px-8 xl:px-12 py-5 xl:py-6 flex flex-col sm:flex-row items-center justify-center gap-4 xl:gap-8">
+            <AnimateIn delay={0.3} className="mt-4 xl:mt-6">
+              <div className="max-w-3xl xl:max-w-5xl mx-auto bg-white/[0.04] border border-white/8 rounded-2xl px-8 xl:px-12 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 xl:gap-8">
                 <div className="flex items-center gap-3">
-                  <GraduationCap className="w-5 h-5 xl:w-6 xl:h-6 text-blue-400 shrink-0" />
+                  <GraduationCap className="w-4 h-4 xl:w-5 xl:h-5 text-blue-400 shrink-0" />
                   <p
                     className="text-slate-300 font-semibold"
-                    style={{ fontSize: "clamp(0.8rem, 0.9vw, 1.1rem)" }}
+                    style={{ fontSize: "clamp(0.78rem, 0.85vw, 1.05rem)" }}
                   >
                     {t("team.universityStrip")}
                   </p>
                 </div>
                 <div className="hidden sm:block w-px h-5 bg-white/20" />
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 xl:w-5 xl:h-5 text-slate-500 shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-slate-500 shrink-0" />
                   <p
                     className="text-slate-500"
-                    style={{ fontSize: "clamp(0.75rem, 0.85vw, 1rem)" }}
+                    style={{ fontSize: "clamp(0.72rem, 0.8vw, 0.95rem)" }}
                   >
                     {t("team.location")}
                   </p>
@@ -1407,7 +1407,6 @@ function HomeContent() {
 
         {/* ══ Contact ═══════════════════════════════════════════════════ */}
         <section
-          id="contact"
           className="py-28 px-6 xl:py-36 xl:px-12 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden"
         >
           {/* Decorative blobs */}
@@ -1424,7 +1423,7 @@ function HomeContent() {
             }}
           />
 
-          <div className="max-w-screen-2xl mx-auto relative z-10">
+          <div id="contact" className="max-w-screen-2xl mx-auto relative z-10 scroll-mt-24">
             <AnimateIn className="text-center mb-14">
               <SectionLabel>{t("contact.eyebrow")}</SectionLabel>
               <h2 className="text-display-lg text-slate-900">
@@ -1759,10 +1758,10 @@ function HomeContent() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-6 right-6 xl:bottom-8 xl:right-8 2xl:bottom-10 2xl:right-10 z-50 flex items-center justify-center w-14 h-14 xl:w-16 xl:h-16 2xl:w-20 2xl:h-20 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
+        className="fixed bottom-5 right-5 xl:bottom-6 xl:right-6 z-50 flex items-center justify-center w-11 h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
         style={{ backgroundColor: "#25D366" }}
       >
-        <WhatsAppIcon className="w-7 h-7 text-white" />
+        <WhatsAppIcon className="w-5 h-5 text-white" />
       </a>
     </>
   );

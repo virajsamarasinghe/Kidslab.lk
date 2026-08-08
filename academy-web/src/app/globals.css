@@ -26,6 +26,11 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -62,6 +67,11 @@
   --input: oklch(0.92 0.008 264);
   --ring: oklch(0.45 0.2 264);
   --radius: 0.75rem;
+  --chart-1: var(--brand-navy);
+  --chart-2: var(--brand-red);
+  --chart-3: var(--brand-blue);
+  --chart-4: var(--brand-yellow);
+  --chart-5: #16a34a;
 }
 
 /* Responsive orbital ring radius */

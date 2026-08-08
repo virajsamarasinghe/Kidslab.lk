@@ -1,13 +1,25 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, BookOpen, CheckCircle, TrendingUp, ArrowRight } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Users, BookOpen, CheckCircle, Mail, ArrowRight, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid,
+} from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig,
+} from "@/components/ui/chart";
 
 interface Stats {
   totalUsers: number;
   totalCourses: number;
   activeCourses: number;
+  totalSubscribers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  usersThisWeek: number;
+  weeklyGrowth: number;
   recentUsers: Array<{
     _id: string;
     name: string;
@@ -16,7 +28,23 @@ interface Stats {
     interestedCourse: string;
     createdAt: string;
   }>;
+  signupTrend: Array<{ date: string; signups: number }>;
+  topCities: Array<{ city: string; count: number }>;
+  topCourses: Array<{ course: string; count: number }>;
 }
+
+const signupChartConfig = {
+  signups: { label: "New Students", color: "var(--color-chart-1)" },
+} satisfies ChartConfig;
+
+const cityChartConfig = {
+  count: { label: "Students", color: "var(--color-chart-3)" },
+} satisfies ChartConfig;
+
+const statusChartConfig = {
+  active: { label: "Active", color: "#16a34a" },
+  inactive: { label: "Inactive", color: "var(--color-chart-2)" },
+} satisfies ChartConfig;
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -26,11 +54,21 @@ export default function AdminDashboard() {
   }, []);
 
   const cards = [
-    { label: "Total Students",    value: stats?.totalUsers ?? "—",    icon: Users,        bg: "rgba(15,36,24,0.06)",   color: "var(--brand-navy)" },
-    { label: "Total Courses",     value: stats?.totalCourses ?? "—",  icon: BookOpen,     bg: "rgba(224,138,60,0.12)", color: "var(--brand-red)"  },
-    { label: "Active Courses",    value: stats?.activeCourses ?? "—", icon: CheckCircle,  bg: "rgba(22,163,74,0.10)",  color: "#16a34a"           },
-    { label: "Growth",            value: "↑ Growing",                 icon: TrendingUp,   bg: "rgba(43,95,224,0.10)",  color: "var(--brand-blue)" },
+    { label: "Total Students", value: stats?.totalUsers ?? "—", icon: Users, bg: "rgba(15,36,24,0.06)", color: "var(--brand-navy)" },
+    { label: "Active Courses", value: stats ? `${stats.activeCourses}/${stats.totalCourses}` : "—", icon: BookOpen, bg: "rgba(224,138,60,0.12)", color: "var(--brand-red)" },
+    { label: "Active Students", value: stats?.activeUsers ?? "—", icon: CheckCircle, bg: "rgba(22,163,74,0.10)", color: "#16a34a" },
+    { label: "Newsletter Subscribers", value: stats?.totalSubscribers ?? "—", icon: Mail, bg: "rgba(43,95,224,0.10)", color: "var(--brand-blue)" },
   ];
+
+  const statusData = stats
+    ? [
+        { name: "active", label: "Active", value: stats.activeUsers, fill: "#16a34a" },
+        { name: "inactive", label: "Inactive", value: stats.inactiveUsers, fill: "var(--color-chart-2)" },
+      ]
+    : [];
+
+  const growth = stats?.weeklyGrowth ?? 0;
+  const isPositive = growth >= 0;
 
   return (
     <div className="p-8">
@@ -46,14 +84,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
         {cards.map(({ label, value, icon: Icon, bg, color }) => (
           <Card key={label} className="pcb-card border-slate-100 shadow-sm">
             <CardContent className="p-6 flex items-center gap-4">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: bg }}
-              >
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: bg }}>
                 <Icon className="w-6 h-6" style={{ color }} />
               </div>
               <div>
@@ -63,6 +98,133 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Charts row */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+        {/* Signup trend */}
+        <Card className="pcb-card border-slate-100 shadow-sm xl:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-sm font-semibold text-slate-900">Registrations — Last 14 Days</CardTitle>
+              <p className="text-xs text-slate-400 mt-1">{stats?.usersThisWeek ?? 0} new this week</p>
+            </div>
+            <div
+              className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
+                isPositive ? "text-green-700 bg-green-50" : "text-red-600 bg-red-50"
+              }`}
+            >
+              {isPositive ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
+              {Math.abs(growth)}% vs last week
+            </div>
+          </CardHeader>
+          <CardContent className="pb-4">
+            {stats ? (
+              <ChartContainer config={signupChartConfig} className="h-[220px] w-full">
+                <AreaChart data={stats.signupTrend} margin={{ left: 0, right: 8, top: 8 }}>
+                  <defs>
+                    <linearGradient id="signupsFill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--color-signups)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="var(--color-signups)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} fontSize={11} />
+                  <YAxis tickLine={false} axisLine={false} width={28} fontSize={11} allowDecimals={false} />
+                  <ChartTooltip content={(props: any) => <ChartTooltipContent {...props} indicator="dot" />} />
+                  <Area
+                    type="monotone"
+                    dataKey="signups"
+                    stroke="var(--color-signups)"
+                    fill="url(#signupsFill)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            ) : (
+              <div className="h-[220px] flex items-center justify-center text-slate-400 text-sm">Loading…</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Status breakdown */}
+        <Card className="pcb-card border-slate-100 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-slate-900">Student Status</CardTitle>
+            <p className="text-xs text-slate-400 mt-1">Active vs inactive</p>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center pb-4">
+            {stats ? (
+              <>
+                <ChartContainer config={statusChartConfig} className="h-[160px] w-full">
+                  <PieChart>
+                    <ChartTooltip content={(props: any) => <ChartTooltipContent {...props} hideLabel nameKey="name" />} />
+                    <Pie data={statusData} dataKey="value" nameKey="name" innerRadius={45} outerRadius={70} strokeWidth={2}>
+                      {statusData.map(d => (
+                        <Cell key={d.name} fill={d.fill} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <span className="w-2 h-2 rounded-full bg-green-600" /> Active {stats.activeUsers}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "var(--brand-red)" }} /> Inactive {stats.inactiveUsers}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="h-[160px] flex items-center justify-center text-slate-400 text-sm">Loading…</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Breakdown row */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-6">
+        <Card className="pcb-card border-slate-100 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-slate-900">Top Cities</CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4">
+            {stats && stats.topCities.length > 0 ? (
+              <ChartContainer config={cityChartConfig} className="h-[200px] w-full">
+                <BarChart data={stats.topCities} layout="vertical" margin={{ left: 8, right: 8 }}>
+                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                  <XAxis type="number" tickLine={false} axisLine={false} fontSize={11} allowDecimals={false} />
+                  <YAxis type="category" dataKey="city" tickLine={false} axisLine={false} width={80} fontSize={11} />
+                  <ChartTooltip content={(props: any) => <ChartTooltipContent {...props} indicator="line" />} />
+                  <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <div className="h-[200px] flex items-center justify-center text-slate-400 text-sm">No data yet</div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="pcb-card border-slate-100 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-slate-900">Most Popular Course Interest</CardTitle>
+          </CardHeader>
+          <CardContent className="pb-4">
+            {stats && stats.topCourses.length > 0 ? (
+              <ChartContainer config={cityChartConfig} className="h-[200px] w-full">
+                <BarChart data={stats.topCourses} layout="vertical" margin={{ left: 8, right: 8 }}>
+                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                  <XAxis type="number" tickLine={false} axisLine={false} fontSize={11} allowDecimals={false} />
+                  <YAxis type="category" dataKey="course" tickLine={false} axisLine={false} width={100} fontSize={11} />
+                  <ChartTooltip content={(props: any) => <ChartTooltipContent {...props} indicator="line" />} />
+                  <Bar dataKey="count" fill="var(--brand-red)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            ) : (
+              <div className="h-[200px] flex items-center justify-center text-slate-400 text-sm">No data yet</div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Registrations */}
