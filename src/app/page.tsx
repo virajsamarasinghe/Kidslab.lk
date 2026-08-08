@@ -1902,6 +1902,13 @@ function HomeContent() {
                 {t("footer.founded")}
               </p>
             </div>
+
+            <p
+              className="text-center text-slate-500/70 mt-4"
+              style={{ fontSize: "0.75rem" }}
+            >
+              {t("footer.company")}
+            </p>
           </div>
         </footer>
       </motion.main>

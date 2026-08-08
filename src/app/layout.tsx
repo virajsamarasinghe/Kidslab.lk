@@ -146,6 +146,11 @@ export default function RootLayout({
         },
         elements: {
           rootBox: "font-sans",
+          // Force the modal overlay to be a fixed, full-viewport, centered
+          // flex container above the sticky navbar (z-50) regardless of
+          // where clerk-js mounts it in the DOM.
+          modalBackdrop: "!fixed !inset-0 !z-[100] !flex !items-center !justify-center !p-4 !bg-black/50 !backdrop-blur-sm",
+          modalContent: "!static !top-auto !left-auto !right-auto !bottom-auto !translate-x-0 !translate-y-0 !max-h-[90vh] !overflow-y-auto",
           card: "shadow-xl border border-slate-100 rounded-2xl",
           headerTitle: "font-extrabold tracking-tight",
           headerSubtitle: "text-slate-500",
