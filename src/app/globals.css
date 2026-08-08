@@ -100,6 +100,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
   }
 
   body {
@@ -107,6 +112,11 @@
     font-family: var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
     font-size: 16px;
     line-height: 1.6;
+    scrollbar-width: none;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
   }
 
   /* Display headings use the premium display font */

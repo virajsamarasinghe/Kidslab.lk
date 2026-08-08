@@ -1,4 +1,5 @@
 import { SITE_NAME, SITE_URL } from "@/config/site";
+import { getSettings } from "@/lib/settings";
 
 const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
@@ -8,9 +9,10 @@ interface SendWelcomeEmailParams {
 }
 
 export async function sendWelcomeEmail({ name, email }: SendWelcomeEmailParams) {
-  const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL;
-  const senderName = process.env.BREVO_SENDER_NAME ?? SITE_NAME;
+  const settings = await getSettings();
+  const apiKey = settings.brevo.apiKey || process.env.BREVO_API_KEY;
+  const senderEmail = settings.brevo.senderEmail || process.env.BREVO_SENDER_EMAIL;
+  const senderName = settings.brevo.senderName || process.env.BREVO_SENDER_NAME || SITE_NAME;
 
   if (!apiKey || !senderEmail) {
     console.warn("[brevo] BREVO_API_KEY or BREVO_SENDER_EMAIL not set — skipping welcome email");

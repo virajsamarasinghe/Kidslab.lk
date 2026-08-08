@@ -1,10 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   LayoutDashboard, Users, BookOpen, LogOut, Mail, ShieldCheck, UserRound,
+  Settings, ChevronDown, Send, BrainCircuit, Layers3,
 } from "lucide-react";
 
 const navItems = [
@@ -15,9 +17,17 @@ const navItems = [
   { label: "Subscribers",     href: "/admin/subscribers",  icon: Mail },
 ];
 
+const settingsItems = [
+  { label: "Brevo Email",       href: "/admin/settings/brevo",     icon: Send },
+  { label: "LLM Config",        href: "/admin/settings/llm",       icon: BrainCircuit },
+  { label: "Embedding Model",   href: "/admin/settings/embedding", icon: Layers3 },
+];
+
 export default function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const inSettings = pathname.startsWith("/admin/settings");
+  const [settingsOpen, setSettingsOpen] = useState(inSettings);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -102,6 +112,68 @@ export default function AdminSidebar() {
             </a>
           );
         })}
+
+        {/* Settings — collapsible group */}
+        <button
+          onClick={() => setSettingsOpen(o => !o)}
+          className={`w-full relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
+            inSettings && !settingsOpen
+              ? "text-white"
+              : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+          }`}
+        >
+          {inSettings && !settingsOpen && (
+            <motion.span
+              layoutId="admin-nav-active"
+              transition={{ type: "spring", stiffness: 420, damping: 34 }}
+              className="absolute inset-0 rounded-xl shadow-[0_4px_16px_-2px_rgba(224,138,60,0.5)]"
+              style={{ backgroundColor: "var(--brand-red)" }}
+            />
+          )}
+          <span
+            className={`relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
+              inSettings ? "bg-white/15" : "bg-white/5"
+            }`}
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </span>
+          <span className="relative z-10">Settings</span>
+          <ChevronDown
+            className={`relative z-10 ml-auto w-3.5 h-3.5 transition-transform duration-200 ${settingsOpen ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {settingsOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden pl-3"
+            >
+              <div className="border-l border-white/10 ml-4 pl-3 py-1 space-y-0.5">
+                {settingsItems.map(({ label, href, icon: Icon }) => {
+                  const active = pathname === href;
+                  return (
+                    <a
+                      key={href}
+                      href={href}
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                        active
+                          ? "text-white bg-white/10"
+                          : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      {label}
+                    </a>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Admin identity + Logout */}
