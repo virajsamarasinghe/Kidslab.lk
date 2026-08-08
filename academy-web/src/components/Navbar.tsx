@@ -41,9 +41,9 @@ export default function Navbar() {
           : "color-mix(in srgb, var(--brand-paper) 82%, transparent)",
       }}
     >
-      <div className="relative w-full max-w-[1920px] mx-auto px-[clamp(1.5rem,4vw,5rem)] h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
+      <div className="relative w-full px-[clamp(1rem,2vw,2.5rem)] h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2.5 opacity-100 hover:opacity-80 transition-opacity">
+        <a href="#" className="flex items-center gap-2.5 shrink-0 opacity-100 hover:opacity-80 transition-opacity">
           <span
             className="flex items-center justify-center rounded-lg p-0.5 shrink-0"
             style={{ border: "2px solid var(--brand-yellow)" }}
@@ -69,7 +69,7 @@ export default function Navbar() {
         </a>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center justify-center gap-1 md:absolute md:left-1/2 md:-translate-x-1/2">
+        <nav className="hidden md:flex items-center gap-1 md:absolute md:left-1/2 md:-translate-x-1/2">
           {links.map((link) => (
             <a
               key={link.href}
@@ -82,7 +82,7 @@ export default function Navbar() {
         </nav>
 
         {/* CTA */}
-        <div className="flex items-center justify-end gap-1.5">
+        <div className="flex items-center justify-end gap-1.5 shrink-0">
           {/* Language toggle */}
           <div
             className="hidden md:inline-flex items-center rounded-full p-0.5 text-xs font-semibold shrink-0"
@@ -167,7 +167,7 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-white border-t border-slate-100 px-[clamp(1.5rem,4vw,5rem)] py-4 flex flex-col gap-1"
+          className="md:hidden bg-white border-t border-slate-100 px-[clamp(1rem,2vw,2.5rem)] py-4 flex flex-col gap-1"
         >
           {links.map((link) => (
             <a

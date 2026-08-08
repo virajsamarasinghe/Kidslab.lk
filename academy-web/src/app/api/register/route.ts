@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
+import { sendWelcomeEmail } from "@/lib/brevo";
 
 export async function POST(req: NextRequest) {
   try {
@@ -56,6 +57,13 @@ export async function POST(req: NextRequest) {
       city: city?.trim() ?? "",
       interestedCourse: interestedCourse ?? "Robotics & AI",
     });
+
+    // Only send a welcome email when the user provided a real address
+    if (email?.trim()) {
+      sendWelcomeEmail({ name: name.trim(), email: resolvedEmail }).catch((err) =>
+        console.error("[register] failed to send welcome email", err)
+      );
+    }
 
     return NextResponse.json(
       { success: true, message: "Registration successful!" },

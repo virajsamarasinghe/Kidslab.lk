@@ -1648,10 +1648,10 @@ function HomeContent() {
 
         {/* ══ Footer ════════════════════════════════════════════════════ */}
         <footer
-          className="text-white pt-14 pb-10 px-[clamp(1.5rem,4vw,5rem)]"
+          className="text-white pt-14 pb-10 px-[clamp(1rem,2vw,2.5rem)]"
           style={{ backgroundColor: "var(--brand-navy)" }}
         >
-          <div className="w-full max-w-[1920px] mx-auto">
+          <div className="w-full">
             <div className="flex flex-col md:flex-row items-start justify-between gap-12 pb-12 border-b border-white/10">
               {/* Brand */}
               <div className="max-w-[300px]">

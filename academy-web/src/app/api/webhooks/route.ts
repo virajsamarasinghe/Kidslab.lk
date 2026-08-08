@@ -3,6 +3,7 @@ import { Webhook } from "svix";
 import type { WebhookEvent } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
+import { sendWelcomeEmail } from "@/lib/brevo";
 
 // Keeps the MongoDB `User` collection (used by the admin dashboard) in sync
 // with accounts created through Clerk's hosted sign-in/sign-up.
@@ -52,6 +53,13 @@ export async function POST(req: NextRequest) {
       },
       { upsert: true, setDefaultsOnInsert: true }
     );
+
+    // Only on first sign-up, not on later profile edits
+    if (event.type === "user.created") {
+      sendWelcomeEmail({ name, email: email.toLowerCase() }).catch((err) =>
+        console.error("[webhooks] failed to send welcome email", err)
+      );
+    }
   }
 
   if (event.type === "user.deleted") {
