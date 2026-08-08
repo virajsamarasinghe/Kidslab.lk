@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
-import { createSmtpTransport } from "@/lib/brevo";
+import { createSmtpTransport, mergeBrevoInput, resolveSmtp, type BrevoSmtpCredentials } from "@/lib/brevo";
 
 const SECTIONS = ["brevo", "llm", "embedding"] as const;
 type Section = (typeof SECTIONS)[number];
@@ -18,7 +18,7 @@ async function fetchWithTimeout(url: string, init: RequestInit) {
 }
 
 /** Verifies the Brevo SMTP relay — the transport `sendEmail` actually uses. */
-async function testBrevo(smtp: { host: string; port: number; user: string; key: string } | null) {
+async function testBrevo(smtp: BrevoSmtpCredentials | null) {
   if (!smtp) return { success: false, message: "SMTP login and key are required" };
 
   const transport = createSmtpTransport(smtp);
@@ -123,22 +123,7 @@ export async function POST(req: NextRequest) {
   try {
     let result;
     if (section === "brevo") {
-      const smtpKeyIn = incoming.smtpKey as string | undefined;
-      const smtpKey =
-        typeof smtpKeyIn === "string" && smtpKeyIn.includes("••••")
-          ? settings.brevo.smtpKey
-          : smtpKeyIn ?? settings.brevo.smtpKey;
-      const smtpUser = (incoming.smtpUser as string) || settings.brevo.smtpUser;
-      result = await testBrevo(
-        smtpUser && smtpKey
-          ? {
-              host: (incoming.smtpHost as string) || settings.brevo.smtpHost || "smtp-relay.brevo.com",
-              port: Number(incoming.smtpPort || settings.brevo.smtpPort) || 587,
-              user: smtpUser,
-              key: smtpKey,
-            }
-          : null
-      );
+      result = await testBrevo(resolveSmtp(mergeBrevoInput(settings.brevo, incoming)));
     } else if (section === "llm") {
       result = await testLLM(
         (incoming.providerId as string) ?? "",

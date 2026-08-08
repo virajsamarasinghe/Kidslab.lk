@@ -10,6 +10,7 @@ export default function BrevoSettingsPage() {
       title="Brevo Email"
       description="Transactional email used for welcome emails and notifications, sent through the Brevo SMTP relay."
       icon={Send}
+      allowTestEmail
       fields={[
         { key: "senderEmail", label: "Sender Email", placeholder: "hello@kidslab.lk", helper: "Must be a verified sender in Brevo." },
         { key: "senderName", label: "Sender Name", placeholder: "kidslab.lk" },

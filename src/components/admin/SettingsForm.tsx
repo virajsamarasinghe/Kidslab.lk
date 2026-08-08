@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { CheckCircle2, XCircle, Loader2, Save, Zap, type LucideIcon } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Save, Zap, Mail, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,17 +21,21 @@ interface SettingsFormProps {
   description: string;
   icon: LucideIcon;
   fields: SettingsField[];
+  /** Adds a "send a real email to this address" row — email sections only. */
+  allowTestEmail?: boolean;
 }
 
 type Result = { success: boolean; message: string } | null;
 
-export default function SettingsForm({ section, title, description, icon: Icon, fields }: SettingsFormProps) {
+export default function SettingsForm({ section, title, description, icon: Icon, fields, allowTestEmail }: SettingsFormProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<Result>(null);
   const [saved, setSaved] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -74,6 +78,20 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
     const data = await res.json();
     setResult(data);
     setTesting(false);
+  }
+
+  async function handleSendTestEmail() {
+    setSendingTest(true);
+    setResult(null);
+    // Posts the on-screen values too, so the config can be tried before saving.
+    const res = await fetch("/api/settings/test-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: testEmail, data: values }),
+    });
+    const data = await res.json();
+    setResult(data);
+    setSendingTest(false);
   }
 
   return (
@@ -119,6 +137,38 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
                   </div>
                 ))}
               </div>
+
+              {allowTestEmail && (
+                <div className="border-t border-slate-100 pt-4">
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                    Send a Test Email
+                  </Label>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
+                    <div className="flex-1 min-w-0">
+                      <Input
+                        type="email"
+                        value={testEmail}
+                        onChange={e => { setTestEmail(e.target.value); setResult(null); }}
+                        placeholder="you@example.com"
+                        className="border-slate-200 text-sm"
+                      />
+                      <p className="text-[11px] text-slate-400 mt-1">
+                        Delivers a real email using the values above — no need to save first.
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      onClick={handleSendTestEmail}
+                      disabled={sendingTest || !testEmail.trim()}
+                      className="rounded-full text-sm font-semibold border-slate-200 gap-1.5 shrink-0"
+                      style={{ color: "var(--brand-navy)" }}
+                    >
+                      {sendingTest ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                      {sendingTest ? "Sending…" : "Send Test"}
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {result && (
                 <div

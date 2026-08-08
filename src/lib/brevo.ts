@@ -18,22 +18,36 @@ export interface BrevoSmtpCredentials {
   key: string;
 }
 
+export interface BrevoConfigInput {
+  senderEmail?: string;
+  senderName?: string;
+  smtpUser?: string;
+  smtpKey?: string;
+  smtpHost?: string;
+  smtpPort?: number | string;
+}
+
 export async function getBrevoCredentials(): Promise<BrevoCredentials | null> {
   const settings = await getSettings();
-  const senderEmail = settings.brevo.senderEmail || process.env.BREVO_SENDER_EMAIL;
-  const senderName = settings.brevo.senderName || process.env.BREVO_SENDER_NAME || SITE_NAME;
-  const smtp = resolveSmtp(settings.brevo);
+  return buildCredentials(settings.brevo);
+}
+
+/**
+ * Resolves a Brevo config (saved settings, optionally overlaid with unsaved
+ * admin-form values) into usable credentials, falling back to env vars.
+ * Returns null when either the sender or the SMTP login is incomplete.
+ */
+export function buildCredentials(brevo: BrevoConfigInput): BrevoCredentials | null {
+  const senderEmail = brevo.senderEmail || process.env.BREVO_SENDER_EMAIL;
+  const senderName = brevo.senderName || process.env.BREVO_SENDER_NAME || SITE_NAME;
+  const smtp = resolveSmtp(brevo);
 
   if (!senderEmail || !smtp) return null;
   return { senderEmail, senderName, smtp };
 }
 
-function resolveSmtp(brevo: {
-  smtpUser?: string;
-  smtpKey?: string;
-  smtpHost?: string;
-  smtpPort?: number;
-}): BrevoSmtpCredentials | null {
+/** Resolves just the SMTP half of a config — a sender address isn't needed to test the relay. */
+export function resolveSmtp(brevo: BrevoConfigInput): BrevoSmtpCredentials | null {
   const user = brevo.smtpUser || process.env.BREVO_SMTP_USER;
   const key = brevo.smtpKey || process.env.BREVO_SMTP_KEY;
   if (!user || !key) return null;
@@ -42,6 +56,32 @@ function resolveSmtp(brevo: {
     port: Number(brevo.smtpPort || process.env.BREVO_SMTP_PORT || DEFAULT_SMTP_PORT),
     user,
     key,
+  };
+}
+
+/**
+ * Overlays unsaved values from the admin settings form onto the stored config,
+ * so "Test Connection" / "Send Test Email" exercise what's on screen rather
+ * than what was last saved. A `smtpKey` still holding the masked placeholder
+ * means the admin didn't retype it — fall back to the stored secret.
+ */
+export function mergeBrevoInput(
+  stored: BrevoConfigInput,
+  incoming: Record<string, string | number | undefined>
+): BrevoConfigInput {
+  const smtpKeyIn = incoming.smtpKey;
+  const smtpKey =
+    typeof smtpKeyIn === "string" && smtpKeyIn.includes("••••")
+      ? stored.smtpKey
+      : (smtpKeyIn as string | undefined) ?? stored.smtpKey;
+
+  return {
+    senderEmail: (incoming.senderEmail as string) || stored.senderEmail,
+    senderName: (incoming.senderName as string) || stored.senderName,
+    smtpUser: (incoming.smtpUser as string) || stored.smtpUser,
+    smtpKey,
+    smtpHost: (incoming.smtpHost as string) || stored.smtpHost,
+    smtpPort: incoming.smtpPort || stored.smtpPort,
   };
 }
 
@@ -99,6 +139,24 @@ export async function sendEmail(
   });
 }
 
+/** Sends a diagnostic email so an admin can confirm delivery end to end. */
+export async function sendTestEmail(creds: BrevoCredentials, to: string) {
+  await sendEmail(creds, {
+    to,
+    subject: `${SITE_NAME} — SMTP test email`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+        <h2>SMTP is working</h2>
+        <p>This is a test email from the ${SITE_NAME} admin dashboard.</p>
+        <p style="color:#666;font-size:13px;">
+          Sent from <strong>${creds.senderEmail}</strong>
+          via ${creds.smtp.host}:${creds.smtp.port}.
+        </p>
+      </div>
+    `,
+  });
+}
+
 interface SendWelcomeEmailParams {
   name: string;
   email: string;
@@ -107,7 +165,7 @@ interface SendWelcomeEmailParams {
 export async function sendWelcomeEmail({ name, email }: SendWelcomeEmailParams) {
   const creds = await getBrevoCredentials();
   if (!creds) {
-    console.warn("[brevo] No Brevo API key/sender configured — skipping welcome email");
+    console.warn("[brevo] No SMTP credentials/sender configured — skipping welcome email");
     return;
   }
 
