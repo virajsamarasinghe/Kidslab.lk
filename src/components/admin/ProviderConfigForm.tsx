@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { CheckCircle2, XCircle, Loader2, Save, Zap, type LucideIcon } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Save, Zap, Plus, Trash2, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,13 +19,129 @@ interface ProviderConfigFormProps {
   keyPlaceholder?: string;
 }
 
+type StoredEntry = { provider?: string; baseUrl?: string; apiKey?: string; model?: string; priority?: number };
 type Result = { success: boolean; message: string } | null;
 
 const selectClass =
   "h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-sm outline-none transition-colors focus-visible:border-slate-400";
 
+const PRIORITY_LABELS: Record<number, string> = {
+  1: "1 — Try first",
+  2: "2",
+  3: "3 — Default",
+  4: "4",
+  5: "5 — Try last",
+};
+
+// The "llm" section stores a list of providers (with fallback priority); the
+// "embedding" section stores a single provider. Both are edited through this
+// same form — for "llm" we render one card per stored entry plus an "Add
+// provider" affordance; for "embedding" we render a single card as before.
 export default function ProviderConfigForm({ section, title, description, icon: Icon, providers, keyPlaceholder }: ProviderConfigFormProps) {
+  const isList = section === "llm";
   const [loading, setLoading] = useState(true);
+  const [entries, setEntries] = useState<StoredEntry[]>([]);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch("/api/settings");
+    const data = await res.json();
+    const stored = data[section];
+    setEntries(isList ? (Array.isArray(stored) ? stored : []) : [stored ?? {}]);
+    setLoading(false);
+  }, [section, isList]);
+
+  useEffect(() => { load(); }, [load]);
+
+  function addEntry() {
+    setEntries(prev => [...prev, { priority: 3 }]);
+  }
+
+  function removeEntry(index: number) {
+    const entry = entries[index];
+    setEntries(prev => prev.filter((_, i) => i !== index));
+    // Entries loaded from the server always carry a `provider` key (even ""
+    // for an unset one); a freshly added, unsaved row does not — skip the
+    // API call for those since there's nothing persisted to delete yet.
+    if (isList && entry && entry.provider !== undefined) {
+      fetch("/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section, data: { remove: index } }),
+      }).then(() => load());
+    }
+  }
+
+  return (
+    <div className="p-8">
+      <div className="mb-8 flex items-center gap-3">
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+          style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
+        >
+          <Icon className="w-5 h-5" style={{ color: "var(--brand-navy)" }} />
+        </div>
+        <div>
+          <h1
+            className="text-2xl font-bold text-slate-900 tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            {title}
+          </h1>
+          <p className="text-slate-500 text-sm mt-0.5">{description}</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
+      ) : (
+        <div className="space-y-4">
+          {entries.map((entry, index) => (
+            <ProviderEntryCard
+              key={index}
+              section={section}
+              providers={providers}
+              keyPlaceholder={keyPlaceholder}
+              index={index}
+              stored={entry}
+              showPriority={isList}
+              showRemove={isList && entries.length > 1}
+              onRemove={() => removeEntry(index)}
+              onSaved={updated => setEntries(prev => prev.map((e, i) => (i === index ? updated : e)))}
+            />
+          ))}
+
+          {isList && (
+            <Button
+              variant="outline"
+              onClick={addEntry}
+              className="rounded-full text-sm font-semibold border-slate-200 gap-1.5"
+              style={{ color: "var(--brand-navy)" }}
+            >
+              <Plus className="w-4 h-4" /> Add provider
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface ProviderEntryCardProps {
+  section: "llm" | "embedding";
+  providers: ProviderPreset[];
+  keyPlaceholder?: string;
+  index: number;
+  stored: StoredEntry;
+  showPriority: boolean;
+  showRemove: boolean;
+  onRemove: () => void;
+  onSaved: (entry: StoredEntry) => void;
+}
+
+function ProviderEntryCard({
+  section, providers, keyPlaceholder, index, stored, showPriority, showRemove, onRemove, onSaved,
+}: ProviderEntryCardProps) {
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<Result>(null);
@@ -39,10 +155,11 @@ export default function ProviderConfigForm({ section, title, description, icon: 
   const [apiKey, setApiKey] = useState("");
   const [modelValue, setModelValue] = useState<string>(providers[0]?.models[0]?.value ?? CUSTOM_MODEL_VALUE);
   const [customModelName, setCustomModelName] = useState("");
+  const [priority, setPriority] = useState(3);
 
   const activePreset = useMemo(() => findProvider(providers, providerId), [providers, providerId]);
 
-  const applyLoaded = useCallback((data: { provider?: string; baseUrl?: string; apiKey?: string; model?: string }) => {
+  const applyLoaded = useCallback((data: StoredEntry) => {
     const providerRaw = data.provider ?? "";
     const matchedPreset = findProvider(providers, providerRaw);
     // Nothing saved yet — default to the first known provider instead of
@@ -59,6 +176,7 @@ export default function ProviderConfigForm({ section, title, description, icon: 
 
     setBaseUrl(data.baseUrl || preset?.baseUrl || "");
     setApiKey(data.apiKey ?? "");
+    setPriority(data.priority ?? 3);
 
     const modelInPreset = preset?.models.some(m => m.value === data.model);
     if (data.model && modelInPreset) {
@@ -73,15 +191,7 @@ export default function ProviderConfigForm({ section, title, description, icon: 
     }
   }, [providers]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    const res = await fetch("/api/settings");
-    const data = await res.json();
-    applyLoaded(data[section] ?? {});
-    setLoading(false);
-  }, [section, applyLoaded]);
-
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { applyLoaded(stored); }, [applyLoaded, stored]);
 
   function handleProviderChange(id: string) {
     setProviderId(id);
@@ -107,6 +217,7 @@ export default function ProviderConfigForm({ section, title, description, icon: 
       baseUrl,
       apiKey,
       model: modelValue === CUSTOM_MODEL_VALUE ? customModelName : modelValue,
+      ...(showPriority ? { priority, index } : {}),
     };
   }
 
@@ -119,7 +230,9 @@ export default function ProviderConfigForm({ section, title, description, icon: 
       body: JSON.stringify({ section, data: buildPayload() }),
     });
     const data = await res.json();
-    applyLoaded(data);
+    const savedEntry = showPriority ? data[index] : data;
+    applyLoaded(savedEntry);
+    onSaved(savedEntry);
     setSaving(false);
     setSaved(true);
   }
@@ -138,164 +251,164 @@ export default function ProviderConfigForm({ section, title, description, icon: 
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
-        <div
-          className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-          style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
-        >
-          <Icon className="w-5 h-5" style={{ color: "var(--brand-navy)" }} />
-        </div>
-        <div>
-          <h1
-            className="text-2xl font-bold text-slate-900 tracking-tight"
-            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-          >
-            {title}
-          </h1>
-          <p className="text-slate-500 text-sm mt-0.5">{description}</p>
-        </div>
-      </div>
+    <Card className="pcb-card border-slate-100 shadow-sm p-6">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div>
+            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              Provider
+            </Label>
+            <select
+              className={selectClass}
+              value={providerId}
+              onChange={e => handleProviderChange(e.target.value)}
+            >
+              {providers.map(p => (
+                <option key={p.id} value={p.id}>{p.label}</option>
+              ))}
+              <option value={CUSTOM_PROVIDER_ID}>Custom / Other…</option>
+            </select>
+          </div>
 
-      <div className="w-full">
-        <Card className="pcb-card border-slate-100 shadow-sm p-6">
-          {loading ? (
-            <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
-          ) : (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    Provider
-                  </Label>
-                  <select
-                    className={selectClass}
-                    value={providerId}
-                    onChange={e => handleProviderChange(e.target.value)}
-                  >
-                    {providers.map(p => (
-                      <option key={p.id} value={p.id}>{p.label}</option>
-                    ))}
-                    <option value={CUSTOM_PROVIDER_ID}>Custom / Other…</option>
-                  </select>
-                </div>
+          <div>
+            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              Model
+            </Label>
+            <select
+              className={selectClass}
+              value={modelValue}
+              onChange={e => handleModelChange(e.target.value)}
+            >
+              {activePreset?.models.map(m => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+              <option value={CUSTOM_MODEL_VALUE}>Custom / Other…</option>
+            </select>
+          </div>
 
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    Model
-                  </Label>
-                  <select
-                    className={selectClass}
-                    value={modelValue}
-                    onChange={e => handleModelChange(e.target.value)}
-                  >
-                    {activePreset?.models.map(m => (
-                      <option key={m.value} value={m.value}>{m.label}</option>
-                    ))}
-                    <option value={CUSTOM_MODEL_VALUE}>Custom / Other…</option>
-                  </select>
-                </div>
-
-                {providerId === CUSTOM_PROVIDER_ID && (
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                      Provider Name
-                    </Label>
-                    <Input
-                      value={customProviderName}
-                      onChange={e => { setCustomProviderName(e.target.value); setSaved(false); setResult(null); }}
-                      placeholder="e.g. My Self-hosted Model"
-                      className="border-slate-200 text-sm"
-                    />
-                  </div>
-                )}
-
-                {modelValue === CUSTOM_MODEL_VALUE && (
-                  <div>
-                    <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                      Model Name
-                    </Label>
-                    <Input
-                      value={customModelName}
-                      onChange={e => { setCustomModelName(e.target.value); setSaved(false); setResult(null); }}
-                      placeholder="e.g. gpt-4o-mini"
-                      className="border-slate-200 text-sm"
-                    />
-                  </div>
-                )}
-
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    Base URL
-                  </Label>
-                  <Input
-                    value={baseUrl}
-                    onChange={e => { setBaseUrl(e.target.value); setSaved(false); setResult(null); }}
-                    placeholder="https://api.openai.com/v1"
-                    className="border-slate-200 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    API Key
-                  </Label>
-                  <Input
-                    type="password"
-                    value={apiKey}
-                    onChange={e => { setApiKey(e.target.value); setSaved(false); setResult(null); }}
-                    placeholder={keyPlaceholder ?? "sk-…"}
-                    className="border-slate-200 text-sm"
-                  />
-                </div>
-              </div>
-
-              {result && (
-                <div
-                  className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
-                    result.success
-                      ? "bg-green-50 border-green-200 text-green-700"
-                      : "bg-red-50 border-red-200 text-red-600"
-                  }`}
-                >
-                  {result.success ? (
-                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-                  ) : (
-                    <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                  )}
-                  <span className="break-words">{result.message}</span>
-                </div>
-              )}
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  {saving ? "Saving…" : "Save"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleTest}
-                  disabled={testing}
-                  className="rounded-full text-sm font-semibold border-slate-200 gap-1.5"
-                  style={{ color: "var(--brand-navy)" }}
-                >
-                  {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                  {testing ? "Testing…" : "Test Connection"}
-                </Button>
-                {saved && (
-                  <span className="text-xs font-medium text-green-600 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Saved
-                  </span>
-                )}
-              </div>
+          {showPriority && (
+            <div>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                Priority
+              </Label>
+              <select
+                className={selectClass}
+                value={priority}
+                onChange={e => { setPriority(Number(e.target.value)); setSaved(false); setResult(null); }}
+              >
+                {[1, 2, 3, 4, 5].map(p => (
+                  <option key={p} value={p}>{PRIORITY_LABELS[p]}</option>
+                ))}
+              </select>
             </div>
           )}
-        </Card>
+
+          {providerId === CUSTOM_PROVIDER_ID && (
+            <div>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                Provider Name
+              </Label>
+              <Input
+                value={customProviderName}
+                onChange={e => { setCustomProviderName(e.target.value); setSaved(false); setResult(null); }}
+                placeholder="e.g. My Self-hosted Model"
+                className="border-slate-200 text-sm"
+              />
+            </div>
+          )}
+
+          {modelValue === CUSTOM_MODEL_VALUE && (
+            <div>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                Model Name
+              </Label>
+              <Input
+                value={customModelName}
+                onChange={e => { setCustomModelName(e.target.value); setSaved(false); setResult(null); }}
+                placeholder="e.g. gpt-4o-mini"
+                className="border-slate-200 text-sm"
+              />
+            </div>
+          )}
+
+          <div>
+            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              Base URL
+            </Label>
+            <Input
+              value={baseUrl}
+              onChange={e => { setBaseUrl(e.target.value); setSaved(false); setResult(null); }}
+              placeholder="https://api.openai.com/v1"
+              className="border-slate-200 text-sm"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+              API Key
+            </Label>
+            <Input
+              type="password"
+              value={apiKey}
+              onChange={e => { setApiKey(e.target.value); setSaved(false); setResult(null); }}
+              placeholder={keyPlaceholder ?? "sk-…"}
+              className="border-slate-200 text-sm"
+            />
+          </div>
+        </div>
+
+        {result && (
+          <div
+            className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
+              result.success
+                ? "bg-green-50 border-green-200 text-green-700"
+                : "bg-red-50 border-red-200 text-red-600"
+            }`}
+          >
+            {result.success ? (
+              <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+            ) : (
+              <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+            )}
+            <span className="break-words">{result.message}</span>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 pt-2">
+          <Button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            {saving ? "Saving…" : "Save"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleTest}
+            disabled={testing}
+            className="rounded-full text-sm font-semibold border-slate-200 gap-1.5"
+            style={{ color: "var(--brand-navy)" }}
+          >
+            {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+            {testing ? "Testing…" : "Test Connection"}
+          </Button>
+          {showRemove && (
+            <Button
+              variant="outline"
+              onClick={onRemove}
+              className="rounded-full text-sm font-semibold border-slate-200 gap-1.5 text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="w-4 h-4" /> Remove
+            </Button>
+          )}
+          {saved && (
+            <span className="text-xs font-medium text-green-600 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+            </span>
+          )}
+        </div>
       </div>
-    </div>
+    </Card>
   );
 }

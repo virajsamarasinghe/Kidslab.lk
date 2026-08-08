@@ -78,7 +78,7 @@ export default function AdminSubscribers() {
                   <td className="px-5 py-3.5">
                     <button
                       onClick={() => setDeleteId(s._id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="p-2.5 -m-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

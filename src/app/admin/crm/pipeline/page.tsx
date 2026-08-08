@@ -91,7 +91,7 @@ function StageColumn({ stage, contacts, colIdx }: { stage: PipelineStage; contac
   const { setNodeRef, isOver } = useDroppable({ id: stage });
 
   return (
-    <div className="min-w-0">
+    <div className="shrink-0 w-[85vw] max-w-xs snap-start sm:w-auto sm:max-w-none sm:shrink sm:min-w-0">
       <div className="flex items-center gap-2 mb-3 px-1">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STAGE_ACCENTS[stage] }} />
         <h2 className="text-sm font-semibold text-slate-700">{STAGE_LABELS[stage]}</h2>
@@ -228,7 +228,7 @@ export default function CrmPipelinePage() {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 items-start">
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-8 px-8 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 xl:grid-cols-5 sm:overflow-visible sm:snap-none items-start">
             {PIPELINE_STAGES.map((stage, colIdx) => (
               <StageColumn key={stage} stage={stage} contacts={columns[stage]} colIdx={colIdx} />
             ))}

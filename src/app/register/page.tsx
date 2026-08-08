@@ -265,7 +265,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Phone + Age */}
-            <div className="grid grid-cols-2" style={{ gap: "clamp(0.75rem, 1.2vw, 1.75rem)" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: "clamp(0.75rem, 1.2vw, 1.75rem)" }}>
               <div>
                 <Label className="reg-label text-slate-500 block" style={{ marginBottom: "clamp(0.3rem, 0.5vw, 0.75rem)" }}>
                   Phone <span style={{ color: "var(--brand-red)" }}>*</span>
@@ -301,7 +301,7 @@ export default function RegisterPage() {
             </div>
 
             {/* Parent + City */}
-            <div className="grid grid-cols-2" style={{ gap: "clamp(0.75rem, 1.2vw, 1.75rem)" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: "clamp(0.75rem, 1.2vw, 1.75rem)" }}>
               <div>
                 <Label className="reg-label text-slate-500 block" style={{ marginBottom: "clamp(0.3rem, 0.5vw, 0.75rem)" }}>
                   Parent / Guardian

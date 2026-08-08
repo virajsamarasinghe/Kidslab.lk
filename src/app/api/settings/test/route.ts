@@ -103,24 +103,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid section" }, { status: 400 });
   }
 
-  const incoming = (body.data ?? {}) as Record<string, string>;
+  const incoming = (body.data ?? {}) as Record<string, string | number>;
   const settings = await getSettings();
-  const stored = section === "brevo" ? settings.brevo : section === "llm" ? settings.llm : settings.embedding;
+  const storedApiKey =
+    section === "brevo" ? settings.brevo.apiKey :
+    section === "llm" ? (settings.llm[Number(incoming.index)]?.apiKey ?? "") :
+    settings.embedding.apiKey;
 
   // Resolve a still-masked apiKey field back to the real stored secret.
+  const apiKeyIn = incoming.apiKey as string | undefined;
   const apiKey =
-    typeof incoming.apiKey === "string" && incoming.apiKey.includes("••••")
-      ? stored.apiKey
-      : incoming.apiKey ?? stored.apiKey;
+    typeof apiKeyIn === "string" && apiKeyIn.includes("••••")
+      ? storedApiKey
+      : apiKeyIn ?? storedApiKey;
 
   try {
     let result;
     if (section === "brevo") {
       result = await testBrevo(apiKey);
     } else if (section === "llm") {
-      result = await testLLM(incoming.providerId ?? "", incoming.baseUrl ?? "", apiKey, incoming.model ?? "");
+      result = await testLLM(
+        (incoming.providerId as string) ?? "",
+        (incoming.baseUrl as string) ?? "",
+        apiKey,
+        (incoming.model as string) ?? ""
+      );
     } else {
-      result = await testEmbedding(incoming.baseUrl ?? "", apiKey, incoming.model ?? "");
+      result = await testEmbedding((incoming.baseUrl as string) ?? "", apiKey, (incoming.model as string) ?? "");
     }
     return NextResponse.json(result);
   } catch (err) {

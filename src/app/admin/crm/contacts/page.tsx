@@ -141,7 +141,7 @@ export default function CrmContactsPage() {
                       value={c.stage}
                       onChange={e => updateStage(c.email, e.target.value as PipelineStage)}
                       disabled={savingStage}
-                      className={`text-xs font-medium rounded-full border px-2.5 py-1 outline-none ${STAGE_COLORS[c.stage]}`}
+                      className={`text-xs font-medium rounded-full border px-2.5 py-1.5 outline-none ${STAGE_COLORS[c.stage]}`}
                     >
                       {Object.entries(STAGE_LABELS).map(([value, label]) => (
                         <option key={value} value={value}>{label}</option>
@@ -152,7 +152,7 @@ export default function CrmContactsPage() {
                   <td className="px-5 py-3.5">
                     <button
                       onClick={() => setActive(c)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
+                      className="p-2.5 -m-1 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
                     >
                       <MessageSquarePlus className="w-3.5 h-3.5" />
                     </button>

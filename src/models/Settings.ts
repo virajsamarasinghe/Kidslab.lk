@@ -6,11 +6,13 @@ interface BrevoConfig {
   senderName: string;
 }
 
-interface LLMConfig {
+export interface LLMConfig {
   provider: string;
   baseUrl: string;
   apiKey: string;
   model: string;
+  /** Fallback order when multiple LLM providers are configured — 1 tried first, 5 last. */
+  priority: number;
 }
 
 interface EmbeddingConfig {
@@ -22,7 +24,7 @@ interface EmbeddingConfig {
 
 export interface ISettings extends Document {
   brevo: BrevoConfig;
-  llm: LLMConfig;
+  llm: LLMConfig[];
   embedding: EmbeddingConfig;
 }
 
@@ -41,6 +43,7 @@ const LLMSchema = new Schema<LLMConfig>(
     baseUrl:  { type: String, default: "" },
     apiKey:   { type: String, default: "" },
     model:    { type: String, default: "" },
+    priority: { type: Number, default: 3, min: 1, max: 5 },
   },
   { _id: false }
 );
@@ -58,7 +61,7 @@ const EmbeddingSchema = new Schema<EmbeddingConfig>(
 const SettingsSchema = new Schema<ISettings>(
   {
     brevo:     { type: BrevoSchema,     default: () => ({}) },
-    llm:       { type: LLMSchema,       default: () => ({}) },
+    llm:       { type: [LLMSchema],     default: () => [] },
     embedding: { type: EmbeddingSchema, default: () => ({}) },
   },
   { timestamps: true }

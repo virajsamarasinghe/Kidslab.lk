@@ -614,17 +614,17 @@ function HomeContent({ courses }: { courses: Course[] }) {
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.58 }}
-              className="mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 xl:gap-6 max-w-4xl mx-auto"
+              className="mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 xl:gap-6 max-w-4xl mx-auto"
             >
               {stats.map(({ value, label }, i) => (
                 <div
                   key={label}
-                  className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm px-6 xl:px-8 py-4 lg:py-4 xl:py-7 flex flex-col items-center text-center"
+                  className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm px-3 sm:px-6 xl:px-8 py-3.5 sm:py-4 xl:py-7 flex flex-col items-center text-center min-w-0"
                 >
                   <p
                     className="font-extrabold text-slate-900 leading-none tracking-tight"
                     style={{
-                      fontSize: "1.625rem",
+                      fontSize: "clamp(1.25rem, 5.5vw, 1.625rem)",
                       fontFamily: "var(--font-display)",
                     }}
                   >
@@ -632,7 +632,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                   </p>
                   <p
                     className="text-slate-400 mt-1"
-                    style={{ fontSize: "0.8125rem" }}
+                    style={{ fontSize: "clamp(0.6875rem, 2.6vw, 0.8125rem)" }}
                   >
                     {statLabels[i]}
                   </p>
@@ -660,7 +660,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                 <span className="font-bold text-white">
                   {t("universityBanner.bold")}
                 </span>
-                <span className="hidden sm:inline text-blue-300 mx-2">·</span>
+                <span className="text-blue-300 mx-1.5 sm:mx-2">·</span>
                 <span className="inline-flex items-center gap-1 text-blue-100">
                   <MapPin className="w-3 h-3" /> {t("universityBanner.location")}
                 </span>
@@ -1464,7 +1464,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
               </div>
 
               {/* Link columns */}
-              <div className="grid grid-cols-2 gap-x-16 gap-y-3">
+              <div className="grid grid-cols-2 gap-x-8 sm:gap-x-16 gap-y-3">
                 <div>
                   <p className="text-label text-slate-500 mb-4">{t("footer.programsHeading")}</p>
                   {(t.raw("footer.programLinks") as string[]).map((l) => (

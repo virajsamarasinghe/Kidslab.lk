@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { Plus, Trash2, Pencil, X, Mail, UserRound } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { Plus, Trash2, Pencil, X, Mail, UserRound, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,9 @@ export default function AdminInstructors() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<Partial<Instructor> | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +57,27 @@ export default function AdminInstructors() {
     setSaving(false);
     setForm(null);
     load();
+  }
+
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    setUploading(true);
+    setUploadError("");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/instructors/photo", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      setForm(f => ({ ...f, photo: data.photo }));
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function handleDelete() {
@@ -98,7 +122,7 @@ export default function AdminInstructors() {
           </p>
         </div>
         <Button
-          onClick={() => setForm({ ...EMPTY })}
+          onClick={() => { setForm({ ...EMPTY }); setUploadError(""); }}
           className="btn-brand-navy text-white rounded-full text-sm font-semibold"
         >
           <Plus className="w-4 h-4 mr-1.5" /> Add Instructor
@@ -111,7 +135,7 @@ export default function AdminInstructors() {
         ) : instructors.length === 0 ? (
           <div className="col-span-3 text-center py-16">
             <p className="text-slate-400 mb-4">No instructors yet</p>
-            <Button onClick={() => setForm({ ...EMPTY })} className="btn-brand-navy text-white rounded-full">
+            <Button onClick={() => { setForm({ ...EMPTY }); setUploadError(""); }} className="btn-brand-navy text-white rounded-full">
               <Plus className="w-4 h-4 mr-1.5" /> Add First Instructor
             </Button>
           </div>
@@ -146,14 +170,14 @@ export default function AdminInstructors() {
               <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
                 <div className="flex-1" />
                 <button
-                  onClick={() => setForm({ ...ins })}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
+                  onClick={() => { setForm({ ...ins }); setUploadError(""); }}
+                  className="p-2.5 -m-1 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => setDeleteId(ins._id)}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                  className="p-2.5 -m-1 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -175,10 +199,49 @@ export default function AdminInstructors() {
               </button>
             </div>
             <div className="p-6 space-y-4">
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Photo</Label>
+                <div className="flex items-center gap-4">
+                  <div className="relative shrink-0">
+                    <div
+                      className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-white"
+                      style={{ background: "linear-gradient(135deg, var(--brand-navy), var(--brand-blue))" }}
+                    >
+                      {form?.photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={form.photo} alt={form.name || "Instructor"} className="w-full h-full object-cover" />
+                      ) : (
+                        <UserRound className="w-6 h-6" />
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                      className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      aria-label="Change instructor photo"
+                    >
+                      {uploading ? (
+                        <Loader2 className="w-3 h-3 animate-spin" style={{ color: "var(--brand-navy)" }} />
+                      ) : (
+                        <Camera className="w-3 h-3" style={{ color: "var(--brand-navy)" }} />
+                      )}
+                    </button>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif"
+                      className="hidden"
+                      onChange={handlePhotoChange}
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500">JPG, PNG, WEBP or GIF. Max 5MB.</p>
+                </div>
+                {uploadError && <p className="text-xs text-red-600 mt-1.5">{uploadError}</p>}
+              </div>
               {field("name",  "Full Name")}
               {field("title", "Title / Role")}
               {field("bio",   "Short Bio", true)}
-              {field("photo", "Photo URL")}
               {field("email", "Email")}
             </div>
             <div className="px-6 pb-6 flex gap-3">
