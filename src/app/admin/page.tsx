@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import {
-  Users, BookOpen, CheckCircle, Mail, ArrowRight, ArrowUpRight, ArrowDownRight,
-  GraduationCap, Contact2, Send, Award, MapPin, TrendingUp,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, ArrowDownRight, MapPin, TrendingUp } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid,
@@ -98,32 +95,58 @@ const statusChartConfig = {
   inactive: { label: "Inactive", color: "var(--color-chart-2)" },
 } satisfies ChartConfig;
 
+interface Kpi {
+  label: string;
+  value: number | null;
+  hint: string;
+  accent: string;
+  delta?: number;
+}
+
+function KpiTile({ label, value, hint, accent, delta }: Kpi) {
+  const loading = value === null;
+  return (
+    <Card className="pcb-card border-slate-100 shadow-sm overflow-hidden">
+      <CardContent className="relative px-5 py-4">
+        <span className="absolute left-0 top-4 bottom-4 w-[3px] rounded-r-full" style={{ backgroundColor: accent }} />
+        <div className="pl-3.5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">{label}</p>
+          <div className="flex items-baseline gap-2 mt-2">
+            {loading ? (
+              <span className="block h-8 w-16 rounded-md bg-slate-100 animate-pulse" />
+            ) : (
+              <span className="text-[28px] leading-none font-extrabold text-slate-900 tabular-nums tracking-tight">
+                {value.toLocaleString()}
+              </span>
+            )}
+            {!loading && delta !== undefined && (
+              <span
+                className={`flex items-center gap-0.5 text-[11px] font-semibold ${
+                  delta >= 0 ? "text-green-700" : "text-red-600"
+                }`}
+              >
+                {delta >= 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                {Math.abs(delta)}%
+              </span>
+            )}
+          </div>
+          {loading ? (
+            <span className="block h-3 w-24 rounded bg-slate-100 animate-pulse mt-2.5" />
+          ) : (
+            <p className="text-xs text-slate-400 mt-2">{hint}</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
     fetch("/api/stats").then(r => r.json()).then(setStats);
   }, []);
-
-  const cards = [
-    { label: "Total Students", value: stats?.totalUsers ?? "—", icon: Users, bg: "rgba(15,36,24,0.06)", color: "var(--brand-navy)" },
-    { label: "Active Courses", value: stats ? `${stats.activeCourses}/${stats.totalCourses}` : "—", icon: BookOpen, bg: "rgba(224,138,60,0.12)", color: "var(--brand-red)" },
-    { label: "Active Students", value: stats?.activeUsers ?? "—", icon: CheckCircle, bg: "rgba(22,163,74,0.10)", color: "#16a34a" },
-    { label: "Newsletter Subscribers", value: stats?.totalSubscribers ?? "—", icon: Mail, bg: "rgba(43,95,224,0.10)", color: "var(--brand-blue)" },
-  ];
-
-  const secondaryCards = [
-    { label: "Instructors", value: stats?.totalInstructors ?? "—", icon: GraduationCap, bg: "rgba(147,51,234,0.10)", color: "#9333ea" },
-    { label: "CRM Contacts", value: stats?.totalContacts ?? "—", icon: Contact2, bg: "rgba(43,95,224,0.10)", color: "var(--brand-blue)" },
-    { label: "Campaigns Sent", value: stats ? `${stats.campaignsSent}/${stats.totalCampaigns}` : "—", icon: Send, bg: "rgba(224,138,60,0.12)", color: "var(--brand-red)" },
-    {
-      label: "Enrolled → Alumni",
-      value: stats ? stats.pipeline.find(p => p.stage === "enrolled")?.count ?? 0 : "—",
-      icon: Award,
-      bg: "rgba(22,163,74,0.10)",
-      color: "#16a34a",
-    },
-  ];
 
   const pipeline = stats?.pipeline ?? [];
   const pipelineTotal = pipeline.reduce((sum, p) => sum + p.count, 0);
@@ -145,6 +168,61 @@ export default function AdminDashboard() {
 
   const mappedRegistrations = stats ? stats.mapCities.reduce((sum, c) => sum + c.count, 0) : 0;
 
+  const activeShare =
+    stats && stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0;
+
+  const kpis: Kpi[] = [
+    {
+      label: "Total Students",
+      value: stats?.totalUsers ?? null,
+      hint: `${stats?.usersThisWeek ?? 0} joined this week`,
+      accent: "var(--brand-navy)",
+      delta: growth,
+    },
+    {
+      label: "Active Students",
+      value: stats?.activeUsers ?? null,
+      hint: `${activeShare}% of all students`,
+      accent: "#16a34a",
+    },
+    {
+      label: "Active Courses",
+      value: stats?.activeCourses ?? null,
+      hint: `of ${stats?.totalCourses ?? 0} courses published`,
+      accent: "var(--brand-red)",
+    },
+    {
+      label: "Subscribers",
+      value: stats?.totalSubscribers ?? null,
+      hint: "opted into the newsletter",
+      accent: "var(--brand-blue)",
+    },
+    {
+      label: "Instructors",
+      value: stats?.totalInstructors ?? null,
+      hint: "on the teaching team",
+      accent: "#9333ea",
+    },
+    {
+      label: "CRM Contacts",
+      value: stats?.totalContacts ?? null,
+      hint: `${pipelineTotal} tracked in the pipeline`,
+      accent: "var(--brand-blue)",
+    },
+    {
+      label: "Campaigns Sent",
+      value: stats?.campaignsSent ?? null,
+      hint: `of ${stats?.totalCampaigns ?? 0} created`,
+      accent: "var(--brand-red)",
+    },
+    {
+      label: "Enrolled",
+      value: stats ? enrolledCount : null,
+      hint: `${conversionRate}% pipeline conversion`,
+      accent: "#16a34a",
+    },
+  ];
+
   return (
     <div className="p-8">
       {/* Header */}
@@ -158,37 +236,10 @@ export default function AdminDashboard() {
         <p className="text-slate-500 text-sm mt-1">Welcome back, Admin · <span style={{ color: "var(--brand-navy)" }}>kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk</span></p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-        {cards.map(({ label, value, icon: Icon, bg, color }) => (
-          <Card key={label} className="pcb-card border-slate-100 shadow-sm">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: bg }}>
-                <Icon className="w-6 h-6" style={{ color }} />
-              </div>
-              <div>
-                <p className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">{value}</p>
-                <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Secondary stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
-        {secondaryCards.map(({ label, value, icon: Icon, bg, color }) => (
-          <Card key={label} className="pcb-card border-slate-100 shadow-sm">
-            <CardContent className="p-5 flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: bg }}>
-                <Icon className="w-5 h-5" style={{ color }} />
-              </div>
-              <div>
-                <p className="text-xl font-extrabold text-slate-900 tracking-tight leading-none">{value}</p>
-                <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
-              </div>
-            </CardContent>
-          </Card>
+      {/* KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+        {kpis.map(kpi => (
+          <KpiTile key={kpi.label} {...kpi} />
         ))}
       </div>
 
