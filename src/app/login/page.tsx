@@ -3,10 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Eye, EyeOff, Lock, Mail, Bot } from "lucide-react";
+import { motion } from "motion/react";
+import {
+  Eye, EyeOff, Lock, Mail, ArrowRight, Users, BookOpen, BarChart3, ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const highlights = [
+  { icon: Users,     label: "Track every student registration in real time" },
+  { icon: BookOpen,  label: "Manage programs, instructors & schedules" },
+  { icon: BarChart3, label: "See growth trends at a glance" },
+];
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,58 +44,133 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen relative flex items-center justify-center px-4 overflow-hidden"
-      style={{ backgroundColor: "var(--brand-paper)" }}
-    >
-      {/* PCB layout grid — same signature backdrop as the marketing hero */}
+    <div className="min-h-screen flex" style={{ backgroundColor: "var(--brand-paper)" }}>
+      {/* ── Left — brand panel ── */}
       <div
-        className="absolute inset-0 opacity-[0.06] pointer-events-none"
+        className="hidden lg:flex lg:w-[46%] relative flex-col justify-between overflow-hidden px-12 py-12"
         style={{
-          backgroundImage:
-            "linear-gradient(var(--brand-blue) 1px, transparent 1px), linear-gradient(90deg, var(--brand-blue) 1px, transparent 1px)",
-          backgroundSize: "34px 34px",
+          background: "linear-gradient(160deg, var(--brand-navy) 0%, #123a2a 55%, #0d2560 100%)",
         }}
-      />
-      <div
-        className="absolute inset-0 opacity-[0.08] pointer-events-none"
-        style={{
-          backgroundImage: "radial-gradient(var(--brand-red) 1.5px, transparent 1.5px)",
-          backgroundSize: "68px 68px",
-          backgroundPosition: "17px 17px",
-        }}
-      />
+      >
+        {/* PCB grid backdrop */}
+        <div
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
+          }}
+        />
+        <div
+          className="absolute -top-24 -right-24 w-96 h-96 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, var(--brand-red), transparent 70%)", opacity: 0.18 }}
+        />
+        <div
+          className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, var(--brand-blue), transparent 70%)", opacity: 0.2 }}
+        />
 
-      <div className="w-full max-w-[400px] relative z-10">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 flex items-center gap-3"
+        >
           <div
-            className="inline-flex w-16 h-16 rounded-2xl items-center justify-center shadow-lg mb-4 p-2.5"
+            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 p-1.5 shadow-lg"
+            style={{ border: "2px solid var(--brand-yellow)" }}
+          >
+            <Image src="/logo.png" alt="kidslab.lk" width={44} height={44} className="w-full h-full object-contain rounded-md" />
+          </div>
+          <span
+            className="text-white font-bold text-lg tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
+          </span>
+        </motion.div>
+
+        {/* Headline + highlights */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="relative z-10"
+        >
+          <h1
+            className="text-white font-bold leading-tight mb-4"
             style={{
-              background:
-                "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
+              fontSize: "clamp(1.75rem, 2.6vw, 2.5rem)",
+              fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif",
+            }}
+          >
+            Everything your academy needs, in one dashboard.
+          </h1>
+          <p className="text-slate-400 text-sm leading-relaxed mb-8 max-w-sm">
+            Sign in to manage students, courses, instructors and enrollment — all in real time.
+          </p>
+          <div className="space-y-3.5">
+            {highlights.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-3">
+                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 shrink-0">
+                  <Icon className="w-4 h-4 text-white" />
+                </span>
+                <span className="text-slate-300 text-sm">{label}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Footer credit */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="relative z-10 flex items-center gap-2 text-slate-500 text-xs"
+        >
+          <ShieldCheck className="w-3.5 h-3.5" style={{ color: "var(--brand-yellow)" }} />
+          University of Ruhuna · Faculty of Engineering
+        </motion.div>
+      </div>
+
+      {/* ── Right — form panel ── */}
+      <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
+        {/* Mobile-only brand mark */}
+        <div className="lg:hidden absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
+          <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 p-1.5"
+            style={{
+              background: "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
               border: "2px solid var(--brand-yellow)",
             }}
           >
-            <Image
-              src="/logo.png"
-              alt="kidslab.lk"
-              width={64}
-              height={64}
-              className="w-full h-full object-contain rounded-md"
-            />
+            <Image src="/logo.png" alt="kidslab.lk" width={36} height={36} className="w-full h-full object-contain rounded-md" />
           </div>
-          <h1
-            className="text-2xl font-bold text-slate-900 tracking-tight"
-            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          <span
+            className="font-bold text-base tracking-tight"
+            style={{ color: "var(--brand-navy)", fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
           >
-            Admin Portal
-          </h1>
-          <p className="text-slate-500 text-sm mt-1"><span style={{ color: "var(--brand-navy)" }}>kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk</span> · Management Dashboard</p>
+            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
+          </span>
         </div>
 
-        {/* Card */}
-        <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/60 p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-[380px]"
+        >
+          <div className="mb-8">
+            <h2
+              className="text-2xl font-bold text-slate-900 tracking-tight"
+              style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+            >
+              Welcome back
+            </h2>
+            <p className="text-slate-500 text-sm mt-1.5">Sign in to access the admin dashboard.</p>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
               <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
@@ -97,7 +181,7 @@ export default function LoginPage() {
                 <Input
                   type="email"
                   placeholder="admin@kidslab.lk"
-                  className="pl-9 border-slate-200 text-sm h-11"
+                  className="pl-9 border-slate-200 text-sm h-11 rounded-xl"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
@@ -114,7 +198,7 @@ export default function LoginPage() {
                 <Input
                   type={show ? "text" : "password"}
                   placeholder="••••••••"
-                  className="pl-9 pr-10 border-slate-200 text-sm h-11"
+                  className="pl-9 pr-10 border-slate-200 text-sm h-11 rounded-xl"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   required
@@ -130,7 +214,7 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
                 {error}
               </div>
             )}
@@ -138,16 +222,17 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="btn-brand-navy w-full text-white font-semibold h-11 rounded-full text-sm tracking-[-0.01em] shadow-sm"
+              className="btn-brand-navy w-full text-white font-semibold h-11 rounded-full text-sm tracking-[-0.01em] shadow-sm gap-1.5"
             >
               {loading ? "Signing in…" : "Sign In to Dashboard"}
+              {!loading && <ArrowRight className="w-4 h-4" />}
             </Button>
           </form>
-        </div>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          University of Ruhuna · Faculty of Engineering
-        </p>
+          <p className="text-center text-xs text-slate-400 mt-8 lg:hidden">
+            University of Ruhuna · Faculty of Engineering
+          </p>
+        </motion.div>
       </div>
     </div>
   );
