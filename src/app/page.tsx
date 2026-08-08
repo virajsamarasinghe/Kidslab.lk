@@ -17,6 +17,7 @@ import {
     ArrowRight,
     Award,
     CheckCircle,
+    ChevronDown,
     ChevronLeft,
     ChevronRight,
     FlaskConical,
@@ -126,6 +127,8 @@ const testimonials = [
     stars: 5,
   },
 ];
+
+const FAQ_COUNT = 10;
 
 const BLUE_GRADIENT = "linear-gradient(to right, var(--brand-blue), #1a3fa0)";
 const COPPER_GRADIENT = "linear-gradient(to right, var(--brand-red), #b8651f)";
@@ -1514,6 +1517,42 @@ function HomeContent() {
                       </div>
                     </div>
                   </div>
+                </AnimateIn>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ══ FAQ ═══════════════════════════════════════════════════════ */}
+        <section id="faq" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <AnimateIn className="text-center mb-16">
+              <SectionLabel>{t("faq.eyebrow")}</SectionLabel>
+              <h2 className="text-display-lg text-slate-900">
+                {t("faq.headingStart")}
+                <span className="bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+                  {t("faq.headingHighlight")}
+                </span>
+              </h2>
+              <p className="text-body-xl text-slate-500 mt-5 max-w-lg mx-auto">
+                {t("faq.subtitle")}
+              </p>
+            </AnimateIn>
+
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: FAQ_COUNT }).map((_, i) => (
+                <AnimateIn key={i} delay={i * 0.04}>
+                  <details className="group pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm open:shadow-md transition-shadow duration-300">
+                    <summary className="flex items-center justify-between gap-4 cursor-pointer list-none p-6 select-none">
+                      <span className="font-semibold text-slate-900 text-body-lg">
+                        {t(`faq.items.${i}.q`)}
+                      </span>
+                      <ChevronDown className="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 group-open:rotate-180" />
+                    </summary>
+                    <p className="text-body-md text-slate-500 px-6 pb-6 -mt-2 leading-[1.75]">
+                      {t(`faq.items.${i}.a`)}
+                    </p>
+                  </details>
                 </AnimateIn>
               ))}
             </div>

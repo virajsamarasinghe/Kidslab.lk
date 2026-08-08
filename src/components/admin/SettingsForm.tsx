@@ -96,7 +96,7 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+      <div className="max-w-3xl">
         <Card className="pcb-card border-slate-100 shadow-sm p-6">
           {loading ? (
             <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
@@ -162,15 +162,6 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
               </div>
             </div>
           )}
-        </Card>
-
-        <Card className="pcb-card border-slate-100 shadow-sm p-6 h-fit">
-          <h3 className="font-semibold text-slate-900 text-sm mb-2">How this is used</h3>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            {section === "brevo"
-              ? "Powers transactional emails sent from the platform, like the welcome email new students receive after registering. The API key is stored securely and never shown again after saving."
-              : "The API key is stored securely and never shown again after saving."}
-          </p>
         </Card>
       </div>
     </div>

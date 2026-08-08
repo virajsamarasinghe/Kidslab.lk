@@ -107,6 +107,19 @@ export default function RegisterPage() {
   /* ── Main page ── */
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "Home", item: "https://kidslab.lk" },
+              { "@type": "ListItem", position: 2, name: "Register", item: "https://kidslab.lk/register" },
+            ],
+          }),
+        }}
+      />
 
       {/* ══ Left panel ══ */}
       <div

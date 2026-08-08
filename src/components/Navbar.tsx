@@ -21,6 +21,7 @@ export default function Navbar() {
     { label: t("programs"), href: "#programs" },
     { label: t("about"), href: "#about" },
     { label: t("team"), href: "#team" },
+    { label: t("faq"), href: "#faq" },
   ];
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 40));

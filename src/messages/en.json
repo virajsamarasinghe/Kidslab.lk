@@ -3,6 +3,7 @@
     "programs": "Programs",
     "about": "About",
     "team": "Team",
+    "faq": "FAQ",
     "contactMe": "Contact Me",
     "signIn": "Sign In",
     "signUp": "Sign Up",
@@ -125,6 +126,54 @@
       {
         "role": "Parent · Matara",
         "quote": "The quality is outstanding. Real university engineers teaching kids — I'm impressed by how much my son has learned in just 3 months."
+      }
+    ]
+  },
+  "faq": {
+    "eyebrow": "Frequently Asked Questions",
+    "headingStart": "Got ",
+    "headingHighlight": "Questions?",
+    "subtitle": "Everything parents ask us before enrolling — if yours isn't here, reach out on WhatsApp.",
+    "items": [
+      {
+        "q": "What is kidslab.lk?",
+        "a": "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering, based in Galle, Sri Lanka."
+      },
+      {
+        "q": "What age group is the Robotics & AI program for?",
+        "a": "The program is designed for children aged 9 to 14 years old."
+      },
+      {
+        "q": "How much does the Robotics & AI program cost?",
+        "a": "The course fee is LKR 5,000 for 3 months. It can be paid in installments within 3 months. Day 1 is a completely free introductory seminar with no obligation to continue."
+      },
+      {
+        "q": "When is the free seminar?",
+        "a": "The free introductory seminar is on 27 June 2026 at the kidslab.lk Academy in Hapugala, Galle, Sri Lanka. Seats are limited — register at kidslab.lk/register."
+      },
+      {
+        "q": "What will my child learn in the Robotics & AI program?",
+        "a": "Children learn to build real robots using mechanics, sensors, and microcontrollers. The program also covers Artificial Intelligence basics, machine learning concepts, and hands-on project building — all in one 3-month course."
+      },
+      {
+        "q": "Who teaches the classes at kidslab.lk?",
+        "a": "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith — Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics."
+      },
+      {
+        "q": "Where are the kidslab.lk classes held?",
+        "a": "Classes are held at the kidslab.lk Academy in Hapugala, Galle 80000, Sri Lanka."
+      },
+      {
+        "q": "Can I pay the course fee in installments?",
+        "a": "Yes. The LKR 5,000 course fee can be paid in installments spread over 3 months."
+      },
+      {
+        "q": "How do I register for the free seminar or the course?",
+        "a": "Visit kidslab.lk/register and fill in your child's details. You can also contact us via WhatsApp at +94703906478."
+      },
+      {
+        "q": "Is kidslab.lk affiliated with the University of Ruhuna?",
+        "a": "The programs are designed and conducted by Computer Engineering graduates and professionals from the University of Ruhuna, Faculty of Engineering."
       }
     ]
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { CheckCircle2, XCircle, Loader2, Save, Zap, ExternalLink, type LucideIcon } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Save, Zap, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,29 +31,41 @@ export default function ProviderConfigForm({ section, title, description, icon: 
   const [result, setResult] = useState<Result>(null);
   const [saved, setSaved] = useState(false);
 
-  const [providerId, setProviderId] = useState(CUSTOM_PROVIDER_ID);
+  const defaultProviderId = providers[0]?.id ?? CUSTOM_PROVIDER_ID;
+
+  const [providerId, setProviderId] = useState(defaultProviderId);
   const [customProviderName, setCustomProviderName] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
+  const [baseUrl, setBaseUrl] = useState(providers[0]?.baseUrl ?? "");
   const [apiKey, setApiKey] = useState("");
-  const [modelValue, setModelValue] = useState<string>(CUSTOM_MODEL_VALUE);
+  const [modelValue, setModelValue] = useState<string>(providers[0]?.models[0]?.value ?? CUSTOM_MODEL_VALUE);
   const [customModelName, setCustomModelName] = useState("");
 
   const activePreset = useMemo(() => findProvider(providers, providerId), [providers, providerId]);
 
   const applyLoaded = useCallback((data: { provider?: string; baseUrl?: string; apiKey?: string; model?: string }) => {
-    const preset = findProvider(providers, data.provider ?? "");
+    const providerRaw = data.provider ?? "";
+    const matchedPreset = findProvider(providers, providerRaw);
+    // Nothing saved yet — default to the first known provider instead of
+    // "Custom" so the model dropdown isn't left empty on first visit.
+    const preset = matchedPreset ?? (!providerRaw ? providers[0] : undefined);
+
     if (preset) {
       setProviderId(preset.id);
       setCustomProviderName("");
     } else {
       setProviderId(CUSTOM_PROVIDER_ID);
-      setCustomProviderName(data.provider ?? "");
+      setCustomProviderName(providerRaw);
     }
-    setBaseUrl(data.baseUrl ?? preset?.baseUrl ?? "");
+
+    setBaseUrl(data.baseUrl || preset?.baseUrl || "");
     setApiKey(data.apiKey ?? "");
+
     const modelInPreset = preset?.models.some(m => m.value === data.model);
     if (data.model && modelInPreset) {
       setModelValue(data.model);
+      setCustomModelName("");
+    } else if (!data.model && preset) {
+      setModelValue(preset.models[0]?.value ?? CUSTOM_MODEL_VALUE);
       setCustomModelName("");
     } else {
       setModelValue(CUSTOM_MODEL_VALUE);
@@ -145,8 +157,7 @@ export default function ProviderConfigForm({ section, title, description, icon: 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
-        {/* Form */}
+      <div className="max-w-3xl">
         <Card className="pcb-card border-slate-100 shadow-sm p-6">
           {loading ? (
             <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
@@ -284,40 +295,6 @@ export default function ProviderConfigForm({ section, title, description, icon: 
             </div>
           )}
         </Card>
-
-        {/* Info panel */}
-        <div className="space-y-5">
-          <Card className="pcb-card border-slate-100 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-900 text-sm mb-3">
-              {activePreset ? activePreset.label : "Custom provider"}
-            </h3>
-            <p className="text-slate-500 text-sm leading-relaxed mb-4">
-              {activePreset
-                ? `Base URL and model list are pre-filled for ${activePreset.label}. You can still edit the base URL if you're using a proxy, region-specific endpoint, or self-hosted gateway.`
-                : "Enter any OpenAI-compatible base URL, API key, and model name manually."}
-            </p>
-            {activePreset && (
-              <a
-                href={activePreset.docsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold hover:underline"
-                style={{ color: "var(--brand-red)" }}
-              >
-                Get an API key <ExternalLink className="w-3 h-3" />
-              </a>
-            )}
-          </Card>
-
-          <Card className="pcb-card border-slate-100 shadow-sm p-6">
-            <h3 className="font-semibold text-slate-900 text-sm mb-2">How this is used</h3>
-            <p className="text-slate-500 text-sm leading-relaxed">
-              {section === "llm"
-                ? "Once connected, this model can power any AI-assisted features added to the dashboard — the key is stored securely and never shown again after saving."
-                : "Once connected, this embedding model can power search, similarity, or RAG-style features added to the dashboard — the key is stored securely and never shown again after saving."}
-            </p>
-          </Card>
-        </div>
       </div>
     </div>
   );
