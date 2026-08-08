@@ -2,17 +2,17 @@
 
 import { motion, useScroll, useMotionValueEvent } from "motion/react";
 import { useState } from "react";
-import { ArrowRight, Menu, Phone, X } from "lucide-react";
+import { Menu, Phone, X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
+import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/locale-context";
-import { useRegisterModal } from "@/lib/register-modal-context";
 
 export default function Navbar() {
   const t = useTranslations("nav");
   const { locale, setLocale } = useLocale();
-  const { openRegisterModal } = useRegisterModal();
+  const { isLoaded, isSignedIn } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { scrollY } = useScroll();
@@ -124,26 +124,34 @@ export default function Navbar() {
               {t("contactMe")}
             </Button>
           </a>
-          <motion.div
-            className="hidden md:block rounded-full shrink-0"
-            animate={{
-              boxShadow: [
-                "0 0 0 0px rgba(224,138,60,0.45)",
-                "0 0 0 5px rgba(224,138,60,0.12)",
-                "0 0 0 10px rgba(224,138,60,0)",
-              ],
-            }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
-          >
-            <Button
-              onClick={openRegisterModal}
-              size="sm"
-              className="btn-register btn-brand-copper gap-1.5 rounded-full text-white font-semibold shadow-sm whitespace-nowrap"
-            >
-              {t("register")}
-              <ArrowRight className="size-3.5" />
-            </Button>
-          </motion.div>
+          <div className="hidden md:flex items-center gap-1.5 shrink-0">
+            {isLoaded && (
+              isSignedIn ? (
+                <UserButton />
+              ) : (
+                <>
+                  <SignInButton mode="modal">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full border-slate-200 font-semibold hover:border-slate-300 hover:bg-slate-50 whitespace-nowrap"
+                      style={{ color: "var(--brand-navy)" }}
+                    >
+                      {t("signIn")}
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button
+                      size="sm"
+                      className="btn-brand-copper rounded-full text-white font-semibold shadow-sm whitespace-nowrap"
+                    >
+                      {t("signUp")}
+                    </Button>
+                  </SignUpButton>
+                </>
+              )
+            )}
+          </div>
           {/* Mobile toggle */}
           <button
             className="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100"
@@ -209,14 +217,38 @@ export default function Navbar() {
               {t("contactMe")}
             </Button>
           </a>
-          <Button
-            size="lg"
-            onClick={() => { setMobileOpen(false); openRegisterModal(); }}
-            className="mt-1 btn-brand-copper w-full gap-2 text-white font-semibold rounded-full"
-          >
-            {t("register")}
-            <ArrowRight className="size-4" />
-          </Button>
+
+          {isLoaded && (
+            isSignedIn ? (
+              <div className="mt-2 flex items-center gap-2 px-1">
+                <UserButton />
+                <span className="text-sm text-slate-500">{t("account")}</span>
+              </div>
+            ) : (
+              <>
+                <SignInButton mode="modal">
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => setMobileOpen(false)}
+                    className="mt-1 w-full font-semibold rounded-full border-slate-200"
+                    style={{ color: "var(--brand-navy)" }}
+                  >
+                    {t("signIn")}
+                  </Button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <Button
+                    size="lg"
+                    onClick={() => setMobileOpen(false)}
+                    className="mt-1 btn-brand-copper w-full text-white font-semibold rounded-full"
+                  >
+                    {t("signUp")}
+                  </Button>
+                </SignUpButton>
+              </>
+            )
+          )}
         </motion.div>
       )}
     </motion.header>

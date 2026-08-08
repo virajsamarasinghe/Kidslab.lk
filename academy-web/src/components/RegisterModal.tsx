@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle, Star, Users, Clock, BadgeCheck, X } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { useRegisterModalState } from "@/lib/register-modal-context";
 
 export default function RegisterModal() {
   const { open, setOpen } = useRegisterModalState();
+  const { isSignedIn, user } = useUser();
   const [form, setForm] = useState({
     name: "", email: "", phone: "",
     age: "", parentName: "", city: "",
@@ -18,6 +20,19 @@ export default function RegisterModal() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill from the signed-in Clerk account so returning users don't retype it.
+  useEffect(() => {
+    if (open && isSignedIn && user) {
+      const email = user.primaryEmailAddress?.emailAddress ?? "";
+      const name = user.fullName ?? "";
+      setForm(f => ({
+        ...f,
+        email: email || f.email,
+        name: f.name || name,
+      }));
+    }
+  }, [open, isSignedIn, user]);
 
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>

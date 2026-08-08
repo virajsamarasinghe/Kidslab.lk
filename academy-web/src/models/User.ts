@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IUser extends Document {
+  clerkId?: string;
   name: string;
   email: string;
   password: string;
@@ -17,9 +18,12 @@ export interface IUser extends Document {
 
 const UserSchema = new Schema<IUser>(
   {
+    // Set only for accounts created via Clerk sign-up; absent for seminar leads.
+    clerkId:          { type: String, unique: true, sparse: true },
     name:             { type: String, required: true, trim: true },
     email:            { type: String, required: true, unique: true, lowercase: true, trim: true },
-    password:         { type: String, required: true },
+    // Clerk owns the credential for clerkId accounts, so this stays empty for them.
+    password:         { type: String, default: "" },
     phone:            { type: String, default: "" },
     age:              { type: Number, default: 0 },
     parentName:       { type: String, default: "" },

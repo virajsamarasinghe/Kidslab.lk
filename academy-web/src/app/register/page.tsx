@@ -4,14 +4,16 @@
 // (Next.js ignores `export const metadata` in "use client" files —
 //  set title/description via the parent layout or a separate layout.tsx)
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { CheckCircle, ArrowLeft, Star, Users, Clock, BadgeCheck } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function RegisterPage() {
+  const { isSignedIn, user } = useUser();
   const [form, setForm] = useState({
     name: "", email: "", phone: "",
     age: "", parentName: "", city: "",
@@ -19,6 +21,19 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Pre-fill from the signed-in Clerk account so returning users don't retype it.
+  useEffect(() => {
+    if (isSignedIn && user) {
+      const email = user.primaryEmailAddress?.emailAddress ?? "";
+      const name = user.fullName ?? "";
+      setForm(f => ({
+        ...f,
+        email: email || f.email,
+        name: f.name || name,
+      }));
+    }
+  }, [isSignedIn, user]);
 
   const set = (k: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
