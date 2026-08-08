@@ -54,6 +54,12 @@ export const navGroups: NavGroupDef[] = [
   },
 ];
 
+/** Flat list of routes that carry a "new since last visit" badge. */
+export const countedRoutes: { href: string; countKey: SummaryKey }[] = [
+  ...navItems.filter((i): i is NavItemDef & { countKey: SummaryKey } => !!i.countKey),
+  ...navGroups.flatMap(g => g.items.filter((i): i is NavItemDef & { countKey: SummaryKey } => !!i.countKey)),
+];
+
 /** Flat href -> breadcrumb trail (group label omitted for top-level items). */
 export function breadcrumbFor(pathname: string): { label: string; href: string }[] {
   if (pathname.startsWith("/admin/profile")) {
