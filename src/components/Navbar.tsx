@@ -175,9 +175,7 @@ export default function Navbar() {
               )
             )}
           </div>
-          {/* ── Mobile: compact language toggle + register CTA stay in the
-                 bar itself. Burying both behind the hamburger meant a phone
-                 visitor saw no call to action at all above the fold. ── */}
+          {/* ── Mobile: compact language toggle stays in the bar itself. ── */}
           <button
             onClick={() => setLocale(locale === "en" ? "si" : "en")}
             aria-label={locale === "en" ? "Switch to Sinhala" : "Switch to English"}
@@ -189,12 +187,6 @@ export default function Navbar() {
             }}
           >
             {locale === "en" ? "සිං" : "EN"}
-          </button>
-          <button
-            onClick={openRegisterModal}
-            className="btn-brand-copper md:hidden shrink-0 h-9 px-3.5 rounded-full text-white text-[13px] font-semibold shadow-sm whitespace-nowrap"
-          >
-            {t("register")}
           </button>
 
           {/* Mobile menu toggle */}

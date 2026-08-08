@@ -402,21 +402,6 @@
   border-radius: 9999px;
 }
 
-/* ── Mobile action bar ──
-   The register CTA only existed inside the hero and the program card, so
-   on a phone it scrolls out of reach for most of the page. This docks it
-   to the bottom edge below md, over the home-indicator safe area. */
-.mobile-cta-bar {
-  padding-bottom: calc(0.625rem + env(safe-area-inset-bottom, 0px));
-}
-
-/* Reserve room so the footer's last line is never sitting under the bar. */
-@media (max-width: 767px) {
-  .has-mobile-cta {
-    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
-  }
-}
-
 /* Respect the OS "reduce motion" setting for the page's ambient loops
    (pulsing CTA halos, shimmer, blinking cursor). Motion-driven ones are
    handled in JS; these are the CSS animations. */
