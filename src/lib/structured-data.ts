@@ -260,6 +260,19 @@ export function buildLandingJsonLd(courses: Course[]) {
         "Python Programming",
         "STEM Education for Children",
       ],
+      hasCredential: {
+        "@type": "EducationalOccupationalCredential",
+        name: "BSc Eng (Hons) in Computer Engineering",
+        credentialCategory: "Bachelor's Degree",
+        educationalLevel: "Bachelor's Degree (4 years)",
+        recognizedBy: {
+          "@type": "CollegeOrUniversity",
+          name: "University of Ruhuna",
+          department:
+            "Faculty of Engineering — Department of Computer Engineering",
+          url: "https://www.ruh.ac.lk/",
+        },
+      },
       url: "https://kidslab.lk/#viraj-samarasinghe",
       sameAs: [
         "https://www.linkedin.com/in/virajsamarasinghe/",
@@ -314,6 +327,19 @@ export function buildLandingJsonLd(courses: Course[]) {
         "Python Programming",
         "STEM Education for Children",
       ],
+      hasCredential: {
+        "@type": "EducationalOccupationalCredential",
+        name: "BSc Eng (Hons) in Computer Engineering",
+        credentialCategory: "Bachelor's Degree",
+        educationalLevel: "Bachelor's Degree (4 years)",
+        recognizedBy: {
+          "@type": "CollegeOrUniversity",
+          name: "University of Ruhuna",
+          department:
+            "Faculty of Engineering — Department of Computer Engineering",
+          url: "https://www.ruh.ac.lk/",
+        },
+      },
       url: "https://kidslab.lk/#menura-dulkith",
       sameAs: [
         "https://www.linkedin.com/in/menuradulkith/",
@@ -385,6 +411,46 @@ export function buildLandingJsonLd(courses: Course[]) {
           acceptedAnswer: {
             "@type": "Answer",
             text: "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith — Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Are the kidslab.lk instructors qualified to teach children?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. Both instructors, Viraj Samarasinghe and Menura Dulkith, hold a completed BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering, and have taught students and run workshops before starting kidslab.lk. To be clear: they are practising engineers who teach, not government-certified school teachers. The curriculum is written and delivered by the same people who work with robotics and AI professionally, and their full names, photos and LinkedIn profiles are published on kidslab.lk so parents can verify their backgrounds before enrolling.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What are the qualifications of the kidslab.lk founders?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Viraj Samarasinghe and Menura Dulkith both hold a BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering, Sri Lanka — a four-year accredited degree from a UGC-recognised state university. Their specialisations cover Artificial Intelligence, machine learning, robotics and embedded systems, which are the same subjects taught in the kidslab.lk program. Both publish verifiable LinkedIn profiles: linkedin.com/in/virajsamarasinghe and linkedin.com/in/menuradulkith.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What exactly is in the kidslab.lk syllabus?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "The 3-month program moves week by week from electronics and circuit basics, to Arduino microcontroller programming, to sensors and actuators, to building a working robot, and then to an introduction to Artificial Intelligence and machine-learning concepts — finishing with a personal project the child builds and presents. The full week-by-week syllabus is covered during the free seminar and sent in writing to every parent before the paid course begins. Parents can also request it on WhatsApp at +94703906478.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "What equipment or robotics kit does my child need for kidslab.lk?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "For the free seminar, nothing beyond a laptop or desktop with an internet connection. For the paid 3-month course, parents receive the exact kit list — microcontroller board, sensors, breadboard and jumper wires — along with where to buy it in Sri Lanka, before paying anything. Early lessons also use free online circuit simulators, so a child can start on time even if the kit has not arrived.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How are children supervised during kidslab.lk online classes?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Every class is live with cameras on and both instructors present for the entire session, so children are never left in a room unattended. Class links are private and issued only to registered students, so no one outside the class can join. Parents are welcome to sit in on any session without notice, and every session is recorded and shared with parents.",
           },
         },
         {

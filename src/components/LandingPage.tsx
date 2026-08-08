@@ -21,12 +21,16 @@ import {
     ChevronDown,
     ChevronLeft,
     ChevronRight,
+    Eye,
     FlaskConical,
     GraduationCap,
+    Lock,
     MapPin,
+    ShieldCheck,
     Star,
     Target,
     Users,
+    Video,
     Zap,
 } from "lucide-react";
 import { motion, useScroll, useTransform } from "motion/react";
@@ -1035,10 +1039,16 @@ function HomeContent({
                       </p>
                     </div>
 
-                    {/* University */}
-                    <div className="flex items-center gap-1.5 text-slate-400 text-xs">
-                      <GraduationCap className="w-3.5 h-3.5 shrink-0 text-blue-400" />
-                      {t("team.university")}
+                    {/* Degree + university */}
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex items-center gap-1.5 text-blue-200 text-xs font-semibold">
+                        <Award className="w-3.5 h-3.5 shrink-0 text-blue-400" />
+                        {t("team.degree")}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-slate-400 text-xs">
+                        <GraduationCap className="w-3.5 h-3.5 shrink-0 text-blue-400" />
+                        {t("team.university")}
+                      </div>
                     </div>
 
                     {/* Tags */}
@@ -1068,6 +1078,35 @@ function HomeContent({
               ))}
             </div>
 
+            {/* Credentials — answers "are they actually qualified?" */}
+            <AnimateIn delay={0.25} className="mt-6 xl:mt-8">
+              <div className="max-w-3xl xl:max-w-5xl mx-auto">
+                <h3 className="text-center text-white/90 font-bold tracking-tight mb-3 xl:mb-4 text-sm xl:text-base">
+                  {t("team.credentialsHeading")}
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 xl:gap-3">
+                  {(
+                    t.raw("team.credentials") as { title: string; desc: string }[]
+                  ).map((c) => (
+                    <div
+                      key={c.title}
+                      className="flex gap-2.5 rounded-xl bg-white/[0.04] border border-white/10 px-4 py-3"
+                    >
+                      <CheckCircle className="w-4 h-4 shrink-0 mt-0.5 text-blue-400" />
+                      <div>
+                        <p className="text-white font-semibold text-[0.8125rem] xl:text-sm leading-snug">
+                          {c.title}
+                        </p>
+                        <p className="text-slate-400 text-xs xl:text-[0.8125rem] leading-relaxed mt-0.5">
+                          {c.desc}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </AnimateIn>
+
             {/* University strip */}
             <AnimateIn delay={0.3} className="mt-4 xl:mt-6">
               <div className="max-w-3xl xl:max-w-5xl mx-auto bg-white/[0.04] border border-white/8 rounded-2xl px-8 xl:px-12 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 xl:gap-8">
@@ -1092,6 +1131,47 @@ function HomeContent({
                 </div>
               </div>
             </AnimateIn>
+          </div>
+        </section>
+
+        {/* ══ Parent safety / supervision ═══════════════════════════════ */}
+        <section
+          id="safety"
+          className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white"
+        >
+          <div className="max-w-screen-2xl mx-auto">
+            <AnimateIn className="text-center mb-16">
+              <SectionLabel className="text-blue-600">
+                {t("safety.eyebrow")}
+              </SectionLabel>
+              <h2 className="text-display-lg text-slate-900">
+                {t("safety.headingStart")}
+                <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                  {t("safety.headingHighlight")}
+                </span>
+              </h2>
+              <p className="text-body-xl text-slate-500 mt-5 max-w-xl mx-auto">
+                {t("safety.subtitle")}
+              </p>
+            </AnimateIn>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+              {[Video, Eye, ShieldCheck, Lock].map((Icon, i) => (
+                <AnimateIn key={i} delay={i * 0.07} className="h-full">
+                  <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-7 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 h-full">
+                    <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center mb-4">
+                      <Icon className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <h4 className="text-display-md text-slate-900 mb-2">
+                      {t(`safety.cards.${i}.title`)}
+                    </h4>
+                    <p className="text-body-md text-slate-500">
+                      {t(`safety.cards.${i}.desc`)}
+                    </p>
+                  </div>
+                </AnimateIn>
+              ))}
+            </div>
           </div>
         </section>
 

@@ -37,7 +37,12 @@
     "trust4": "Open to All of Sri Lanka"
   },
   "stats": {
-    "labels": ["Young Innovators", "Expert Engineers", "Program", "Hands-on Learning"]
+    "labels": [
+      "Young Innovators",
+      "Expert Engineers",
+      "Program",
+      "Hands-on Learning"
+    ]
   },
   "universityBanner": {
     "prefix": "Programs conducted by ",
@@ -108,9 +113,57 @@
     "university": "University of Ruhuna",
     "linkedin": "LinkedIn Profile",
     "role": "Software Engineer · AI Specialized",
-    "tags": ["AI & Machine Learning", "Robotics", "Embedded Systems"],
+    "tags": [
+      "AI & Machine Learning",
+      "Robotics",
+      "Embedded Systems"
+    ],
     "universityStrip": "University of Ruhuna · Faculty of Engineering",
-    "location": "100% Online Classes"
+    "location": "100% Online Classes",
+    "degree": "BSc Eng (Hons) Computer Engineering",
+    "credentialsHeading": "Why you can trust us with your child",
+    "credentials": [
+      {
+        "title": "Accredited engineering degrees",
+        "desc": "Both founders hold a completed BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering — a four-year degree from a UGC-recognised state university."
+      },
+      {
+        "title": "Specialised in exactly what we teach",
+        "desc": "Our degree and professional work cover embedded systems, microcontrollers, robotics and machine learning — the same subjects your child learns, not a general IT background."
+      },
+      {
+        "title": "Real teaching experience",
+        "desc": "We taught students and ran workshops before starting kidslab.lk. The curriculum is written and delivered by the same engineers who build with these technologies."
+      },
+      {
+        "title": "Publicly verifiable",
+        "desc": "Our real names, photos and LinkedIn profiles are published here on purpose. Check our backgrounds yourself before you enrol — we would rather you did."
+      }
+    ]
+  },
+  "safety": {
+    "eyebrow": "For Parents",
+    "headingStart": "How We Keep Classes ",
+    "headingHighlight": "Safe & Open",
+    "subtitle": "Online should not mean out of sight. Here is exactly how your child is supervised in every session.",
+    "cards": [
+      {
+        "title": "Live and supervised, always",
+        "desc": "Every class runs live on Zoom / Google Meet with cameras on and both instructors present for the full session. Children are never left in a room unattended."
+      },
+      {
+        "title": "Parents are always welcome",
+        "desc": "You may sit in on any session at any time, without telling us in advance. Nothing in our classroom is closed to parents."
+      },
+      {
+        "title": "Every session is recorded",
+        "desc": "Recordings are shared with parents, so you can review exactly what was taught and how your child was spoken to — even if you could not attend."
+      },
+      {
+        "title": "Private, registered-only links",
+        "desc": "Class links are private and issued only to registered students. There are no public or open rooms, so strangers cannot join a class."
+      }
+    ]
   },
   "testimonials": {
     "eyebrow": "Student & Parent Reviews",
@@ -163,6 +216,22 @@
         "a": "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith  Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics."
       },
       {
+        "q": "Are the instructors qualified to teach children?",
+        "a": "Both instructors hold a completed BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering, and have taught students and run workshops before starting kidslab.lk. To be clear and honest: we are practising engineers who teach, not government-certified school teachers. The curriculum is written and delivered by the same people who build with robotics and AI professionally. Our real names, photos and LinkedIn profiles are published on this site so you can verify our backgrounds yourself before enrolling."
+      },
+      {
+        "q": "What exactly is in the syllabus?",
+        "a": "The 3-month program moves week by week from electronics and circuit basics, to Arduino microcontroller programming, to sensors and actuators, to building a working robot, and then to an introduction to Artificial Intelligence and machine-learning concepts — finishing with a personal project your child builds and presents. We walk through the full week-by-week syllabus during the free seminar and send it in writing to every parent before the paid course begins. You can also request it any time on WhatsApp at +94703906478."
+      },
+      {
+        "q": "What equipment or robotics kit does my child need?",
+        "a": "For the free seminar, nothing beyond a laptop or desktop with an internet connection. For the paid 3-month course we give you the exact kit list — microcontroller board, sensors, breadboard and jumper wires — along with where to buy it in Sri Lanka, before you pay anything. Early lessons also use free online circuit simulators, so your child can start on time even if the kit has not arrived yet."
+      },
+      {
+        "q": "How are children supervised during online classes?",
+        "a": "Every class is live with cameras on and both instructors present for the entire session — children are never left in a room unattended. Class links are private and issued only to registered students, so no one outside the class can join. Parents are welcome to sit in on any session without telling us in advance, and every session is recorded and shared with parents so you can see exactly what was taught."
+      },
+      {
         "q": "Where are the kidslab.lk classes held?",
         "a": "Classes are conducted entirely online, so your child can join from anywhere in Sri Lanka. Our office is located at 1/108, Pelawaththa Circle Road, Hittatiya Central, Matara."
       },
@@ -204,7 +273,11 @@
     "ctaDescPrefix": "Attend our ",
     "ctaDescBold": "free introductory seminar",
     "ctaDescSuffix": " — basic Robotics & AI, mindset building & motivation. No commitment required.",
-    "highlights": ["Ages 9–14", "3-Month Program", "LKR 5,000 · Pay in Installments"],
+    "highlights": [
+      "Ages 9–14",
+      "3-Month Program",
+      "LKR 5,000 · Pay in Installments"
+    ],
     "registerCta": "Register for Free Seminar →",
     "followFacebook": "Follow on Facebook"
   },
@@ -218,8 +291,19 @@
     "subscribeError": "Something went wrong. Try again.",
     "programsHeading": "Programs",
     "academyHeading": "Academy",
-    "programLinks": ["Robotics", "AI & ML", "IoT", "Autonomous Systems", "Coding"],
-    "academyLinks": ["About Us", "Our Team", "Enrol", "Contact"],
+    "programLinks": [
+      "Robotics",
+      "AI & ML",
+      "IoT",
+      "Autonomous Systems",
+      "Coding"
+    ],
+    "academyLinks": [
+      "About Us",
+      "Our Team",
+      "Enrol",
+      "Contact"
+    ],
     "copyright": "All rights reserved.",
     "founded": "Founded by University of Ruhuna Engineering Graduates",
     "company": "kidslab.lk is a brand of VM Lumic Pvt Ltd"
