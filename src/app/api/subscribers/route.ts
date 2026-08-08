@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import Subscriber from "@/models/Subscriber";
 import type { QueryFilter } from "mongoose";
 import type { ISubscriber } from "@/models/Subscriber";
@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   await connectDB();
   const search = req.nextUrl.searchParams.get("search") ?? "";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import { getDashboardStats } from "@/lib/dashboard-stats";
 
 /**
@@ -8,8 +8,8 @@ import { getDashboardStats } from "@/lib/dashboard-stats";
  * from `@/lib/dashboard-stats`, so hitting it is never extra database work.
  */
 export async function GET() {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   const stats = await getDashboardStats();
   return NextResponse.json(stats, {

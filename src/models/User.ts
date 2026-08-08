@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { ALL_ROLES, type Role } from "@/lib/roles";
 
 export interface IUser extends Document {
   clerkId?: string;
@@ -11,7 +12,7 @@ export interface IUser extends Document {
   parentName: string;
   city: string;
   interestedCourse: string;
-  role: "user" | "admin";
+  role: Role;
   status: "active" | "inactive";
   enrolledCourses: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -31,7 +32,7 @@ const UserSchema = new Schema<IUser>(
     parentName:       { type: String, default: "" },
     city:             { type: String, default: "" },
     interestedCourse: { type: String, default: "" },
-    role:             { type: String, enum: ["user", "admin"], default: "user" },
+    role:             { type: String, enum: ALL_ROLES, default: "user" },
     status:           { type: String, enum: ["active", "inactive"], default: "active" },
     enrolledCourses:  [{ type: Schema.Types.ObjectId, ref: "Course" }],
   },

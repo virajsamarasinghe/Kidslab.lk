@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   ChevronDown, X, Search, UserCog, LogOut, ShieldCheck, type LucideIcon,
 } from "lucide-react";
-import { navItems, navGroups, flattenNav, type NavItemDef, type NavGroupDef } from "./nav-config";
+import { navForRole, flattenNav, type NavItemDef, type NavGroupDef } from "./nav-config";
 import { useAdminProfile } from "./AdminProfileContext";
 import { useAdminSummary, type Summary } from "./AdminSummaryContext";
 
@@ -235,13 +235,18 @@ export default function AdminSidebar({
   const [query, setQuery] = useState("");
   const [footerFlyoutOpen, setFooterFlyoutOpen] = useState(false);
 
+  const { items: navItems, groups: navGroups } = useMemo(
+    () => navForRole(profile.role),
+    [profile.role]
+  );
+
   const searchResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return null;
-    return flattenNav().filter(
+    return flattenNav(profile.role).filter(
       item => item.label.toLowerCase().includes(q) || (item.group ?? "").toLowerCase().includes(q)
     );
-  }, [query]);
+  }, [query, profile.role]);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });

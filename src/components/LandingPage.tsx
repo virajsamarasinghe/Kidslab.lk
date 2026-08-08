@@ -1689,14 +1689,15 @@ function HomeContent({
         </footer>
       </motion.main>
 
-      {/* ── Floating WhatsApp button — desktop only; on mobile it lives in
-             the action bar below so the two don't stack in one corner ── */}
+      {/* ── Floating WhatsApp button — always a standalone floating pill,
+             on mobile it docks above the bottom register bar instead of
+             sharing its row ── */}
       <a
         href="https://wa.me/94703906478"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="hidden md:flex fixed bottom-5 right-5 xl:bottom-6 xl:right-6 z-50 items-center justify-center w-11 h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
+        className="fixed bottom-[calc(4.75rem+0.75rem)] right-4 md:bottom-5 md:right-5 xl:bottom-6 xl:right-6 z-40 flex items-center justify-center w-12 h-12 md:w-11 md:h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
         style={{ backgroundColor: "#25D366" }}
       >
         <WhatsAppIcon className="w-5 h-5 text-white" />
@@ -1708,24 +1709,14 @@ function HomeContent({
              Docked here it stays one thumb-reach away throughout. */}
       {/* z-30, below the nav sheet's backdrop (z-40) and any dialog (z-50),
           so an open overlay dims this bar instead of it punching through. */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 mobile-cta-bar bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 pt-2.5 flex items-center gap-2.5 shadow-[0_-4px_16px_rgba(15,36,24,0.08)]">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 mobile-cta-bar bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 pt-2.5 flex items-center shadow-[0_-4px_16px_rgba(15,36,24,0.08)]">
         <button
           onClick={openRegisterModal}
-          className="btn-register btn-brand-copper flex-1 min-w-0 h-12 rounded-full text-white font-semibold text-[15px] tracking-[-0.01em] shadow-sm flex items-center justify-center gap-2"
+          className="btn-register btn-brand-copper w-full h-12 rounded-full text-white font-semibold text-[15px] tracking-[-0.01em] shadow-sm flex items-center justify-center gap-2"
         >
           <span className="truncate">{t("hero.ctaRegister")}</span>
           <ArrowRight className="w-4 h-4 shrink-0" />
         </button>
-        <a
-          href="https://wa.me/94703906478"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Chat on WhatsApp"
-          className="shrink-0 flex items-center justify-center w-12 h-12 rounded-full active:scale-95 transition-transform"
-          style={{ backgroundColor: "#25D366" }}
-        >
-          <WhatsAppIcon className="w-5 h-5 text-white" />
-        </a>
       </div>
     </>
   );

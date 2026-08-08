@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import Instructor from "@/models/Instructor";
 import { logActivity } from "@/lib/activity-log";
 
@@ -13,8 +13,8 @@ function pickAllowed(body: Record<string, unknown>) {
 }
 
 export async function GET() {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   await connectDB();
   const instructors = await Instructor.find().sort({ name: 1 }).limit(500).lean();
@@ -22,8 +22,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("content:write");
+  if (session instanceof NextResponse) return session;
 
   await connectDB();
   const body = await req.json();

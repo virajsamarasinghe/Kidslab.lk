@@ -1,11 +1,13 @@
 "use client";
 
 import { createContext, useContext, useState, type ReactNode } from "react";
+import type { Role } from "@/lib/roles";
 
 export interface AdminProfile {
   name: string;
   email: string;
   avatar: string;
+  role: Role;
 }
 
 interface AdminProfileContextValue extends AdminProfile {

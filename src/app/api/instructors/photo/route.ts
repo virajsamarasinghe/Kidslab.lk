@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import { uploadInstructorPhoto } from "@/lib/cloudinary";
 
 const MAX_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 export async function POST(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("content:write");
+  if (session instanceof NextResponse) return session;
 
   if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
     return NextResponse.json({ error: "Cloudinary is not configured" }, { status: 500 });

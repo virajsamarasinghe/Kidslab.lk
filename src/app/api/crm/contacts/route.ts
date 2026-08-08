@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import { getUnifiedContacts, invalidateUnifiedContacts } from "@/lib/crm";
 import Contact from "@/models/Contact";
 
 export async function GET(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   const search = (req.nextUrl.searchParams.get("search") ?? "").trim().toLowerCase();
   const page = Math.max(1, Number(req.nextUrl.searchParams.get("page") ?? "1"));
@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("content:write");
+  if (session instanceof NextResponse) return session;
 
   await connectDB();
   const body = await req.json();

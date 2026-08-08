@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import User from "@/models/User";
 
 export async function GET() {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   await connectDB();
   const user = await User.findById(session.id).select("name email avatar");
@@ -16,8 +16,8 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   const body = await req.json();
   const { name, email, currentPassword, newPassword } = body as {

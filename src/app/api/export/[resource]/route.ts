@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import { getUnifiedContacts } from "@/lib/crm";
 import User from "@/models/User";
 import Subscriber from "@/models/Subscriber";
@@ -47,8 +47,8 @@ const EXPORTERS: Record<string, () => Promise<{ filename: string; csv: string }>
 };
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ resource: string }> }) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("dashboard:read");
+  if (session instanceof NextResponse) return session;
 
   const { resource } = await params;
   const exporter = EXPORTERS[resource];

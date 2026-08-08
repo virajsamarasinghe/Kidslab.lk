@@ -1,8 +1,9 @@
 import {
   LayoutDashboard, Users, BookOpen, Mail, UserRound,
   Settings, Send, BrainCircuit, Layers3,
-  Contact2, KanbanSquare, Megaphone, History, type LucideIcon,
+  Contact2, KanbanSquare, Megaphone, History, ShieldCheck, type LucideIcon,
 } from "lucide-react";
+import { can, type Capability } from "@/lib/roles";
 
 export type SummaryKey = "users" | "subscribers" | "leads";
 
@@ -11,6 +12,8 @@ export interface NavItemDef {
   href: string;
   icon: LucideIcon;
   countKey?: SummaryKey;
+  /** Hidden from the sidebar unless the signed-in role holds this. */
+  capability?: Capability;
 }
 
 export interface NavGroupDef {
@@ -23,7 +26,7 @@ export interface NavGroupDef {
 
 export const navItems: NavItemDef[] = [
   { label: "Dashboard",   href: "/admin",             icon: LayoutDashboard },
-  { label: "Users",       href: "/admin/users",       icon: Users,    countKey: "users" },
+  { label: "Users",       href: "/admin/users",       icon: Users,    countKey: "users", capability: "users:manage" },
   { label: "Courses",     href: "/admin/courses",     icon: BookOpen },
   { label: "Instructors", href: "/admin/instructors", icon: UserRound },
   { label: "Subscribers", href: "/admin/subscribers", icon: Mail,     countKey: "subscribers" },
@@ -48,9 +51,10 @@ export const navGroups: NavGroupDef[] = [
     icon: Settings,
     basePath: "/admin/settings",
     items: [
-      { label: "Brevo Email",     href: "/admin/settings/brevo",     icon: Send },
-      { label: "LLM Config",      href: "/admin/settings/llm",       icon: BrainCircuit },
-      { label: "Embedding Model", href: "/admin/settings/embedding", icon: Layers3 },
+      { label: "Administrators",  href: "/admin/settings/admins",    icon: ShieldCheck,   capability: "admins:manage" },
+      { label: "Brevo Email",     href: "/admin/settings/brevo",     icon: Send,          capability: "settings:manage" },
+      { label: "LLM Config",      href: "/admin/settings/llm",       icon: BrainCircuit,  capability: "settings:manage" },
+      { label: "Embedding Model", href: "/admin/settings/embedding", icon: Layers3,       capability: "settings:manage" },
     ],
   },
 ];
@@ -61,15 +65,33 @@ export const countedRoutes: { href: string; countKey: SummaryKey }[] = [
   ...navGroups.flatMap(g => g.items.filter((i): i is NavItemDef & { countKey: SummaryKey } => !!i.countKey)),
 ];
 
+/** True when `role` may see this entry — items without a capability are open to all admins. */
+function visibleTo(role: string | undefined, item: NavItemDef) {
+  return !item.capability || can(role, item.capability);
+}
+
+/** The sidebar's view of the nav for one role: empty groups drop out entirely. */
+export function navForRole(role: string | undefined) {
+  return {
+    items: navItems.filter(item => visibleTo(role, item)),
+    groups: navGroups
+      .map(group => ({ ...group, items: group.items.filter(item => visibleTo(role, item)) }))
+      .filter(group => group.items.length > 0),
+  };
+}
+
 export interface FlatNavEntry extends NavItemDef {
   group?: string;
 }
 
 /** Every navigable destination as one flat list — used by search and the command palette. */
-export function flattenNav(): FlatNavEntry[] {
+export function flattenNav(role?: string): FlatNavEntry[] {
+  const { items, groups } = role === undefined
+    ? { items: navItems, groups: navGroups }
+    : navForRole(role);
   return [
-    ...navItems.map(item => ({ ...item })),
-    ...navGroups.flatMap(group => group.items.map(item => ({ ...item, group: group.label }))),
+    ...items.map(item => ({ ...item })),
+    ...groups.flatMap(group => group.items.map(item => ({ ...item, group: group.label }))),
   ];
 }
 

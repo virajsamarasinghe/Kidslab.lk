@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth";
+import { requireCapability } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { createSmtpTransport, mergeBrevoInput, resolveSmtp, type BrevoSmtpCredentials } from "@/lib/brevo";
 
@@ -98,8 +98,8 @@ async function testEmbedding(baseUrl: string, apiKey: string, model: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getAdminSession();
-  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await requireCapability("settings:manage");
+  if (session instanceof NextResponse) return session;
 
   const body = await req.json();
   const section = body.section as Section;

@@ -8,6 +8,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { flattenNav } from "./nav-config";
+import { useAdminProfile } from "./AdminProfileContext";
 
 interface Command {
   id: string;
@@ -30,6 +31,7 @@ interface PaletteProps {
  */
 function PaletteBody({ onClose, onLogout }: Omit<PaletteProps, "open">) {
   const router = useRouter();
+  const profile = useAdminProfile();
   const [query, setQuery] = useState("");
   const [cursor, setCursor] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -40,7 +42,7 @@ function PaletteBody({ onClose, onLogout }: Omit<PaletteProps, "open">) {
       router.push(href);
     };
     return [
-      ...flattenNav().map(item => ({
+      ...flattenNav(profile.role).map(item => ({
         id: `nav:${item.href}`,
         label: item.label,
         hint: item.group,
@@ -77,7 +79,7 @@ function PaletteBody({ onClose, onLogout }: Omit<PaletteProps, "open">) {
         },
       },
     ];
-  }, [router, onClose, onLogout]);
+  }, [router, onClose, onLogout, profile.role]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
