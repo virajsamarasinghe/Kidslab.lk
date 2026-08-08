@@ -157,13 +157,13 @@ export default function ProviderConfigForm({ section, title, description, icon: 
         </div>
       </div>
 
-      <div className="max-w-3xl">
+      <div className="w-full">
         <Card className="pcb-card border-slate-100 shadow-sm p-6">
           {loading ? (
             <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
           ) : (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                 <div>
                   <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
                     Provider
@@ -195,59 +195,59 @@ export default function ProviderConfigForm({ section, title, description, icon: 
                     <option value={CUSTOM_MODEL_VALUE}>Custom / Other…</option>
                   </select>
                 </div>
-              </div>
 
-              {providerId === CUSTOM_PROVIDER_ID && (
+                {providerId === CUSTOM_PROVIDER_ID && (
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                      Provider Name
+                    </Label>
+                    <Input
+                      value={customProviderName}
+                      onChange={e => { setCustomProviderName(e.target.value); setSaved(false); setResult(null); }}
+                      placeholder="e.g. My Self-hosted Model"
+                      className="border-slate-200 text-sm"
+                    />
+                  </div>
+                )}
+
+                {modelValue === CUSTOM_MODEL_VALUE && (
+                  <div>
+                    <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                      Model Name
+                    </Label>
+                    <Input
+                      value={customModelName}
+                      onChange={e => { setCustomModelName(e.target.value); setSaved(false); setResult(null); }}
+                      placeholder="e.g. gpt-4o-mini"
+                      className="border-slate-200 text-sm"
+                    />
+                  </div>
+                )}
+
                 <div>
                   <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    Provider Name
+                    Base URL
                   </Label>
                   <Input
-                    value={customProviderName}
-                    onChange={e => { setCustomProviderName(e.target.value); setSaved(false); setResult(null); }}
-                    placeholder="e.g. My Self-hosted Model"
+                    value={baseUrl}
+                    onChange={e => { setBaseUrl(e.target.value); setSaved(false); setResult(null); }}
+                    placeholder="https://api.openai.com/v1"
                     className="border-slate-200 text-sm"
                   />
                 </div>
-              )}
 
-              {modelValue === CUSTOM_MODEL_VALUE && (
                 <div>
                   <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    Model Name
+                    API Key
                   </Label>
                   <Input
-                    value={customModelName}
-                    onChange={e => { setCustomModelName(e.target.value); setSaved(false); setResult(null); }}
-                    placeholder="e.g. gpt-4o-mini"
+                    type="password"
+                    value={apiKey}
+                    onChange={e => { setApiKey(e.target.value); setSaved(false); setResult(null); }}
+                    placeholder={keyPlaceholder ?? "sk-…"}
                     className="border-slate-200 text-sm"
                   />
                 </div>
-              )}
-
-              <div>
-                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                  Base URL
-                </Label>
-                <Input
-                  value={baseUrl}
-                  onChange={e => { setBaseUrl(e.target.value); setSaved(false); setResult(null); }}
-                  placeholder="https://api.openai.com/v1"
-                  className="border-slate-200 text-sm"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                  API Key
-                </Label>
-                <Input
-                  type="password"
-                  value={apiKey}
-                  onChange={e => { setApiKey(e.target.value); setSaved(false); setResult(null); }}
-                  placeholder={keyPlaceholder ?? "sk-…"}
-                  className="border-slate-200 text-sm"
-                />
               </div>
 
               {result && (

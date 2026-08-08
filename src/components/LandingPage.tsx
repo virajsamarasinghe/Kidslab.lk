@@ -359,12 +359,12 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
-export default function Home() {
+export default function LandingPage({ courses }: { courses: Course[] }) {
   return (
     <LocaleProvider>
       <I18nProvider>
         <RegisterModalProvider>
-          <HomeContent />
+          <HomeContent courses={courses} />
           <RegisterModal />
           <SubscribePopup />
         </RegisterModalProvider>
@@ -373,7 +373,7 @@ export default function Home() {
   );
 }
 
-function HomeContent() {
+function HomeContent({ courses }: { courses: Course[] }) {
   const t = useTranslations();
   const { locale } = useLocale();
   const { openRegisterModal } = useRegisterModal();
@@ -398,24 +398,18 @@ function HomeContent() {
     return () => clearTimeout(id);
   }, [locale]);
 
-  /* ── Live programs, pulled from the admin-managed course backend ── */
-  const [liveCourses, setLiveCourses] = useState<Course[] | null>(null);
-  useEffect(() => {
-    fetch("/api/courses")
-      .then((r) => r.json())
-      .then((data: { courses?: Course[] }) => {
-        setLiveCourses((data.courses ?? []).filter((c) => c.isActive));
-      })
-      .catch(() => setLiveCourses([]));
-  }, []);
+  /* ── Live programs. Fetched server-side (src/lib/courses.ts) and passed in
+       as a prop so the real course text is present in the SSR HTML for
+       crawlers — a client-side fetch left them seeing only the fallback. ── */
   const programCards = useMemo(() => {
-    if (liveCourses && liveCourses.length > 0) {
-      return liveCourses.map((c) => ({
+    if (courses.length > 0) {
+      return courses.map((c) => ({
         id: c._id,
         title: c.title,
         desc: c.description || t("programs.card.desc"),
         level: c.ageRange || t("programs.card.level"),
         duration: c.duration || t("programs.card.duration"),
+        schedule: c.schedule,
         feeLabel: `LKR ${c.price.toLocaleString()}`,
         installmentNote: t("programs.card.installment"),
         badgeText: c.badgeText || t("programs.enrollingNow"),
@@ -431,6 +425,7 @@ function HomeContent() {
         desc: t("programs.card.desc"),
         level: t("programs.card.level"),
         duration: t("programs.card.duration"),
+        schedule: "",
         feeLabel: t("programs.card.fee"),
         installmentNote: t("programs.card.installment"),
         badgeText: t("programs.enrollingNow"),
@@ -439,7 +434,7 @@ function HomeContent() {
         instructorNames: "",
       },
     ];
-  }, [liveCourses, t]);
+  }, [courses, t]);
   const [activeCourseIndex, setActiveCourseIndex] = useState(0);
   const courseScrollRef = useRef<HTMLDivElement>(null);
   const scrollToCourse = (index: number) => {
@@ -458,403 +453,11 @@ function HomeContent() {
   const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
   const bannerY = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"]);
 
-  /* ── JSON-LD structured data ── */
-  const jsonLd = [
-    /* 1. WebSite */
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: "kidslab.lk",
-      url: "https://kidslab.lk",
-      description: "Sri Lanka's Robotics & AI academy for children aged 9–14",
-      potentialAction: {
-        "@type": "SearchAction",
-        target: "https://kidslab.lk/register",
-        "query-input": "required name=search_term_string",
-      },
-    },
-    /* 2. EducationalOrganization */
-    {
-      "@context": "https://schema.org",
-      "@type": ["EducationalOrganization", "LocalBusiness"],
-      name: "kidslab.lk",
-      alternateName: "kidslab Academy",
-      url: "https://kidslab.lk",
-      logo: "https://kidslab.lk/logo.png",
-      image: "https://kidslab.lk/logo.png",
-      description:
-        "Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna.",
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "Hapugala",
-        addressLocality: "Galle",
-        postalCode: "80000",
-        addressCountry: "LK",
-      },
-      geo: { "@type": "GeoCoordinates", latitude: 6.0328, longitude: 80.2168 },
-      telephone: "+94703906478",
-      email: "info@kidslab.lk",
-      foundingDate: "2026",
-      founders: [
-        { "@type": "Person", name: "Viraj Samarasinghe" },
-        { "@type": "Person", name: "Menura Dulkith" },
-      ],
-      parentOrganization: {
-        "@type": "CollegeOrUniversity",
-        name: "University of Ruhuna",
-        department:
-          "Faculty of Engineering — Department of Computer Engineering",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Hapugala, Galle",
-          addressCountry: "LK",
-        },
-      },
-      sameAs: [
-        "https://www.facebook.com/profile.php?id=61585638656242",
-        "https://wa.me/94703906478",
-      ],
-    },
-    /* 3. Course */
-    {
-      "@context": "https://schema.org",
-      "@type": "Course",
-      name: "Robotics & AI for Kids",
-      description:
-        "A 3-month hands-on program covering robotics mechanics, sensors, microcontrollers, and machine learning basics. Designed for children aged 9–14. Taught by Computer Engineers from the University of Ruhuna.",
-      provider: {
-        "@type": "EducationalOrganization",
-        name: "kidslab.lk",
-        url: "https://kidslab.lk",
-      },
-      educationalLevel: "Beginner",
-      audience: {
-        "@type": "EducationalAudience",
-        educationalRole: "student",
-        audienceType: "Children aged 9–14",
-      },
-      timeRequired: "P3M",
-      numberOfCredits: 0,
-      offers: {
-        "@type": "Offer",
-        price: "5000",
-        priceCurrency: "LKR",
-        availability: "https://schema.org/InStock",
-        validFrom: "2026-06-27",
-        url: "https://kidslab.lk/register",
-        description:
-          "Payable in installments within 3 months. Day 1 is a FREE seminar.",
-      },
-      hasCourseInstance: {
-        "@type": "CourseInstance",
-        courseMode: "in-person",
-        location: {
-          "@type": "Place",
-          name: "kidslab.lk Academy",
-          address: {
-            "@type": "PostalAddress",
-            addressLocality: "Hapugala, Galle",
-            addressCountry: "LK",
-          },
-        },
-        startDate: "2026-06-27",
-        endDate: "2026-09-27",
-        instructor: [
-          {
-            "@type": "Person",
-            name: "Viraj Samarasinghe",
-            jobTitle: "Software Engineer · AI Specialized",
-          },
-          {
-            "@type": "Person",
-            name: "Menura Dulkith",
-            jobTitle: "Software Engineer · AI Specialized",
-          },
-        ],
-      },
-    },
-    /* 4. Event — Free Seminar */
-    {
-      "@context": "https://schema.org",
-      "@type": "Event",
-      name: "Free Robotics & AI Introductory Seminar — kidslab.lk",
-      description:
-        "A free introductory seminar covering basics of Robotics & AI, mindset building, and motivation. No obligation to enrol. Open to children aged 9–14 and their parents.",
-      image: ["https://kidslab.lk/og-image.png", "https://kidslab.lk/logo.png"],
-      startDate: "2026-06-27T09:00:00+05:30",
-      endDate: "2026-06-27T13:00:00+05:30",
-      eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-      location: {
-        "@type": "Place",
-        name: "kidslab.lk Academy",
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: "Hapugala",
-          addressLocality: "Galle",
-          addressCountry: "LK",
-        },
-      },
-      organizer: {
-        "@type": "EducationalOrganization",
-        name: "kidslab.lk",
-        url: "https://kidslab.lk",
-      },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "LKR",
-        availability: "https://schema.org/LimitedAvailability",
-        url: "https://kidslab.lk/register",
-        validFrom: "2026-06-14",
-      },
-      performer: [
-        { "@type": "Person", name: "Viraj Samarasinghe" },
-        { "@type": "Person", name: "Menura Dulkith" },
-      ],
-      audience: {
-        "@type": "Audience",
-        audienceType: "Children aged 9–14 and parents",
-      },
-    },
-    /* 5a. Person — Viraj Samarasinghe */
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "@id": "https://kidslab.lk/#viraj-samarasinghe",
-      name: "Viraj Samarasinghe",
-      givenName: "Viraj",
-      familyName: "Samarasinghe",
-      jobTitle: "Software Engineer — AI Specialized",
-      description:
-        "Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka. Co-founder of kidslab.lk, specializing in Artificial Intelligence, Robotics, and Embedded Systems. Passionate about making technology education accessible to children in Sri Lanka.",
-      image: "https://kidslab.lk/viraj.jpg",
-      nationality: { "@type": "Country", name: "Sri Lanka" },
-      worksFor: {
-        "@type": "EducationalOrganization",
-        name: "kidslab.lk",
-        url: "https://kidslab.lk",
-        foundingDate: "2026",
-      },
-      hasOccupation: {
-        "@type": "Occupation",
-        name: "Software Engineer",
-        occupationLocation: { "@type": "Country", name: "Sri Lanka" },
-        skills:
-          "Artificial Intelligence, Machine Learning, Robotics, Embedded Systems, Python, Computer Vision",
-        educationRequirements: "Bachelor of Science in Computer Engineering",
-      },
-      alumniOf: {
-        "@type": "CollegeOrUniversity",
-        name: "University of Ruhuna",
-        department:
-          "Faculty of Engineering — Department of Computer Engineering",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Hapugala, Galle",
-          addressCountry: "LK",
-        },
-      },
-      knowsAbout: [
-        "Artificial Intelligence",
-        "Machine Learning",
-        "Robotics",
-        "Embedded Systems",
-        "Computer Engineering",
-        "IoT",
-        "Python Programming",
-        "STEM Education for Children",
-      ],
-      url: "https://kidslab.lk/#viraj-samarasinghe",
-      sameAs: [
-        "https://www.linkedin.com/in/virajsamarasinghe/",
-        "https://kidslab.lk",
-      ],
-    },
-    /* 5b. Person — Menura Dulkith */
-    {
-      "@context": "https://schema.org",
-      "@type": "Person",
-      "@id": "https://kidslab.lk/#menura-dulkith",
-      name: "Menura Dulkith",
-      givenName: "Menura",
-      familyName: "Dulkith",
-      jobTitle: "Software Engineer — AI Specialized",
-      description:
-        "Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka. Co-founder of kidslab.lk, specializing in Artificial Intelligence, Robotics, and Embedded Systems. Dedicated to inspiring the next generation of young engineers in Sri Lanka.",
-      image: "https://kidslab.lk/menura.jpg",
-      nationality: { "@type": "Country", name: "Sri Lanka" },
-      worksFor: {
-        "@type": "EducationalOrganization",
-        name: "kidslab.lk",
-        url: "https://kidslab.lk",
-        foundingDate: "2026",
-      },
-      hasOccupation: {
-        "@type": "Occupation",
-        name: "Software Engineer",
-        occupationLocation: { "@type": "Country", name: "Sri Lanka" },
-        skills:
-          "Artificial Intelligence, Machine Learning, Robotics, Embedded Systems, Python, Computer Vision",
-        educationRequirements: "Bachelor of Science in Computer Engineering",
-      },
-      alumniOf: {
-        "@type": "CollegeOrUniversity",
-        name: "University of Ruhuna",
-        department:
-          "Faculty of Engineering — Department of Computer Engineering",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Hapugala, Galle",
-          addressCountry: "LK",
-        },
-      },
-      knowsAbout: [
-        "Artificial Intelligence",
-        "Machine Learning",
-        "Robotics",
-        "Embedded Systems",
-        "Computer Engineering",
-        "IoT",
-        "Python Programming",
-        "STEM Education for Children",
-      ],
-      url: "https://kidslab.lk/#menura-dulkith",
-      sameAs: [
-        "https://www.linkedin.com/in/menuradulkith/",
-        "https://kidslab.lk",
-      ],
-    },
-    /* 5c. ProfilePage — Viraj (for Google's People results & AI KGs) */
-    {
-      "@context": "https://schema.org",
-      "@type": "ProfilePage",
-      "@id": "https://kidslab.lk/#team",
-      name: "Meet the Founders — kidslab.lk",
-      description:
-        "Viraj Samarasinghe and Menura Dulkith, co-founders of kidslab.lk, are Computer Engineering graduates from the University of Ruhuna specializing in AI & Robotics.",
-      url: "https://kidslab.lk/#team",
-      mainEntity: [
-        { "@id": "https://kidslab.lk/#viraj-samarasinghe" },
-        { "@id": "https://kidslab.lk/#menura-dulkith" },
-      ],
-    },
-    /* 6. FAQPage — key AEO schema */
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is kidslab.lk?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering, based in Galle, Sri Lanka.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What age group is the Robotics & AI program for?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The program is designed for children aged 9 to 14 years old.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How much does the Robotics & AI program cost?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The course fee is LKR 5,000 for 3 months. It can be paid in installments within 3 months. Day 1 is a completely free introductory seminar with no obligation to continue.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "When is the free seminar?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The free introductory seminar is on 27 June 2026 at the kidslab.lk Academy in Hapugala, Galle, Sri Lanka. Seats are limited — register at kidslab.lk/register.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What will my child learn in the Robotics & AI program?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Children learn to build real robots using mechanics, sensors, and microcontrollers. The program also covers Artificial Intelligence basics, machine learning concepts, and hands-on project building — all in one 3-month course.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who teaches the classes at kidslab.lk?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith — Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Where are the kidslab.lk classes held?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Classes are held at the kidslab.lk Academy in Hapugala, Galle 80000, Sri Lanka.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Can I pay the course fee in installments?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. The LKR 5,000 course fee can be paid in installments spread over 3 months.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How do I register for the free seminar or the course?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Visit kidslab.lk/register and fill in your child's details. You can also contact us via WhatsApp at +94703906478.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Is kidslab.lk affiliated with the University of Ruhuna?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The programs are designed and conducted by Computer Engineering graduates and professionals from the University of Ruhuna, Faculty of Engineering.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who is Viraj Samarasinghe?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Viraj Samarasinghe is a Software Engineer specializing in AI, and co-founder of kidslab.lk. He is a Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka, with expertise in Artificial Intelligence, Robotics, and Embedded Systems.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who is Menura Dulkith?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Menura Dulkith is a Software Engineer specializing in AI, and co-founder of kidslab.lk. He is a Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka, with expertise in Artificial Intelligence, Robotics, and Embedded Systems.",
-          },
-        },
-      ],
-    },
-  ];
-
   return (
     <>
-      {/* Inject all JSON-LD schemas */}
-      {jsonLd.map((schema, i) => (
-        <script
-          key={i}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      ))}
-
+      {/* JSON-LD lives in the server component at src/app/page.tsx so that it
+          is built from the same DB courses the cards render — see
+          buildLandingJsonLd() in src/lib/structured-data.ts. */}
       <LoadingScreen />
       <motion.main
         className="bg-white"
@@ -1208,6 +811,11 @@ function HomeContent() {
                             {[
                               { label: t("programs.card.levelLabel"), value: card.level },
                               { label: t("programs.card.durationLabel"), value: card.duration },
+                              // Class times are optional — only shown when the
+                              // admin has filled in the course's Schedule field.
+                              ...(card.schedule
+                                ? [{ label: t("programs.card.scheduleLabel"), value: card.schedule }]
+                                : []),
                               { label: t("programs.courseFee"), value: card.feeLabel, note: card.installmentNote },
                             ].map((row, ri, arr) => (
                               <div

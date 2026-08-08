@@ -7,7 +7,7 @@ export interface Course {
   duration: string;
   schedule: string;
   price: number;
-  instructors: { _id: string; name: string }[];
+  instructors: { _id: string; name: string; title?: string }[];
   maxStudents: number;
   enrolledCount: number;
   isActive: boolean;

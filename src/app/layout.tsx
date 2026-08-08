@@ -32,7 +32,7 @@ const notoSansSinhala = Noto_Sans_Sinhala({
 });
 
 const DESCRIPTION =
-  "Sri Lanka's #1 Robotics & AI academy for children aged 9–14. Hands-on programs designed and taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Free introductory seminar on 27 June 2026 — limited seats, register now.";
+  "Sri Lanka's #1 Robotics & AI academy for children aged 9–14. Hands-on programs designed and taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Free introductory seminar on 19 September 2026 — limited seats, register now.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

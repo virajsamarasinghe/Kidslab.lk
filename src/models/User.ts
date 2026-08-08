@@ -5,6 +5,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  avatar: string;
   phone: string;
   age: number;
   parentName: string;
@@ -24,6 +25,7 @@ const UserSchema = new Schema<IUser>(
     email:            { type: String, required: true, unique: true, lowercase: true, trim: true },
     // Clerk owns the credential for clerkId accounts, so this stays empty for them.
     password:         { type: String, default: "" },
+    avatar:           { type: String, default: "" },
     phone:            { type: String, default: "" },
     age:              { type: Number, default: 0 },
     parentName:       { type: String, default: "" },

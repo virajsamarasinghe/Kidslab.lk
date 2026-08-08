@@ -58,6 +58,7 @@
       "level": "Ages 9–14",
       "durationLabel": "Duration",
       "duration": "3 Months",
+      "scheduleLabel": "Class Times",
       "fee": "LKR 5,000",
       "installment": "Pay in installments within 3 months",
       "seminar": "Day 1 is a FREE seminar — intro to Robotics & AI, mindset building & motivation"
@@ -149,7 +150,7 @@
       },
       {
         "q": "When is the free seminar?",
-        "a": "The free introductory seminar is on 27 June 2026 at the kidslab.lk Academy in Hapugala, Galle, Sri Lanka. Seats are limited — register at kidslab.lk/register."
+        "a": "The free introductory seminar is on 19 September 2026 at the kidslab.lk Academy in Hapugala, Galle, Sri Lanka. Seats are limited — register at kidslab.lk/register."
       },
       {
         "q": "What will my child learn in the Robotics & AI program?",

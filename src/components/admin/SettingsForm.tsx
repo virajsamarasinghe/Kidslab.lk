@@ -96,27 +96,29 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
         </div>
       </div>
 
-      <div className="max-w-3xl">
+      <div className="w-full">
         <Card className="pcb-card border-slate-100 shadow-sm p-6">
           {loading ? (
             <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
           ) : (
             <div className="space-y-4">
-              {fields.map(f => (
-                <div key={f.key}>
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                    {f.label}
-                  </Label>
-                  <Input
-                    type={f.type ?? "text"}
-                    value={values[f.key] ?? ""}
-                    onChange={e => update(f.key, e.target.value)}
-                    placeholder={f.placeholder}
-                    className="border-slate-200 text-sm"
-                  />
-                  {f.helper && <p className="text-[11px] text-slate-400 mt-1">{f.helper}</p>}
-                </div>
-              ))}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {fields.map(f => (
+                  <div key={f.key}>
+                    <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                      {f.label}
+                    </Label>
+                    <Input
+                      type={f.type ?? "text"}
+                      value={values[f.key] ?? ""}
+                      onChange={e => update(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                      className="border-slate-200 text-sm"
+                    />
+                    {f.helper && <p className="text-[11px] text-slate-400 mt-1">{f.helper}</p>}
+                  </div>
+                ))}
+              </div>
 
               {result && (
                 <div

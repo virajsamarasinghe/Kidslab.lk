@@ -1,15 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, BookOpen, CheckCircle, Mail, ArrowRight, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import {
+  Users, BookOpen, CheckCircle, Mail, ArrowRight, ArrowUpRight, ArrowDownRight,
+  GraduationCap, Contact2, Send, Filter,
+} from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig,
 } from "@/components/ui/chart";
+import type { PipelineStage } from "@/types/crm";
 
 interface Stats {
   totalUsers: number;
@@ -31,7 +36,44 @@ interface Stats {
   signupTrend: Array<{ date: string; signups: number }>;
   topCities: Array<{ city: string; count: number }>;
   topCourses: Array<{ course: string; count: number }>;
+  totalInstructors: number;
+  totalContacts: number;
+  pipeline: Array<{ stage: PipelineStage; count: number }>;
+  totalCampaigns: number;
+  campaignsSent: number;
+  recentCampaigns: Array<{
+    _id: string;
+    subject: string;
+    segment: string;
+    status: "draft" | "sending" | "sent" | "failed";
+    recipientCount: number;
+    sentCount: number;
+    createdAt: string;
+  }>;
 }
+
+const STAGE_LABELS: Record<PipelineStage, string> = {
+  lead: "Lead",
+  contacted: "Contacted",
+  registered: "Registered",
+  enrolled: "Enrolled",
+  alumni: "Alumni",
+};
+
+const STAGE_ACCENTS: Record<PipelineStage, string> = {
+  lead: "#94a3b8",
+  contacted: "var(--brand-blue)",
+  registered: "var(--brand-yellow)",
+  enrolled: "#16a34a",
+  alumni: "#9333ea",
+};
+
+const CAMPAIGN_STATUS_STYLES: Record<string, string> = {
+  draft: "bg-slate-50 text-slate-500 border-slate-200",
+  sending: "bg-blue-50 text-blue-600 border-blue-200",
+  sent: "bg-green-50 text-green-700 border-green-200",
+  failed: "bg-red-50 text-red-600 border-red-200",
+};
 
 const signupChartConfig = {
   signups: { label: "New Students", color: "var(--color-chart-1)" },
@@ -59,6 +101,22 @@ export default function AdminDashboard() {
     { label: "Active Students", value: stats?.activeUsers ?? "—", icon: CheckCircle, bg: "rgba(22,163,74,0.10)", color: "#16a34a" },
     { label: "Newsletter Subscribers", value: stats?.totalSubscribers ?? "—", icon: Mail, bg: "rgba(43,95,224,0.10)", color: "var(--brand-blue)" },
   ];
+
+  const secondaryCards = [
+    { label: "Instructors", value: stats?.totalInstructors ?? "—", icon: GraduationCap, bg: "rgba(147,51,234,0.10)", color: "#9333ea" },
+    { label: "CRM Contacts", value: stats?.totalContacts ?? "—", icon: Contact2, bg: "rgba(43,95,224,0.10)", color: "var(--brand-blue)" },
+    { label: "Campaigns Sent", value: stats ? `${stats.campaignsSent}/${stats.totalCampaigns}` : "—", icon: Send, bg: "rgba(224,138,60,0.12)", color: "var(--brand-red)" },
+    {
+      label: "Enrolled → Alumni",
+      value: stats ? stats.pipeline.find(p => p.stage === "enrolled")?.count ?? 0 : "—",
+      icon: Filter,
+      bg: "rgba(22,163,74,0.10)",
+      color: "#16a34a",
+    },
+  ];
+
+  const pipeline = stats?.pipeline ?? [];
+  const pipelineTotal = pipeline.reduce((sum, p) => sum + p.count, 0);
 
   const statusData = stats
     ? [
@@ -93,6 +151,23 @@ export default function AdminDashboard() {
               </div>
               <div>
                 <p className="text-2xl font-extrabold text-slate-900 tracking-tight leading-none">{value}</p>
+                <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Secondary stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-6">
+        {secondaryCards.map(({ label, value, icon: Icon, bg, color }) => (
+          <Card key={label} className="pcb-card border-slate-100 shadow-sm">
+            <CardContent className="p-5 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: bg }}>
+                <Icon className="w-5 h-5" style={{ color }} />
+              </div>
+              <div>
+                <p className="text-xl font-extrabold text-slate-900 tracking-tight leading-none">{value}</p>
                 <p className="text-xs text-slate-400 mt-1 font-medium">{label}</p>
               </div>
             </CardContent>
@@ -222,6 +297,85 @@ export default function AdminDashboard() {
               </ChartContainer>
             ) : (
               <div className="h-[200px] flex items-center justify-center text-slate-400 text-sm">No data yet</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* CRM row */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
+        {/* Pipeline funnel */}
+        <Card className="pcb-card border-slate-100 shadow-sm xl:col-span-2">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div>
+              <CardTitle className="text-sm font-semibold text-slate-900">Enrollment Pipeline</CardTitle>
+              <p className="text-xs text-slate-400 mt-1">{stats?.totalContacts ?? 0} contacts across all stages</p>
+            </div>
+            <a
+              href="/admin/crm/pipeline"
+              className="text-xs font-semibold hover:underline flex items-center gap-1"
+              style={{ color: "var(--brand-red)" }}
+            >
+              Open board <ArrowRight className="w-3 h-3" />
+            </a>
+          </CardHeader>
+          <CardContent className="pb-5">
+            {stats ? (
+              <div className="space-y-3">
+                {pipeline.map(({ stage, count }) => {
+                  const pct = pipelineTotal > 0 ? Math.round((count / pipelineTotal) * 100) : 0;
+                  return (
+                    <div key={stage}>
+                      <div className="flex items-center justify-between text-xs mb-1">
+                        <span className="flex items-center gap-1.5 font-medium text-slate-600">
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: STAGE_ACCENTS[stage] }} />
+                          {STAGE_LABELS[stage]}
+                        </span>
+                        <span className="text-slate-400">{count} · {pct}%</span>
+                      </div>
+                      <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${pct}%`, backgroundColor: STAGE_ACCENTS[stage] }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="h-[160px] flex items-center justify-center text-slate-400 text-sm">Loading…</div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent campaigns */}
+        <Card className="pcb-card border-slate-100 shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-semibold text-slate-900">Recent Campaigns</CardTitle>
+            <a
+              href="/admin/crm/campaigns"
+              className="text-xs font-semibold hover:underline flex items-center gap-1"
+              style={{ color: "var(--brand-red)" }}
+            >
+              View all <ArrowRight className="w-3 h-3" />
+            </a>
+          </CardHeader>
+          <CardContent className="pb-4 space-y-2.5">
+            {stats && stats.recentCampaigns.length > 0 ? (
+              stats.recentCampaigns.map(c => (
+                <div key={c._id} className="flex items-start justify-between gap-2 border-b border-slate-50 last:border-0 pb-2.5 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-slate-900 truncate">{c.subject}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{c.sentCount}/{c.recipientCount} sent</p>
+                  </div>
+                  <Badge className={`text-[10px] shrink-0 capitalize ${CAMPAIGN_STATUS_STYLES[c.status]}`}>
+                    {c.status}
+                  </Badge>
+                </div>
+              ))
+            ) : (
+              <div className="h-[120px] flex items-center justify-center text-slate-400 text-sm">No campaigns yet</div>
             )}
           </CardContent>
         </Card>

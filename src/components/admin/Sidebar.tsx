@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  LayoutDashboard, Users, BookOpen, LogOut, Mail, ShieldCheck, UserRound,
+  LayoutDashboard, Users, BookOpen, Mail, UserRound,
   Settings, ChevronDown, Send, BrainCircuit, Layers3,
-  Contact2, KanbanSquare, Megaphone, type LucideIcon,
+  Contact2, KanbanSquare, Megaphone, X, type LucideIcon,
 } from "lucide-react";
 
 const navItems = [
@@ -51,10 +51,69 @@ const navGroups: NavGroupDef[] = [
   },
 ];
 
-function NavGroup({ group, pathname }: { group: NavGroupDef; pathname: string }) {
+function NavGroup({ group, pathname, collapsed }: { group: NavGroupDef; pathname: string; collapsed: boolean }) {
   const inGroup = pathname.startsWith(group.basePath);
   const [open, setOpen] = useState(inGroup);
+  const [flyoutOpen, setFlyoutOpen] = useState(false);
   const Icon = group.icon;
+
+  if (collapsed) {
+    return (
+      <div
+        className="relative"
+        onMouseEnter={() => setFlyoutOpen(true)}
+        onMouseLeave={() => setFlyoutOpen(false)}
+      >
+        <button
+          className={`w-full relative flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
+            inGroup ? "text-white" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+          }`}
+        >
+          {inGroup && (
+            <span
+              className="absolute inset-0 rounded-xl shadow-[0_4px_16px_-2px_rgba(224,138,60,0.5)]"
+              style={{ backgroundColor: "var(--brand-red)" }}
+            />
+          )}
+          <span className="relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0">
+            <Icon className="w-3.5 h-3.5" />
+          </span>
+        </button>
+
+        <AnimatePresence>
+          {flyoutOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: -6 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.12 }}
+              className="absolute left-full top-0 ml-2 w-52 rounded-xl border border-white/10 shadow-xl py-2 z-50"
+              style={{ backgroundColor: "var(--brand-navy)" }}
+            >
+              <p className="px-3 pb-1.5 text-[10px] font-bold tracking-[0.18em] uppercase text-slate-500">
+                {group.label}
+              </p>
+              {group.items.map(({ label, href, icon: ItemIcon }) => {
+                const active = pathname === href;
+                return (
+                  <a
+                    key={href}
+                    href={href}
+                    className={`flex items-center gap-2.5 mx-2 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                      active ? "text-white bg-white/10" : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <ItemIcon className="w-3.5 h-3.5 shrink-0" />
+                    {label}
+                  </a>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -122,108 +181,123 @@ function NavGroup({ group, pathname }: { group: NavGroupDef; pathname: string })
   );
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({
+  collapsed,
+  mobileOpen,
+  onCloseMobile,
+}: {
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onCloseMobile: () => void;
+}) {
   const pathname = usePathname();
-  const router = useRouter();
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-  }
 
   return (
-    <aside
-      className="fixed inset-y-0 left-0 w-64 flex flex-col z-40 border-r border-white/5"
-      style={{
-        background:
-          "linear-gradient(180deg, var(--brand-navy) 0%, #123a2a 55%, #0d2560 100%)",
-      }}
-    >
-      {/* Brand — the logo is a wide wordmark on its own white plate, so it
-          gets a white panel sized to its real aspect ratio rather than
-          being squashed into a square dark badge. */}
-      <div className="h-16 flex items-center px-5 relative shrink-0">
-        <div className="bg-white rounded-lg shadow-sm px-2.5 py-1.5 flex items-center">
-          <Image src="/logo.png" alt="kidslab.lk" width={301} height={121} className="h-7 w-auto object-contain" priority />
-        </div>
-        <p className="text-slate-500 text-[10px] ml-2.5 font-semibold tracking-[0.15em] uppercase">Admin</p>
-        {/* Bottom edge trace */}
-        <div
-          className="absolute bottom-0 left-5 right-5 h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-yellow) 45%, transparent) 50%, transparent)",
-          }}
-        />
-      </div>
+    <>
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onCloseMobile}
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Navigation */}
-      <nav className="flex-1 px-3 pt-6 pb-4 space-y-1 overflow-y-auto">
-        <p className="px-3 mb-2 text-[10px] font-bold tracking-[0.18em] uppercase text-slate-500">
-          Menu
-        </p>
-        {navItems.map(({ label, href, icon: Icon }) => {
-          const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
-          return (
-            <a
-              key={href}
-              href={href}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
-                active
-                  ? "text-white"
-                  : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
-              }`}
-            >
-              {active && (
-                <motion.span
-                  layoutId="admin-nav-active"
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  className="absolute inset-0 rounded-xl shadow-[0_4px_16px_-2px_rgba(224,138,60,0.5)]"
-                  style={{ backgroundColor: "var(--brand-red)" }}
-                />
-              )}
-              <span
-                className={`relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
-                  active ? "bg-white/15" : "bg-white/5"
+      <aside
+        className={`fixed inset-y-0 left-0 flex flex-col z-40 border-r border-white/5 transition-all duration-200 ease-out
+          ${collapsed ? "lg:w-20" : "lg:w-64"} w-64
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
+        style={{
+          background:
+            "linear-gradient(180deg, var(--brand-navy) 0%, #123a2a 55%, #0d2560 100%)",
+        }}
+      >
+        {/* Brand */}
+        <div className="h-16 flex items-center px-5 relative shrink-0">
+          <div className={`bg-white rounded-lg shadow-sm px-2.5 py-1.5 flex items-center ${collapsed ? "lg:mx-auto lg:px-2" : ""}`}>
+            <Image
+              src="/logo.png"
+              alt="kidslab.lk"
+              width={301}
+              height={121}
+              className={`h-7 w-auto object-contain ${collapsed ? "lg:hidden" : ""}`}
+              priority
+            />
+            <span className={`hidden ${collapsed ? "lg:block" : ""} text-[11px] font-black tracking-tight`} style={{ color: "var(--brand-navy)" }}>
+              KL
+            </span>
+          </div>
+          <p className={`text-slate-500 text-[10px] ml-2.5 font-semibold tracking-[0.15em] uppercase ${collapsed ? "lg:hidden" : ""}`}>
+            Admin
+          </p>
+          <button
+            onClick={onCloseMobile}
+            className="ml-auto text-slate-400 hover:text-white lg:hidden"
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          <div
+            className="absolute bottom-0 left-5 right-5 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-yellow) 45%, transparent) 50%, transparent)",
+            }}
+          />
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 pt-6 pb-4 space-y-1 overflow-y-auto overflow-x-visible">
+          <p className={`px-3 mb-2 text-[10px] font-bold tracking-[0.18em] uppercase text-slate-500 ${collapsed ? "lg:hidden" : ""}`}>
+            Menu
+          </p>
+          {navItems.map(({ label, href, icon: Icon }) => {
+            const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+            return (
+              <a
+                key={href}
+                href={href}
+                title={collapsed ? label : undefined}
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 ${
+                  collapsed ? "lg:justify-center" : ""
+                } ${
+                  active
+                    ? "text-white"
+                    : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" />
-              </span>
-              <span className="relative z-10">{label}</span>
-              {active && (
-                <span className="relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-white" />
-              )}
-            </a>
-          );
-        })}
+                {active && (
+                  <motion.span
+                    layoutId="admin-nav-active"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    className="absolute inset-0 rounded-xl shadow-[0_4px_16px_-2px_rgba(224,138,60,0.5)]"
+                    style={{ backgroundColor: "var(--brand-red)" }}
+                  />
+                )}
+                <span
+                  className={`relative z-10 flex items-center justify-center w-7 h-7 rounded-lg shrink-0 transition-colors ${
+                    active ? "bg-white/15" : "bg-white/5"
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                </span>
+                <span className={`relative z-10 ${collapsed ? "lg:hidden" : ""}`}>{label}</span>
+                {active && (
+                  <span className={`relative z-10 ml-auto w-1.5 h-1.5 rounded-full bg-white ${collapsed ? "lg:hidden" : ""}`} />
+                )}
+              </a>
+            );
+          })}
 
-        {navGroups.map(group => (
-          <NavGroup key={group.id} group={group} pathname={pathname} />
-        ))}
-      </nav>
-
-      {/* Admin identity + Logout */}
-      <div className="px-3 pb-4 pt-3 border-t border-white/10 space-y-3">
-        <div className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]">
-          <div
-            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}
-          >
-            <ShieldCheck className="w-4 h-4 text-white" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-white text-xs font-semibold leading-none truncate">Administrator</p>
-            <p className="text-slate-500 text-[10px] mt-1 truncate">Full access</p>
-          </div>
-        </div>
-        <button
-          onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all"
-        >
-          <LogOut className="w-4 h-4 shrink-0" />
-          Sign Out
-        </button>
-      </div>
-    </aside>
+          {navGroups.map(group => (
+            <NavGroup key={group.id} group={group} pathname={pathname} collapsed={collapsed} />
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }

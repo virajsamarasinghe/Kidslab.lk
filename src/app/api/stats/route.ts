@@ -4,6 +4,9 @@ import { getAdminSession } from "@/lib/auth";
 import User from "@/models/User";
 import Course from "@/models/Course";
 import Subscriber from "@/models/Subscriber";
+import Instructor from "@/models/Instructor";
+import Contact, { PIPELINE_STAGES } from "@/models/Contact";
+import Campaign from "@/models/Campaign";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TREND_DAYS = 14;
@@ -33,6 +36,12 @@ export async function GET() {
     topCoursesRaw,
     usersThisWeek,
     usersLastWeek,
+    totalInstructors,
+    totalContacts,
+    pipelineByStageRaw,
+    totalCampaigns,
+    campaignsSent,
+    recentCampaigns,
   ] = await Promise.all([
     User.countDocuments({ role: "user" }),
     Course.countDocuments(),
@@ -59,6 +68,14 @@ export async function GET() {
     ]),
     User.countDocuments({ role: "user", createdAt: { $gte: weekAgo } }),
     User.countDocuments({ role: "user", createdAt: { $gte: twoWeeksAgo, $lt: weekAgo } }),
+    Instructor.countDocuments(),
+    Contact.countDocuments(),
+    Contact.aggregate([
+      { $group: { _id: "$stage", count: { $sum: 1 } } },
+    ]),
+    Campaign.countDocuments(),
+    Campaign.countDocuments({ status: "sent" }),
+    Campaign.find().sort({ createdAt: -1 }).limit(5).select("subject segment status recipientCount sentCount createdAt").lean(),
   ]);
 
   // Fill every day in the trend window, including days with zero signups
@@ -79,6 +96,9 @@ export async function GET() {
         : 0
       : Math.round(((usersThisWeek - usersLastWeek) / usersLastWeek) * 100);
 
+  const countsByStage = new Map(pipelineByStageRaw.map((s: { _id: string; count: number }) => [s._id, s.count]));
+  const pipeline = PIPELINE_STAGES.map(stage => ({ stage, count: countsByStage.get(stage) ?? 0 }));
+
   return NextResponse.json({
     totalUsers,
     totalCourses,
@@ -92,5 +112,11 @@ export async function GET() {
     signupTrend,
     topCities: topCitiesRaw.map((c: { _id: string; count: number }) => ({ city: c._id, count: c.count })),
     topCourses: topCoursesRaw.map((c: { _id: string; count: number }) => ({ course: c._id, count: c.count })),
+    totalInstructors,
+    totalContacts,
+    pipeline,
+    totalCampaigns,
+    campaignsSent,
+    recentCampaigns,
   });
 }
