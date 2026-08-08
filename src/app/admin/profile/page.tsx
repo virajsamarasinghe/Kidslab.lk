@@ -81,7 +81,7 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="p-8">
       <div className="mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
@@ -100,106 +100,111 @@ export default function AdminProfilePage() {
         </div>
       </div>
 
-      <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-8">
-        {/* Avatar */}
-        <div className="flex items-center gap-5">
-          <div className="relative shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Avatar card */}
+        <Card className="pcb-card border-slate-100 shadow-sm p-6 lg:col-span-1 h-fit">
+          <div className="flex flex-col items-center text-center gap-4">
+            <div className="relative shrink-0">
+              <div
+                className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}
+              >
+                {profile.avatar ? (
+                  <Image src={profile.avatar} alt={profile.name} width={112} height={112} className="w-full h-full object-cover" />
+                ) : (
+                  <ShieldCheck className="w-10 h-10 text-white" />
+                )}
+              </div>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors disabled:opacity-50"
+                aria-label="Change profile photo"
+              >
+                {uploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" style={{ color: "var(--brand-navy)" }} />
+                ) : (
+                  <Camera className="w-4 h-4" style={{ color: "var(--brand-navy)" }} />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/gif"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-800">{profile.name}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{profile.email}</p>
+            </div>
+            <p className="text-xs text-slate-400">JPG, PNG, WEBP or GIF. Max 5MB.</p>
+          </div>
+        </Card>
+
+        {/* Details + password */}
+        <Card className="pcb-card border-slate-100 shadow-sm p-6 lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</Label>
+              <Input value={name} onChange={e => setName(e.target.value)} className="border-slate-200 text-sm" />
+            </div>
+            <div>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Email</Label>
+              <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="border-slate-200 text-sm" />
+            </div>
+          </div>
+
+          {/* Password */}
+          <div>
+            <p className="text-sm font-semibold text-slate-800 mb-3">Change password</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Current Password</Label>
+                <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="border-slate-200 text-sm" placeholder="••••••••" />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">New Password</Label>
+                <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="border-slate-200 text-sm" placeholder="••••••••" />
+              </div>
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Confirm New Password</Label>
+                <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="border-slate-200 text-sm" placeholder="••••••••" />
+              </div>
+            </div>
+            <p className="text-xs text-slate-400 mt-2">Leave blank to keep your current password.</p>
+          </div>
+
+          {notice && (
             <div
-              className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center"
-              style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}
+              className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
+                notice.success
+                  ? "bg-green-50 border-green-200 text-green-700"
+                  : "bg-red-50 border-red-200 text-red-600"
+              }`}
             >
-              {profile.avatar ? (
-                <Image src={profile.avatar} alt={profile.name} width={80} height={80} className="w-full h-full object-cover" />
+              {notice.success ? (
+                <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
               ) : (
-                <ShieldCheck className="w-8 h-8 text-white" />
+                <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
               )}
+              <span className="break-words">{notice.message}</span>
             </div>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:bg-slate-50 transition-colors disabled:opacity-50"
-              aria-label="Change profile photo"
+          )}
+
+          <div>
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
             >
-              {uploading ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: "var(--brand-navy)" }} />
-              ) : (
-                <Camera className="w-3.5 h-3.5" style={{ color: "var(--brand-navy)" }} />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/gif"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? "Saving…" : "Save Changes"}
+            </Button>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-800">Profile photo</p>
-            <p className="text-xs text-slate-500 mt-0.5">JPG, PNG, WEBP or GIF. Max 5MB.</p>
-          </div>
-        </div>
-
-        {/* Details */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} className="border-slate-200 text-sm" />
-          </div>
-          <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Email</Label>
-            <Input type="email" value={email} onChange={e => setEmail(e.target.value)} className="border-slate-200 text-sm" />
-          </div>
-        </div>
-
-        {/* Password */}
-        <div>
-          <p className="text-sm font-semibold text-slate-800 mb-3">Change password</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Current Password</Label>
-              <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="border-slate-200 text-sm" placeholder="••••••••" />
-            </div>
-            <div>
-              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">New Password</Label>
-              <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="border-slate-200 text-sm" placeholder="••••••••" />
-            </div>
-            <div>
-              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Confirm New Password</Label>
-              <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="border-slate-200 text-sm" placeholder="••••••••" />
-            </div>
-          </div>
-          <p className="text-xs text-slate-400 mt-2">Leave blank to keep your current password.</p>
-        </div>
-
-        {notice && (
-          <div
-            className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
-              notice.success
-                ? "bg-green-50 border-green-200 text-green-700"
-                : "bg-red-50 border-red-200 text-red-600"
-            }`}
-          >
-            {notice.success ? (
-              <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-            ) : (
-              <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-            )}
-            <span className="break-words">{notice.message}</span>
-          </div>
-        )}
-
-        <div>
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            {saving ? "Saving…" : "Save Changes"}
-          </Button>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }
