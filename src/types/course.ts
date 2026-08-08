@@ -7,8 +7,11 @@ export interface Course {
   duration: string;
   schedule: string;
   price: number;
-  instructor: string;
+  instructors: { _id: string; name: string }[];
   maxStudents: number;
   enrolledCount: number;
   isActive: boolean;
+  badgeText: string;
+  ctaLabel: string;
+  seminarNote: string;
 }

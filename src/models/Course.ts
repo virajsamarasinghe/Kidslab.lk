@@ -8,10 +8,15 @@ export interface ICourse extends Document {
   duration: string;
   schedule: string;
   price: number;
-  instructor: string;
+  instructors: mongoose.Types.ObjectId[];
   maxStudents: number;
   enrolledCount: number;
   isActive: boolean;
+  // Optional overrides for the landing-page program card — fall back to
+  // translated defaults on the frontend when left blank.
+  badgeText: string;
+  ctaLabel: string;
+  seminarNote: string;
   createdAt: Date;
 }
 
@@ -24,10 +29,13 @@ const CourseSchema = new Schema<ICourse>(
     duration:       { type: String, default: "" },
     schedule:       { type: String, default: "" },
     price:          { type: Number, default: 0 },
-    instructor:     { type: String, default: "" },
+    instructors:    [{ type: Schema.Types.ObjectId, ref: "Instructor" }],
     maxStudents:    { type: Number, default: 50 },
     enrolledCount:  { type: Number, default: 0 },
     isActive:       { type: Boolean, default: true },
+    badgeText:      { type: String, default: "" },
+    ctaLabel:       { type: String, default: "" },
+    seminarNote:    { type: String, default: "" },
   },
   { timestamps: true }
 );

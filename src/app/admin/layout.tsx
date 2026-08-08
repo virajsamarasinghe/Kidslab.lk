@@ -12,7 +12,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       style={{ backgroundColor: "var(--brand-paper)" }}
     >
       <AdminSidebar />
-      <main className="flex-1 ml-60 min-h-screen">
+      <main className="flex-1 ml-64 min-h-screen">
         {children}
       </main>
     </div>

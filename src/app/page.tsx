@@ -12,10 +12,12 @@ import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { LocaleProvider, useLocale } from "@/lib/locale-context";
 import { RegisterModalProvider, useRegisterModal } from "@/lib/register-modal-context";
 import { Button } from "@/components/ui/button";
+import type { Course } from "@/types/course";
 import {
     ArrowRight,
     Award,
     CheckCircle,
+    ChevronLeft,
     ChevronRight,
     FlaskConical,
     GraduationCap,
@@ -392,6 +394,58 @@ function HomeContent() {
     const id = setTimeout(() => setLangFading(false), 160);
     return () => clearTimeout(id);
   }, [locale]);
+
+  /* ── Live programs, pulled from the admin-managed course backend ── */
+  const [liveCourses, setLiveCourses] = useState<Course[] | null>(null);
+  useEffect(() => {
+    fetch("/api/courses")
+      .then((r) => r.json())
+      .then((data: { courses?: Course[] }) => {
+        setLiveCourses((data.courses ?? []).filter((c) => c.isActive));
+      })
+      .catch(() => setLiveCourses([]));
+  }, []);
+  const programCards = useMemo(() => {
+    if (liveCourses && liveCourses.length > 0) {
+      return liveCourses.map((c) => ({
+        id: c._id,
+        title: c.title,
+        desc: c.description || t("programs.card.desc"),
+        level: c.ageRange || t("programs.card.level"),
+        duration: c.duration || t("programs.card.duration"),
+        feeLabel: `LKR ${c.price.toLocaleString()}`,
+        installmentNote: t("programs.card.installment"),
+        badgeText: c.badgeText || t("programs.enrollingNow"),
+        ctaLabel: c.ctaLabel || t("programs.ctaRegister"),
+        seminarNote: c.seminarNote || t("programs.card.seminar"),
+        instructorNames: c.instructors.map((i) => i.name).join(", "),
+      }));
+    }
+    return [
+      {
+        id: "flagship",
+        title: t("programs.card.title"),
+        desc: t("programs.card.desc"),
+        level: t("programs.card.level"),
+        duration: t("programs.card.duration"),
+        feeLabel: t("programs.card.fee"),
+        installmentNote: t("programs.card.installment"),
+        badgeText: t("programs.enrollingNow"),
+        ctaLabel: t("programs.ctaRegister"),
+        seminarNote: t("programs.card.seminar"),
+        instructorNames: "",
+      },
+    ];
+  }, [liveCourses, t]);
+  const [activeCourseIndex, setActiveCourseIndex] = useState(0);
+  const courseScrollRef = useRef<HTMLDivElement>(null);
+  const scrollToCourse = (index: number) => {
+    const el = courseScrollRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(index, programCards.length - 1));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
+    setActiveCourseIndex(clamped);
+  };
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -1034,127 +1088,188 @@ function HomeContent() {
               </p>
             </AnimateIn>
 
-            {/* Flagship program — a single offering shown as a component
-                datasheet rather than a generic pricing card, since a
-                one-item "programs" list reads as sparse in a plain card. */}
-            <AnimateIn className="max-w-4xl xl:max-w-5xl mx-auto">
-                <motion.div
-                  className="rounded-3xl"
-                  animate={{
-                    boxShadow: [
-                      "0 0 0 0px rgba(224,138,60,0.3), 0 10px 40px rgba(15,36,24,0.08)",
-                      "0 0 0 5px rgba(224,138,60,0.1), 0 10px 40px rgba(15,36,24,0.15)",
-                      "0 0 0 10px rgba(224,138,60,0), 0 10px 40px rgba(15,36,24,0.08)",
-                    ],
-                  }}
-                  transition={{
-                    duration: 2.5,
-                    repeat: Infinity,
-                    ease: "easeOut",
-                  }}
-                >
-                  <div
-                    className="pcb-card relative rounded-3xl border-2 overflow-hidden bg-white"
-                    style={{ borderColor: "var(--brand-navy)" }}
-                  >
-                    {/* Datasheet corner stamp — echoes the hero's REV. 2026 badge */}
-                    <span
-                      className="pcb-stamp absolute top-0 right-6 z-10 px-4 py-1.5 text-white text-[11px] font-semibold tracking-widest uppercase inline-flex items-center gap-1.5"
-                      style={{ backgroundColor: "var(--brand-red)" }}
+            {/* Programs carousel — driven by the admin-managed course
+                backend, with a translation-based fallback card so the
+                section never renders empty before any course is added. */}
+            <AnimateIn className="max-w-4xl xl:max-w-5xl mx-auto relative">
+              <div
+                ref={courseScrollRef}
+                onScroll={(e) => {
+                  const el = e.currentTarget;
+                  const idx = Math.round(el.scrollLeft / Math.max(el.clientWidth, 1));
+                  if (idx !== activeCourseIndex) setActiveCourseIndex(idx);
+                }}
+                className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar rounded-3xl"
+                style={{ scrollbarWidth: "none" }}
+              >
+                {programCards.map((card, i) => (
+                  <div key={card.id} className="w-full shrink-0 snap-center px-1">
+                    <motion.div
+                      className="rounded-3xl"
+                      animate={{
+                        boxShadow: [
+                          "0 0 0 0px rgba(224,138,60,0.3), 0 10px 40px rgba(15,36,24,0.08)",
+                          "0 0 0 5px rgba(224,138,60,0.1), 0 10px 40px rgba(15,36,24,0.15)",
+                          "0 0 0 10px rgba(224,138,60,0), 0 10px 40px rgba(15,36,24,0.08)",
+                        ],
+                      }}
+                      transition={{
+                        duration: 2.5,
+                        repeat: Infinity,
+                        ease: "easeOut",
+                        delay: i * 0.15,
+                      }}
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
-                      {t("programs.enrollingNow")}
-                    </span>
-
-                    <div className="grid md:grid-cols-[1.35fr_1fr]">
-                      {/* Left — the story */}
-                      <div className="p-8 xl:p-10 pt-12 flex flex-col gap-5">
-                        <div>
-                          <h3
-                            className="text-display-md"
-                            style={{ color: "var(--brand-navy)" }}
-                          >
-                            {t("programs.card.title")}
-                          </h3>
-                          <p className="text-body-md text-slate-500 mt-2">
-                            {t("programs.card.desc")}
-                          </p>
-                        </div>
-
-                        {/* Seminar callout */}
-                        <div
-                          className="rounded-xl px-4 py-3 flex gap-3 items-start"
-                          style={{
-                            backgroundColor: "#f0f4ff",
-                            border: "1px solid #c8d4f0",
-                          }}
-                        >
-                          <Star
-                            className="w-4 h-4 mt-0.5 shrink-0"
-                            style={{ color: "var(--brand-red)" }}
-                          />
-                          <p className="text-[13px] text-slate-600 leading-snug">
-                            {t("programs.card.seminar")}
-                          </p>
-                        </div>
-
-                        {/* CTA */}
-                        <motion.div
-                          className="rounded-full mt-auto"
-                          animate={{
-                            boxShadow: [
-                              "0 0 0 0px rgba(224,138,60,0.4)",
-                              "0 0 0 4px rgba(224,138,60,0.13)",
-                              "0 0 0 8px rgba(224,138,60,0)",
-                            ],
-                          }}
-                          transition={{
-                            duration: 2.2,
-                            repeat: Infinity,
-                            ease: "easeOut",
-                          }}
-                        >
-                          <button
-                            onClick={openRegisterModal}
-                            className="btn-register btn-brand-copper w-full text-white font-semibold h-11 rounded-full text-[14px] tracking-[-0.01em]"
-                          >
-                            {t("programs.ctaRegister")}
-                          </button>
-                        </motion.div>
-                      </div>
-
-                      {/* Right — spec sheet */}
                       <div
-                        className="p-8 xl:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100"
-                        style={{ backgroundColor: "var(--brand-paper)" }}
+                        className="pcb-card relative rounded-3xl border-2 overflow-hidden bg-white"
+                        style={{ borderColor: "var(--brand-navy)" }}
                       >
-                        {[
-                          { label: t("programs.card.levelLabel"), value: t("programs.card.level") },
-                          { label: t("programs.card.durationLabel"), value: t("programs.card.duration") },
-                          { label: t("programs.courseFee"), value: t("programs.card.fee"), note: t("programs.card.installment") },
-                        ].map((row, i, arr) => (
-                          <div
-                            key={row.label}
-                            className={`py-4 ${i < arr.length - 1 ? "border-b border-slate-200/70" : ""}`}
-                          >
-                            <p className="text-label text-slate-400">{row.label}</p>
-                            <p
-                              className="font-bold mt-1"
-                              style={{ color: "var(--brand-navy)", fontSize: "1.0625rem" }}
+                        {/* Datasheet corner stamp — echoes the hero's REV. 2026 badge */}
+                        <span
+                          className="pcb-stamp absolute top-0 right-6 z-10 px-4 py-1.5 text-white text-[11px] font-semibold tracking-widest uppercase inline-flex items-center gap-1.5"
+                          style={{ backgroundColor: "var(--brand-red)" }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />
+                          {card.badgeText}
+                        </span>
+
+                        <div className="grid md:grid-cols-[1.35fr_1fr]">
+                          {/* Left — the story */}
+                          <div className="p-8 xl:p-10 pt-12 flex flex-col gap-5">
+                            <div>
+                              <h3
+                                className="text-display-md"
+                                style={{ color: "var(--brand-navy)" }}
+                              >
+                                {card.title}
+                              </h3>
+                              <p className="text-body-md text-slate-500 mt-2">
+                                {card.desc}
+                              </p>
+                            </div>
+
+                            {/* Seminar callout */}
+                            <div
+                              className="rounded-xl px-4 py-3 flex gap-3 items-start"
+                              style={{
+                                backgroundColor: "#f0f4ff",
+                                border: "1px solid #c8d4f0",
+                              }}
                             >
-                              {row.value}
-                            </p>
-                            {row.note && (
-                              <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">
-                                {row.note}
+                              <Star
+                                className="w-4 h-4 mt-0.5 shrink-0"
+                                style={{ color: "var(--brand-red)" }}
+                              />
+                              <p className="text-[13px] text-slate-600 leading-snug">
+                                {card.seminarNote}
+                              </p>
+                            </div>
+
+                            {card.instructorNames && (
+                              <p className="text-[13px] text-slate-500">
+                                <span className="font-semibold text-slate-600">Taught by:</span>{" "}
+                                {card.instructorNames}
                               </p>
                             )}
+
+                            {/* CTA */}
+                            <motion.div
+                              className="rounded-full mt-auto"
+                              animate={{
+                                boxShadow: [
+                                  "0 0 0 0px rgba(224,138,60,0.4)",
+                                  "0 0 0 4px rgba(224,138,60,0.13)",
+                                  "0 0 0 8px rgba(224,138,60,0)",
+                                ],
+                              }}
+                              transition={{
+                                duration: 2.2,
+                                repeat: Infinity,
+                                ease: "easeOut",
+                              }}
+                            >
+                              <button
+                                onClick={openRegisterModal}
+                                className="btn-register btn-brand-copper w-full text-white font-semibold h-11 rounded-full text-[14px] tracking-[-0.01em]"
+                              >
+                                {card.ctaLabel}
+                              </button>
+                            </motion.div>
                           </div>
-                        ))}
+
+                          {/* Right — spec sheet */}
+                          <div
+                            className="p-8 xl:p-10 flex flex-col justify-center border-t md:border-t-0 md:border-l border-slate-100"
+                            style={{ backgroundColor: "var(--brand-paper)" }}
+                          >
+                            {[
+                              { label: t("programs.card.levelLabel"), value: card.level },
+                              { label: t("programs.card.durationLabel"), value: card.duration },
+                              { label: t("programs.courseFee"), value: card.feeLabel, note: card.installmentNote },
+                            ].map((row, ri, arr) => (
+                              <div
+                                key={row.label}
+                                className={`py-4 ${ri < arr.length - 1 ? "border-b border-slate-200/70" : ""}`}
+                              >
+                                <p className="text-label text-slate-400">{row.label}</p>
+                                <p
+                                  className="font-bold mt-1"
+                                  style={{ color: "var(--brand-navy)", fontSize: "1.0625rem" }}
+                                >
+                                  {row.value}
+                                </p>
+                                {row.note && (
+                                  <p className="text-[12px] text-slate-500 mt-0.5 leading-snug">
+                                    {row.note}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
-                </motion.div>
+                ))}
+              </div>
+
+              {/* Carousel controls — only shown once there's more than one active course */}
+              {programCards.length > 1 && (
+                <>
+                  <button
+                    aria-label="Previous program"
+                    onClick={() => scrollToCourse(activeCourseIndex - 1)}
+                    disabled={activeCourseIndex === 0}
+                    className="hidden md:flex absolute top-1/2 -left-5 -translate-y-1/2 items-center justify-center w-10 h-10 rounded-full bg-white shadow-lg border border-slate-200 text-slate-500 hover:text-[color:var(--brand-navy)] hover:border-slate-300 transition-all disabled:opacity-0 disabled:pointer-events-none"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    aria-label="Next program"
+                    onClick={() => scrollToCourse(activeCourseIndex + 1)}
+                    disabled={activeCourseIndex === programCards.length - 1}
+                    className="hidden md:flex absolute top-1/2 -right-5 -translate-y-1/2 items-center justify-center w-10 h-10 rounded-full bg-white shadow-lg border border-slate-200 text-slate-500 hover:text-[color:var(--brand-navy)] hover:border-slate-300 transition-all disabled:opacity-0 disabled:pointer-events-none"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex items-center justify-center gap-2 mt-6">
+                    {programCards.map((card, i) => (
+                      <button
+                        key={card.id}
+                        aria-label={`Go to program ${i + 1}`}
+                        onClick={() => scrollToCourse(i)}
+                        className="h-1.5 rounded-full transition-all"
+                        style={{
+                          width: i === activeCourseIndex ? "1.5rem" : "0.375rem",
+                          backgroundColor:
+                            i === activeCourseIndex ? "var(--brand-red)" : "#cbd5e1",
+                        }}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </AnimateIn>
           </div>
         </section>

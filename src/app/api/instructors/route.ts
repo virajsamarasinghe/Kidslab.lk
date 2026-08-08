@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
-import Course from "@/models/Course";
-import "@/models/Instructor";
+import Instructor from "@/models/Instructor";
 
 export async function GET() {
+  const session = await getAdminSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   await connectDB();
-  const courses = await Course.find()
-    .sort({ createdAt: -1 })
-    .populate("instructors", "name")
-    .lean();
-  return NextResponse.json({ courses });
+  const instructors = await Instructor.find().sort({ name: 1 }).lean();
+  return NextResponse.json({ instructors });
 }
 
 export async function POST(req: NextRequest) {
@@ -19,6 +18,6 @@ export async function POST(req: NextRequest) {
 
   await connectDB();
   const body = await req.json();
-  const course = await Course.create(body);
-  return NextResponse.json(course, { status: 201 });
+  const instructor = await Instructor.create(body);
+  return NextResponse.json(instructor, { status: 201 });
 }

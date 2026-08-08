@@ -129,7 +129,42 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#0f2418",
+          colorForeground: "#0f2418",
+          colorMutedForeground: "#64748b",
+          colorBackground: "#ffffff",
+          colorInput: "#ffffff",
+          colorInputForeground: "#0f2418",
+          colorDanger: "#dc2626",
+          colorSuccess: "#16a34a",
+          colorNeutral: "#0f2418",
+          borderRadius: "0.75rem",
+          fontFamily: "var(--font-sans), system-ui, sans-serif",
+        },
+        elements: {
+          rootBox: "font-sans",
+          card: "shadow-xl border border-slate-100 rounded-2xl",
+          headerTitle: "font-extrabold tracking-tight",
+          headerSubtitle: "text-slate-500",
+          socialButtonsBlockButton: "rounded-full border-slate-200 hover:bg-slate-50",
+          dividerLine: "bg-slate-200",
+          dividerText: "text-slate-400",
+          formFieldLabel: "text-slate-600 font-medium",
+          formFieldInput: "rounded-lg border-slate-200 focus:border-[#0f2418]",
+          formButtonPrimary: "!bg-[#e08a3c] hover:!bg-[color-mix(in_srgb,#e08a3c_85%,black)] text-white font-semibold rounded-full normal-case",
+          footerActionLink: "font-semibold text-[#e08a3c] hover:text-[#c9762e]",
+          identityPreviewEditButton: "text-[#e08a3c]",
+          // Hide the "Secured by Clerk" branding badge without removing the
+          // sign-in/sign-up footer action link next to it.
+          footer: {
+            "& > div:last-child": { display: "none" },
+          },
+        },
+      }}
+    >
       <html
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${notoSansSinhala.variable} h-full antialiased`}

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
-import Course from "@/models/Course";
-import "@/models/Instructor";
+import Instructor from "@/models/Instructor";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getAdminSession();
@@ -11,11 +10,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   await connectDB();
   const { id } = await params;
   const body = await req.json();
-  const course = await Course.findByIdAndUpdate(id, body, { new: true })
-    .populate("instructors", "name")
-    .lean();
-  if (!course) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(course);
+  const instructor = await Instructor.findByIdAndUpdate(id, body, { new: true }).lean();
+  if (!instructor) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json(instructor);
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -24,6 +21,6 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
 
   await connectDB();
   const { id } = await params;
-  await Course.findByIdAndDelete(id);
+  await Instructor.findByIdAndDelete(id);
   return NextResponse.json({ success: true });
 }

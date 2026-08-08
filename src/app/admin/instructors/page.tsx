@@ -1,0 +1,210 @@
+"use client";
+
+import { useEffect, useState, useCallback } from "react";
+import { Plus, Trash2, Pencil, X, Mail, UserRound } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel,
+  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+  AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import type { Instructor } from "@/types/instructor";
+
+const EMPTY: Omit<Instructor, "_id" | "createdAt"> = {
+  name: "", title: "", bio: "", photo: "", email: "",
+};
+
+export default function AdminInstructors() {
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [form, setForm] = useState<Partial<Instructor> | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch("/api/instructors");
+    const data = await res.json();
+    setInstructors(data.instructors ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  async function handleSave() {
+    if (!form?.name) return;
+    setSaving(true);
+    if (form._id) {
+      await fetch(`/api/instructors/${form._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+    } else {
+      await fetch("/api/instructors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+    }
+    setSaving(false);
+    setForm(null);
+    load();
+  }
+
+  async function handleDelete() {
+    if (!deleteId) return;
+    await fetch(`/api/instructors/${deleteId}`, { method: "DELETE" });
+    setDeleteId(null);
+    load();
+  }
+
+  const field = (key: keyof Instructor, label: string, multiline = false) => (
+    <div key={key}>
+      <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">{label}</Label>
+      {multiline ? (
+        <Textarea
+          value={String(form?.[key] ?? "")}
+          onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+          className="border-slate-200 text-sm resize-none"
+          rows={3}
+        />
+      ) : (
+        <Input
+          value={String(form?.[key] ?? "")}
+          onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
+          className="border-slate-200 text-sm"
+        />
+      )}
+    </div>
+  );
+
+  return (
+    <div className="p-8">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1
+            className="text-2xl font-bold text-slate-900 tracking-tight"
+            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
+          >
+            Instructors
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            {instructors.length} instructor{instructors.length !== 1 ? "s" : ""} · assignable to courses
+          </p>
+        </div>
+        <Button
+          onClick={() => setForm({ ...EMPTY })}
+          className="btn-brand-navy text-white rounded-full text-sm font-semibold"
+        >
+          <Plus className="w-4 h-4 mr-1.5" /> Add Instructor
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        {loading ? (
+          <p className="text-slate-400 text-sm col-span-3 text-center py-12">Loading…</p>
+        ) : instructors.length === 0 ? (
+          <div className="col-span-3 text-center py-16">
+            <p className="text-slate-400 mb-4">No instructors yet</p>
+            <Button onClick={() => setForm({ ...EMPTY })} className="btn-brand-navy text-white rounded-full">
+              <Plus className="w-4 h-4 mr-1.5" /> Add First Instructor
+            </Button>
+          </div>
+        ) : instructors.map(ins => (
+          <Card key={ins._id} className="pcb-card border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div className="p-6">
+              <div className="flex items-start gap-3 mb-3">
+                <div
+                  className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 text-white font-semibold"
+                  style={{ background: "linear-gradient(135deg, var(--brand-navy), var(--brand-blue))" }}
+                >
+                  {ins.photo ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={ins.photo} alt={ins.name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <UserRound className="w-5 h-5" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-slate-900 text-base leading-tight truncate">{ins.name}</h3>
+                  <p className="text-slate-500 text-xs mt-0.5 truncate">{ins.title || "—"}</p>
+                </div>
+              </div>
+              {ins.bio && (
+                <p className="text-slate-500 text-sm leading-relaxed mb-3 line-clamp-2">{ins.bio}</p>
+              )}
+              {ins.email && (
+                <p className="flex items-center gap-1.5 text-xs text-slate-400 mb-4">
+                  <Mail className="w-3.5 h-3.5 shrink-0" /> {ins.email}
+                </p>
+              )}
+              <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                <div className="flex-1" />
+                <button
+                  onClick={() => setForm({ ...ins })}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setDeleteId(ins._id)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {/* Add / Edit Panel */}
+      {form && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="flex-1 bg-black/30 backdrop-blur-sm" onClick={() => setForm(null)} />
+          <div className="w-full max-w-lg bg-white shadow-2xl overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="font-semibold text-slate-900">{form._id ? "Edit Instructor" : "New Instructor"}</h3>
+              <button onClick={() => setForm(null)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {field("name",  "Full Name")}
+              {field("title", "Title / Role")}
+              {field("bio",   "Short Bio", true)}
+              {field("photo", "Photo URL")}
+              {field("email", "Email")}
+            </div>
+            <div className="px-6 pb-6 flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setForm(null)}>Cancel</Button>
+              <Button className="btn-brand-navy flex-1 text-white" onClick={handleSave} disabled={saving || !form.name}>
+                {saving ? "Saving…" : form._id ? "Update Instructor" : "Create Instructor"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove instructor?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove this instructor. Courses they&apos;re assigned to will keep their other instructors.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction className="bg-red-600 hover:bg-red-700 text-white" onClick={handleDelete}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

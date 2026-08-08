@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Trash2, Pencil, X, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Trash2, Pencil, X, ToggleLeft, ToggleRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,11 +14,13 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Course } from "@/types/course";
+import type { Instructor } from "@/types/instructor";
 
 const EMPTY: Omit<Course, "_id"> = {
   title: "", description: "", ageRange: "8–16",
   level: "Beginner", duration: "", schedule: "",
-  price: 0, instructor: "", maxStudents: 50, enrolledCount: 0, isActive: true,
+  price: 0, instructors: [], maxStudents: 50, enrolledCount: 0, isActive: true,
+  badgeText: "", ctaLabel: "", seminarNote: "",
 };
 
 const LEVELS = ["Beginner", "Intermediate", "Advanced"] as const;
@@ -30,35 +32,54 @@ const LEVEL_COLORS: Record<string, string> = {
 
 export default function AdminCourses() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState<Partial<Course> | null>(null);
+  const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/courses");
-    const data = await res.json();
-    setCourses(data.courses ?? []);
+    const [coursesRes, instructorsRes] = await Promise.all([
+      fetch("/api/courses"),
+      fetch("/api/instructors"),
+    ]);
+    const coursesData = await coursesRes.json();
+    const instructorsData = await instructorsRes.json();
+    setCourses(coursesData.courses ?? []);
+    setInstructors(instructorsData.instructors ?? []);
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
+  function openForm(c?: Course) {
+    setForm(c ? { ...c } : { ...EMPTY });
+    setSelectedInstructorIds(c ? c.instructors.map(i => i._id) : []);
+  }
+
+  function toggleInstructor(id: string) {
+    setSelectedInstructorIds(ids =>
+      ids.includes(id) ? ids.filter(x => x !== id) : [...ids, id]
+    );
+  }
+
   async function handleSave() {
     if (!form) return;
     setSaving(true);
+    const payload = { ...form, instructors: selectedInstructorIds };
     if (form._id) {
       await fetch(`/api/courses/${form._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
     } else {
       await fetch("/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
     }
     setSaving(false);
@@ -82,7 +103,7 @@ export default function AdminCourses() {
     load();
   }
 
-  const field = (key: keyof Course, label: string, type = "text", multiline = false) => (
+  const field = (key: keyof Course, label: string, type = "text", multiline = false, placeholder?: string) => (
     <div key={key}>
       <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">{label}</Label>
       {multiline ? (
@@ -90,6 +111,7 @@ export default function AdminCourses() {
           value={String(form?.[key] ?? "")}
           onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
           className="border-slate-200 text-sm resize-none"
+          placeholder={placeholder}
           rows={3}
         />
       ) : (
@@ -98,6 +120,7 @@ export default function AdminCourses() {
           value={String(form?.[key] ?? "")}
           onChange={e => setForm(f => ({ ...f, [key]: type === "number" ? Number(e.target.value) : e.target.value }))}
           className="border-slate-200 text-sm"
+          placeholder={placeholder}
         />
       )}
     </div>
@@ -116,7 +139,7 @@ export default function AdminCourses() {
           <p className="text-slate-500 text-sm mt-1">{courses.length} course{courses.length !== 1 ? "s" : ""} total</p>
         </div>
         <Button
-          onClick={() => setForm({ ...EMPTY })}
+          onClick={() => openForm()}
           className="btn-brand-navy text-white rounded-full text-sm font-semibold"
         >
           <Plus className="w-4 h-4 mr-1.5" /> Add Course
@@ -129,7 +152,7 @@ export default function AdminCourses() {
         ) : courses.length === 0 ? (
           <div className="col-span-3 text-center py-16">
             <p className="text-slate-400 mb-4">No courses yet</p>
-            <Button onClick={() => setForm({ ...EMPTY })} className="btn-brand-navy text-white rounded-full">
+            <Button onClick={() => openForm()} className="btn-brand-navy text-white rounded-full">
               <Plus className="w-4 h-4 mr-1.5" /> Create First Course
             </Button>
           </div>
@@ -152,10 +175,10 @@ export default function AdminCourses() {
               <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 mb-4">
                 <span>👥 Ages: {c.ageRange}</span>
                 <span>⏱ {c.duration || "—"}</span>
-                <span>👨‍🏫 {c.instructor || "—"}</span>
+                <span className="col-span-2 truncate">👨‍🏫 {c.instructors.length ? c.instructors.map(i => i.name).join(", ") : "—"}</span>
                 <span>💰 LKR {c.price.toLocaleString()}</span>
                 <span>📅 {c.schedule || "—"}</span>
-                <span>🎓 {c.enrolledCount}/{c.maxStudents} students</span>
+                <span className="col-span-2">🎓 {c.enrolledCount}/{c.maxStudents} students</span>
               </div>
               <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
                 <button
@@ -169,7 +192,7 @@ export default function AdminCourses() {
                 </button>
                 <div className="flex-1" />
                 <button
-                  onClick={() => setForm({ ...c })}
+                  onClick={() => openForm(c)}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
                 >
                   <Pencil className="w-4 h-4" />
@@ -220,8 +243,57 @@ export default function AdminCourses() {
               {field("duration",    "Duration",    "text")}
               {field("schedule",    "Schedule",    "text")}
               {field("price",       "Price (LKR)", "number")}
-              {field("instructor",  "Instructor",  "text")}
+
+              {/* Instructors — multi-select from the Instructors backend */}
+              <div>
+                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                  Instructors
+                </Label>
+                {instructors.length === 0 ? (
+                  <p className="text-xs text-slate-400 border border-dashed border-slate-200 rounded-lg px-3 py-3">
+                    No instructors yet — add some in the Instructors section first.
+                  </p>
+                ) : (
+                  <div className="border border-slate-200 rounded-lg divide-y divide-slate-100 max-h-40 overflow-y-auto">
+                    {instructors.map(ins => {
+                      const checked = selectedInstructorIds.includes(ins._id);
+                      return (
+                        <button
+                          key={ins._id}
+                          type="button"
+                          onClick={() => toggleInstructor(ins._id)}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50 transition-colors"
+                        >
+                          <span
+                            className={`w-4 h-4 rounded shrink-0 flex items-center justify-center border ${
+                              checked ? "text-white" : "border-slate-300 bg-white"
+                            }`}
+                            style={checked ? { backgroundColor: "var(--brand-navy)", borderColor: "var(--brand-navy)" } : undefined}
+                          >
+                            {checked && <Check className="w-3 h-3" />}
+                          </span>
+                          <span className="text-sm text-slate-700 truncate">{ins.name}</span>
+                          {ins.title && <span className="text-xs text-slate-400 truncate">· {ins.title}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
               {field("maxStudents", "Max Students","number")}
+
+              {/* Landing-page card overrides */}
+              <div className="pt-2 mt-2 border-t border-slate-100">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+                  Landing Page Card (optional)
+                </p>
+                <div className="space-y-4">
+                  {field("badgeText",   "Badge Text",   "text", false, "Default: Enrolling Now")}
+                  {field("ctaLabel",    "CTA Button Text", "text", false, "Default: Register for Free Seminar")}
+                  {field("seminarNote", "Highlight Note", "text", true, "Default: Day 1 is a FREE seminar…")}
+                </div>
+              </div>
             </div>
             <div className="px-6 pb-6 flex gap-3">
               <Button variant="outline" className="flex-1" onClick={() => setForm(null)}>Cancel</Button>

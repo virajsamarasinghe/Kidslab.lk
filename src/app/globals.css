@@ -74,6 +74,11 @@
   --chart-5: #16a34a;
 }
 
+/* Hide scrollbar on carousel-style horizontal scroll containers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Responsive orbital ring radius */
 .orbital-ring {
   --orbital-r: 140px;
