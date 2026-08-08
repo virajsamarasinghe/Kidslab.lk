@@ -11,7 +11,7 @@
   },
   "hero": {
     "badge": "REV. 2026 · ENROLMENTS OPEN",
-    "srText": "Where Kids Learn to Build Robots & AI — from circuit boards to real robots.",
+    "srText": "Where Kids Learn to Build Robots & AI from circuit boards to real robots.",
     "sentence1": {
       "part1": "Where Kids Learn to ",
       "highlight1": "Build Robots",
@@ -48,13 +48,13 @@
     "eyebrow": "Our Programs",
     "headingStart": "Start Your ",
     "headingHighlight": "Journey",
-    "subtitle": "Our flagship program — currently enrolling.",
+    "subtitle": "Our flagship program currently enrolling.",
     "enrollingNow": "Enrolling Now",
     "courseFee": "Course Fee",
     "ctaRegister": "Register for Free Seminar",
     "card": {
       "title": "Robotics & AI",
-      "desc": "Build real robots and explore Artificial Intelligence hands-on. From mechanics and sensors to smart robotics — all in one exciting program.",
+      "desc": "Build real robots and explore Artificial Intelligence hands-on. From mechanics and sensors to smart robotics all in one exciting program.",
       "levelLabel": "Age Range",
       "level": "Ages 9–14",
       "durationLabel": "Duration",
@@ -62,7 +62,7 @@
       "scheduleLabel": "Class Times",
       "fee": "LKR 5,000",
       "installment": "Pay in installments within 3 months",
-      "seminar": "Day 1 is a FREE seminar — intro to Robotics & AI, mindset building & motivation"
+      "seminar": "Day 1 is a FREE seminar  intro to Robotics & AI, mindset building & motivation"
     }
   },
   "about": {
@@ -71,7 +71,7 @@
     "eyebrowEnd": "lab.lk?",
     "headingStart": "Learning Built for ",
     "headingHighlight": "Young Minds",
-    "subtitle": "We believe every child can be a creator. Our approach combines university-level expertise with kid-friendly teaching.",
+    "subtitle": "We believe every child can be a creator. Our approach combines university level expertise with kid friendly teaching.",
     "cards": [
       {
         "title": "Project-Based Learning",
@@ -87,7 +87,7 @@
       },
       {
         "title": "Real Lab Equipment",
-        "desc": "Actual robotics kits, sensors, microcontrollers — not simulations."
+        "desc": "Actual robotics kits, sensors, microcontrollers not simulations."
       },
       {
         "title": "Age-Appropriate Tracks",
@@ -116,6 +116,7 @@
     "eyebrow": "Student & Parent Reviews",
     "headingStart": "What They're ",
     "headingHighlight": "Saying",
+    "googleLink": "See all reviews on Google",
     "cards": [
       {
         "role": "Parent · Matara",
@@ -127,7 +128,7 @@
       },
       {
         "role": "Parent · Matara",
-        "quote": "The quality is outstanding. Real university engineers teaching kids — I'm impressed by how much my son has learned in just 3 months."
+        "quote": "The quality is outstanding. Real university engineers teaching kids  I'm impressed by how much my son has learned in just 3 months."
       }
     ]
   },
@@ -135,11 +136,11 @@
     "eyebrow": "Frequently Asked Questions",
     "headingStart": "Got ",
     "headingHighlight": "Questions?",
-    "subtitle": "Everything parents ask us before enrolling — if yours isn't here, reach out on WhatsApp.",
+    "subtitle": "Everything parents ask us before enrolling if yours isn't here, reach out on WhatsApp.",
     "items": [
       {
         "q": "What is kidslab.lk?",
-        "a": "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering. All classes are held online, so kids from anywhere in Sri Lanka can join — our office is based in Matara, Sri Lanka."
+        "a": "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering. All classes are held online, so kids from anywhere in Sri Lanka can join our office is based in Matara, Sri Lanka."
       },
       {
         "q": "What age group is the Robotics & AI program for?",
@@ -151,15 +152,15 @@
       },
       {
         "q": "When is the free seminar?",
-        "a": "The free introductory seminar is on 19 September 2026, conducted fully online. Seats are limited — register at kidslab.lk/register."
+        "a": "The free introductory seminar is on 19 September 2026, conducted fully online. Seats are limited register at kidslab.lk/register."
       },
       {
         "q": "What will my child learn in the Robotics & AI program?",
-        "a": "Children learn to build real robots using mechanics, sensors, and microcontrollers. The program also covers Artificial Intelligence basics, machine learning concepts, and hands-on project building — all in one 3-month course."
+        "a": "Children learn to build real robots using mechanics, sensors, and microcontrollers. The program also covers Artificial Intelligence basics, machine learning concepts, and hands-on project building all in one 3-month course."
       },
       {
         "q": "Who teaches the classes at kidslab.lk?",
-        "a": "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith — Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics."
+        "a": "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith  Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics."
       },
       {
         "q": "Where are the kidslab.lk classes held?",
@@ -191,7 +192,7 @@
     "eyebrow": "Get In Touch",
     "headingStart": "Ready to ",
     "headingHighlight": "Enrol Your Child?",
-    "subtitle": "Reach out via any channel below — we're happy to answer your questions and guide you through the process.",
+    "subtitle": "Reach out via any channel below we're happy to answer your questions and guide you through the process.",
     "contactUsTitle": "Contact Us",
     "whatsapp": "WhatsApp",
     "facebook": "Facebook",

@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import RegisterModal from "@/components/RegisterModal";
 import SubscribePopup from "@/components/SubscribePopup";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
+import type { GoogleReview } from "@/lib/google-reviews";
 import { LocaleProvider, useLocale } from "@/lib/locale-context";
 import { RegisterModalProvider, useRegisterModal } from "@/lib/register-modal-context";
 import { Button } from "@/components/ui/button";
@@ -359,12 +360,18 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
-export default function LandingPage({ courses }: { courses: Course[] }) {
+export default function LandingPage({
+  courses,
+  googleReviews = [],
+}: {
+  courses: Course[];
+  googleReviews?: GoogleReview[];
+}) {
   return (
     <LocaleProvider>
       <I18nProvider>
         <RegisterModalProvider>
-          <HomeContent courses={courses} />
+          <HomeContent courses={courses} googleReviews={googleReviews} />
           <RegisterModal />
           <SubscribePopup />
         </RegisterModalProvider>
@@ -373,12 +380,34 @@ export default function LandingPage({ courses }: { courses: Course[] }) {
   );
 }
 
-function HomeContent({ courses }: { courses: Course[] }) {
+function HomeContent({
+  courses,
+  googleReviews,
+}: {
+  courses: Course[];
+  googleReviews: GoogleReview[];
+}) {
   const t = useTranslations();
   const { locale } = useLocale();
   const { openRegisterModal } = useRegisterModal();
   const heroSentences = useMemo(() => getHeroSentences(t), [t]);
   const statLabels = t.raw("stats.labels") as string[];
+
+  /* Prefer live Google reviews when available; otherwise fall back to the
+     hardcoded, translated testimonials so the section never sits empty. */
+  const displayTestimonials = useMemo(
+    () =>
+      googleReviews.length > 0
+        ? googleReviews
+        : testimonials.map((item, i) => ({
+            name: item.name,
+            role: t(`testimonials.cards.${i}.role`),
+            quote: t(`testimonials.cards.${i}.quote`),
+            stars: item.stars,
+            photoUrl: null as string | null,
+          })),
+    [googleReviews, t],
+  );
 
   /* ── Smooth cross-fade whenever the language toggle switches locale ── */
   const [langFading, setLangFading] = useState(false);
@@ -1082,8 +1111,8 @@ function HomeContent({ courses }: { courses: Course[] }) {
             </AnimateIn>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
-              {testimonials.map((item, i) => (
-                <AnimateIn key={item.name} delay={i * 0.1} className="h-full">
+              {displayTestimonials.map((item, i) => (
+                <AnimateIn key={`${item.name}-${i}`} delay={i * 0.1} className="h-full">
                   <div className="pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm p-8 flex flex-col gap-5 h-full hover:shadow-md transition-shadow duration-300">
                     <div className="flex gap-1">
                       {Array.from({ length: item.stars }).map((_, s) => (
@@ -1094,18 +1123,27 @@ function HomeContent({ courses }: { courses: Course[] }) {
                       ))}
                     </div>
                     <p className="text-body-md text-slate-600 flex-1 leading-[1.75]">
-                      &ldquo;{t(`testimonials.cards.${i}.quote`)}&rdquo;
+                      &ldquo;{item.quote}&rdquo;
                     </p>
                     <div className="flex items-center gap-3 pt-5 border-t border-slate-100">
-                      <div
-                        className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white font-bold shrink-0"
-                        style={{ fontSize: "0.6875rem" }}
-                      >
-                        {item.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
+                      {item.photoUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.photoUrl}
+                          alt={item.name}
+                          className="w-9 h-9 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-500 flex items-center justify-center text-white font-bold shrink-0"
+                          style={{ fontSize: "0.6875rem" }}
+                        >
+                          {item.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </div>
+                      )}
                       <div>
                         <p
                           className="font-semibold text-slate-900"
@@ -1120,7 +1158,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                           className="text-slate-400 mt-0.5"
                           style={{ fontSize: "0.8125rem" }}
                         >
-                          {t(`testimonials.cards.${i}.role`)}
+                          {item.role}
                         </p>
                       </div>
                     </div>
@@ -1128,6 +1166,20 @@ function HomeContent({ courses }: { courses: Course[] }) {
                 </AnimateIn>
               ))}
             </div>
+
+            {googleReviews.length > 0 && (
+              <AnimateIn className="text-center mt-10">
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=1%2F108+Pelawaththa+Circle+Road%2C+Hittatiya+Central%2C+Matara%2C+Sri+Lanka"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+                >
+                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  {t("testimonials.googleLink")}
+                </a>
+              </AnimateIn>
+            )}
           </div>
         </section>
 

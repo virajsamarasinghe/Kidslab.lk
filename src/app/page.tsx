@@ -1,5 +1,6 @@
 import LandingPage from "@/components/LandingPage";
 import { getActiveCourses } from "@/lib/courses";
+import { getGoogleReviews } from "@/lib/google-reviews";
 import { buildLandingJsonLd } from "@/lib/structured-data";
 
 /* Courses change rarely and only via the admin dashboard, so serve a cached
@@ -7,7 +8,10 @@ import { buildLandingJsonLd } from "@/lib/structured-data";
 export const revalidate = 300;
 
 export default async function Home() {
-  const courses = await getActiveCourses();
+  const [courses, googleReviews] = await Promise.all([
+    getActiveCourses(),
+    getGoogleReviews(),
+  ]);
   const jsonLd = buildLandingJsonLd(courses);
 
   return (
@@ -19,7 +23,7 @@ export default async function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ))}
-      <LandingPage courses={courses} />
+      <LandingPage courses={courses} googleReviews={googleReviews} />
     </>
   );
 }
