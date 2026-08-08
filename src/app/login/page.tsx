@@ -75,20 +75,11 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative z-10 flex items-center gap-3"
+          className="relative z-10"
         >
-          <div
-            className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 p-1.5 shadow-lg"
-            style={{ border: "2px solid var(--brand-yellow)" }}
-          >
-            <Image src="/logo.png" alt="kidslab.lk" width={44} height={44} className="w-full h-full object-contain rounded-md" />
+          <div className="inline-flex bg-white rounded-xl shadow-lg px-4 py-2.5">
+            <Image src="/logo.png" alt="kidslab.lk" width={301} height={121} className="h-8 w-auto object-contain" priority />
           </div>
-          <span
-            className="text-white font-bold text-lg tracking-tight"
-            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-          >
-            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
-          </span>
         </motion.div>
 
         {/* Headline + highlights */}
@@ -137,22 +128,10 @@ export default function LoginPage() {
       {/* ── Right — form panel ── */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 relative">
         {/* Mobile-only brand mark */}
-        <div className="lg:hidden absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-2.5">
-          <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 p-1.5"
-            style={{
-              background: "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
-              border: "2px solid var(--brand-yellow)",
-            }}
-          >
-            <Image src="/logo.png" alt="kidslab.lk" width={36} height={36} className="w-full h-full object-contain rounded-md" />
+        <div className="lg:hidden absolute top-8 left-1/2 -translate-x-1/2">
+          <div className="bg-white rounded-lg shadow-sm px-3 py-2 inline-flex">
+            <Image src="/logo.png" alt="kidslab.lk" width={301} height={121} className="h-6 w-auto object-contain" />
           </div>
-          <span
-            className="font-bold text-base tracking-tight"
-            style={{ color: "var(--brand-navy)", fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-          >
-            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
-          </span>
         </div>
 
         <motion.div

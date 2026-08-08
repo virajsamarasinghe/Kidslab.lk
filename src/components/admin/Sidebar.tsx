@@ -42,27 +42,14 @@ export default function AdminSidebar() {
           "linear-gradient(180deg, var(--brand-navy) 0%, #123a2a 55%, #0d2560 100%)",
       }}
     >
-      {/* Brand */}
-      <div className="h-16 flex items-center gap-3 px-5 relative shrink-0">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 p-1.5 shadow-lg"
-          style={{
-            background:
-              "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
-            border: "2px solid var(--brand-yellow)",
-          }}
-        >
-          <Image src="/logo.png" alt="logo" width={40} height={40} className="w-full h-full object-contain rounded-md" />
+      {/* Brand — the logo is a wide wordmark on its own white plate, so it
+          gets a white panel sized to its real aspect ratio rather than
+          being squashed into a square dark badge. */}
+      <div className="h-16 flex items-center px-5 relative shrink-0">
+        <div className="bg-white rounded-lg shadow-sm px-2.5 py-1.5 flex items-center">
+          <Image src="/logo.png" alt="kidslab.lk" width={301} height={121} className="h-7 w-auto object-contain" priority />
         </div>
-        <div className="min-w-0">
-          <p
-            className="text-white font-bold text-sm leading-none tracking-tight truncate"
-            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-          >
-            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
-          </p>
-          <p className="text-slate-500 text-[10px] mt-1.5 font-semibold tracking-[0.15em] uppercase">Admin Panel</p>
-        </div>
+        <p className="text-slate-500 text-[10px] ml-2.5 font-semibold tracking-[0.15em] uppercase">Admin</p>
         {/* Bottom edge trace */}
         <div
           className="absolute bottom-0 left-5 right-5 h-px"
