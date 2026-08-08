@@ -44,4 +44,4 @@ See `.env.example` for the full template. Production deployments need their own 
 
 ### Known follow-ups
 - Clerk is currently running in development/test mode; switching kidslab.lk to production requires verifying the domain in the Clerk dashboard and issuing live keys.
-- No automated test suite yet (Playwright is installed but unused).
+- No automated test suite yet.
