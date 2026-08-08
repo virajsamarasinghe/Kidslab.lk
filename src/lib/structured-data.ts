@@ -82,6 +82,7 @@ function courseSchema(c?: Course) {
       "@type": "EducationalAudience",
       educationalRole: "student",
       audienceType: `Children aged ${c?.ageRange || DEFAULT_COURSE.ageRange}`,
+      geographicArea: { "@type": "Country", name: "Sri Lanka" },
     },
     timeRequired: isoDuration(c?.duration),
     numberOfCredits: 0,
@@ -97,17 +98,8 @@ function courseSchema(c?: Course) {
     },
     hasCourseInstance: {
       "@type": "CourseInstance",
-      courseMode: "in-person",
+      courseMode: "online",
       ...(c?.schedule ? { courseSchedule: c.schedule } : {}),
-      location: {
-        "@type": "Place",
-        name: "kidslab.lk Academy",
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Hapugala, Galle",
-          addressCountry: "LK",
-        },
-      },
       startDate: DEFAULT_COURSE.startDate,
       endDate: addMonths(DEFAULT_COURSE.startDate, months),
       instructor: instructors,
@@ -143,15 +135,20 @@ export function buildLandingJsonLd(courses: Course[]) {
       logo: "https://kidslab.lk/logo.png",
       image: "https://kidslab.lk/logo.png",
       description:
-        "Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna.",
+        "Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna. Classes are held online and open to children across all of Sri Lanka.",
       address: {
         "@type": "PostalAddress",
-        streetAddress: "Hapugala",
-        addressLocality: "Galle",
-        postalCode: "80000",
+        streetAddress: "1/108, Pelawaththa Circle Road, Hittatiya Central",
+        addressLocality: "Matara",
+        postalCode: "81000",
         addressCountry: "LK",
       },
-      geo: { "@type": "GeoCoordinates", latitude: 6.0328, longitude: 80.2168 },
+      geo: { "@type": "GeoCoordinates", latitude: 5.9485, longitude: 80.5353 },
+      hasMap: "https://www.google.com/maps/search/?api=1&query=1%2F108+Pelawaththa+Circle+Road%2C+Hittatiya+Central%2C+Matara%2C+Sri+Lanka",
+      areaServed: [
+        { "@type": "City", name: "Matara" },
+        { "@type": "Country", name: "Sri Lanka" },
+      ],
       telephone: "+94703906478",
       email: "info@kidslab.lk",
       foundingDate: "2026",
@@ -188,16 +185,10 @@ export function buildLandingJsonLd(courses: Course[]) {
       startDate: SEMINAR_START,
       endDate: SEMINAR_END,
       eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
       location: {
-        "@type": "Place",
-        name: "kidslab.lk Academy",
-        address: {
-          "@type": "PostalAddress",
-          streetAddress: "Hapugala",
-          addressLocality: "Galle",
-          addressCountry: "LK",
-        },
+        "@type": "VirtualLocation",
+        url: "https://kidslab.lk/register",
       },
       organizer: {
         "@type": "EducationalOrganization",
@@ -353,7 +344,7 @@ export function buildLandingJsonLd(courses: Course[]) {
           name: "What is kidslab.lk?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering, based in Galle, Sri Lanka.",
+            text: "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering. All classes are held online — our office is based in Matara, Sri Lanka.",
           },
         },
         {
@@ -377,7 +368,7 @@ export function buildLandingJsonLd(courses: Course[]) {
           name: "When is the free seminar?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The free introductory seminar is on 19 September 2026 at the kidslab.lk Academy in Hapugala, Galle, Sri Lanka. Seats are limited — register at kidslab.lk/register.",
+            text: "The free introductory seminar is on 19 September 2026, conducted fully online. Seats are limited — register at kidslab.lk/register.",
           },
         },
         {
@@ -401,7 +392,23 @@ export function buildLandingJsonLd(courses: Course[]) {
           name: "Where are the kidslab.lk classes held?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Classes are held at the kidslab.lk Academy in Hapugala, Galle 80000, Sri Lanka.",
+            text: "Classes are conducted entirely online, so students can join from anywhere in Sri Lanka. Our office is located at 1/108, Pelawaththa Circle Road, Hittatiya Central, Matara.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is kidslab.lk based in Matara?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. kidslab.lk's office is located at 1/108, Pelawaththa Circle Road, Hittatiya Central, Matara, Sri Lanka. Since all classes are conducted online, children in Matara and across the rest of Sri Lanka can join equally.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Does kidslab.lk offer robotics and AI classes in Matara?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. kidslab.lk is a Matara-based Robotics & AI academy for children aged 9–14. Classes are held online, so kids in Matara can join live sessions from home without needing to travel.",
           },
         },
         {

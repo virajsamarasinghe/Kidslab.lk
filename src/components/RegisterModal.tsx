@@ -211,7 +211,7 @@ export default function RegisterModal() {
                       Student Full Name <span style={{ color: "var(--brand-red)" }}>*</span>
                     </Label>
                     <Input
-                      placeholder="Kavindu Perera"
+                      placeholder="Ex: Kavindu Perera"
                       className="border-slate-200 w-full h-10 text-sm"
                       value={form.name} onChange={set("name")} required
                     />
@@ -224,7 +224,7 @@ export default function RegisterModal() {
                         Phone <span style={{ color: "var(--brand-red)" }}>*</span>
                       </Label>
                       <Input
-                        placeholder="07X XXX XXXX"
+                        placeholder="Ex: 077 123 4567"
                         className="border-slate-200 w-full h-10 text-sm"
                         value={form.phone} onChange={set("phone")} required
                       />
@@ -234,7 +234,7 @@ export default function RegisterModal() {
                         Student Age <span style={{ color: "var(--brand-red)" }}>*</span>
                       </Label>
                       <Input
-                        type="number" placeholder="12" min={5} max={20}
+                        type="number" placeholder="Ex: 12" min={5} max={20}
                         className="border-slate-200 w-full h-10 text-sm"
                         value={form.age} onChange={set("age")} required
                       />
@@ -248,7 +248,7 @@ export default function RegisterModal() {
                         Email Address
                       </Label>
                       <Input
-                        type="email" placeholder="you@email.com"
+                        type="email" placeholder="Ex: kavindu@gmail.com"
                         className="border-slate-200 w-full h-10 text-sm"
                         value={form.email} onChange={set("email")}
                       />
@@ -258,7 +258,7 @@ export default function RegisterModal() {
                         Parent / Guardian
                       </Label>
                       <Input
-                        placeholder="Sunil Perera"
+                        placeholder="Ex: Sunil Perera"
                         className="border-slate-200 w-full h-10 text-sm"
                         value={form.parentName} onChange={set("parentName")}
                       />
@@ -271,7 +271,7 @@ export default function RegisterModal() {
                       City / District
                     </Label>
                     <Input
-                      placeholder="Galle"
+                      placeholder="Ex: Galle"
                       className="border-slate-200 w-full h-10 text-sm"
                       value={form.city} onChange={set("city")}
                     />

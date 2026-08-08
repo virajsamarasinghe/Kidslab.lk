@@ -594,7 +594,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                 transition={{ duration: 0.6, delay: 0.44 }}
                 className="mt-5 lg:mt-7 flex flex-wrap justify-center gap-5"
               >
-                {[t("hero.trust1"), t("hero.trust2"), t("hero.trust3")].map(
+                {[t("hero.trust1"), t("hero.trust2"), t("hero.trust3"), t("hero.trust4")].map(
                   (label) => (
                     <div
                       key={label}
@@ -773,7 +773,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
 
                             {card.instructorNames && (
                               <p className="text-[13px] text-slate-500">
-                                <span className="font-semibold text-slate-600">Taught by:</span>{" "}
+                                <span className="font-semibold text-slate-600">Conducted by:</span>{" "}
                                 {card.instructorNames}
                               </p>
                             )}
@@ -1273,7 +1273,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                         id: "location",
                         label: t("contact.location"),
                         value: t("contact.locationValue"),
-                        href: "https://www.google.com/maps/search/?api=1&query=Hapugala+Galle+Sri+Lanka",
+                        href: "https://www.google.com/maps/search/?api=1&query=1%2F108+Pelawaththa+Circle+Road%2C+Hittatiya+Central%2C+Matara%2C+Sri+Lanka",
                         external: true,
                         accent: "var(--brand-red)",
                         hoverBg: "hover:bg-orange-50",

@@ -188,7 +188,7 @@ export default function RegisterPage() {
           <div style={{ marginTop: "clamp(1.5rem, 2.5vw, 3.5rem)" }}>
             {[
               { icon: Star,       text: "Day 1 is completely FREE — no obligation" },
-              { icon: Users,      text: "Ages 9–14 · small group classes" },
+              { icon: Users,      text: "Ages 9–14 · open to all of Sri Lanka" },
               { icon: Clock,      text: "3-month program · flexible schedule" },
               { icon: BadgeCheck, text: "LKR 5,000 · pay in installments" },
             ].map(({ icon: Icon, text }) => (
@@ -258,7 +258,7 @@ export default function RegisterPage() {
                 <span style={{ color: "var(--brand-red)" }}>*</span>
               </Label>
               <Input
-                placeholder="Kavindu Perera"
+                placeholder="Ex: Kavindu Perera"
                 className="reg-input border-slate-200 w-full"
                 value={form.name} onChange={set("name")} required
               />
@@ -271,7 +271,7 @@ export default function RegisterPage() {
                   Phone <span style={{ color: "var(--brand-red)" }}>*</span>
                 </Label>
                 <Input
-                  placeholder="07X XXX XXXX"
+                  placeholder="Ex: 077 123 4567"
                   className="reg-input border-slate-200 w-full"
                   value={form.phone} onChange={set("phone")} required
                 />
@@ -281,7 +281,7 @@ export default function RegisterPage() {
                   Student Age <span style={{ color: "var(--brand-red)" }}>*</span>
                 </Label>
                 <Input
-                  type="number" placeholder="12" min={5} max={20}
+                  type="number" placeholder="Ex: 12" min={5} max={20}
                   className="reg-input border-slate-200 w-full"
                   value={form.age} onChange={set("age")} required
                 />
@@ -294,7 +294,7 @@ export default function RegisterPage() {
                 Email Address
               </Label>
               <Input
-                type="email" placeholder="you@email.com"
+                type="email" placeholder="Ex: kavindu@gmail.com"
                 className="reg-input border-slate-200 w-full"
                 value={form.email} onChange={set("email")}
               />
@@ -307,7 +307,7 @@ export default function RegisterPage() {
                   Parent / Guardian
                 </Label>
                 <Input
-                  placeholder="Sunil Perera"
+                  placeholder="Ex: Sunil Perera"
                   className="reg-input border-slate-200 w-full"
                   value={form.parentName} onChange={set("parentName")}
                 />
@@ -317,7 +317,7 @@ export default function RegisterPage() {
                   City / District
                 </Label>
                 <Input
-                  placeholder="Galle"
+                  placeholder="Ex: Galle"
                   className="reg-input border-slate-200 w-full"
                   value={form.city} onChange={set("city")}
                 />

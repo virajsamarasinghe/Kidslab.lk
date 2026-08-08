@@ -32,13 +32,13 @@ const notoSansSinhala = Noto_Sans_Sinhala({
 });
 
 const DESCRIPTION =
-  "Sri Lanka's #1 Robotics & AI academy for children aged 9–14. Hands-on programs designed and taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Free introductory seminar on 19 September 2026 — limited seats, register now.";
+  "Sri Lanka's #1 Robotics & AI academy for children aged 9–14, based in Matara. Hands-on programs designed and taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering, conducted 100% online — open to kids across Sri Lanka. Free introductory seminar on 19 September 2026 — limited seats, register now.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: `${SITE_NAME} — Robotics & AI Academy for Kids | Galle, Sri Lanka`,
+    default: `${SITE_NAME} — Online Robotics & AI Academy for Kids | Matara, Sri Lanka`,
     template: `%s | ${SITE_NAME}`,
   },
 
@@ -46,17 +46,21 @@ export const metadata: Metadata = {
 
   keywords: [
     "robotics academy Sri Lanka",
+    "robotics academy Matara",
+    "AI academy for kids Matara",
     "AI academy for kids Sri Lanka",
-    "coding classes kids Galle",
+    "online coding classes kids Sri Lanka",
+    "STEM education Matara",
     "STEM education Sri Lanka",
-    "robotics classes children Sri Lanka",
+    "online robotics classes children Sri Lanka",
     "kidslab.lk",
     "AI robotics program kids",
     "University of Ruhuna academy",
     "kids programming Sri Lanka",
-    "robotics Galle Sri Lanka",
+    "robotics classes Matara",
+    "robotics classes Hittatiya Matara",
     "free seminar robotics AI",
-    "children STEM Galle",
+    "children STEM online Sri Lanka",
   ],
 
   authors: [
@@ -100,7 +104,7 @@ export const metadata: Metadata = {
         url:    "/og-cover.png",
         width:  1200,
         height: 630,
-        alt:    "kidslab.lk — Robotics & AI Academy for Kids, Galle, Sri Lanka",
+        alt:    "kidslab.lk — Online Robotics & AI Academy for Kids, Matara, Sri Lanka",
       },
     ],
   },
