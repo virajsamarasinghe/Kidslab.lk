@@ -152,10 +152,13 @@ export default function RootLayout({
           rootBox: "font-sans",
           // Force the modal overlay to be a fixed, full-viewport, centered
           // flex container above the sticky navbar (z-50) regardless of
-          // where clerk-js mounts it in the DOM.
-          modalBackdrop: "!fixed !inset-0 !z-[100] !flex !items-center !justify-center !p-4 !bg-black/50 !backdrop-blur-sm",
-          modalContent: "!static !top-auto !left-auto !right-auto !bottom-auto !translate-x-0 !translate-y-0 !max-h-[90vh] !overflow-y-auto",
-          card: "shadow-xl border border-slate-100 rounded-2xl",
+          // where clerk-js mounts it in the DOM. Constrain width so the
+          // card can't overflow narrow viewports (that overflow is what
+          // reads as "blurry" text on mobile — the card gets squeezed
+          // past its default min-width instead of reflowing).
+          modalBackdrop: "!fixed !inset-0 !z-[100] !flex !items-center !justify-center !p-3 sm:!p-4 !bg-black/60 !backdrop-blur-sm",
+          modalContent: "!static !top-auto !left-auto !right-auto !bottom-auto !translate-x-0 !translate-y-0 !w-full !max-w-[400px] !max-h-[90vh] !overflow-y-auto",
+          card: "shadow-xl border border-slate-100 rounded-2xl !w-full",
           headerTitle: "font-extrabold tracking-tight",
           headerSubtitle: "text-slate-500",
           socialButtonsBlockButton: "rounded-full border-slate-200 hover:bg-slate-50",

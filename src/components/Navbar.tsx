@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useScroll, useMotionValueEvent } from "motion/react";
-import { useState } from "react";
+import { AnimatePresence, motion, useScroll, useMotionValueEvent } from "motion/react";
+import { useEffect, useState } from "react";
 import { Menu, Phone, X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -25,6 +25,15 @@ export default function Navbar() {
   ];
 
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 40));
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const original = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = original;
+    };
+  }, [mobileOpen]);
 
   return (
     <motion.header
@@ -163,95 +172,113 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile menu backdrop */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 top-16 z-40 bg-black/30"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Mobile menu */}
-      {mobileOpen && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-white border-t border-slate-100 px-[clamp(1rem,2vw,2.5rem)] py-4 flex flex-col gap-1"
-        >
-          {links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:text-[color:var(--brand-blue)] hover:bg-blue-50 rounded-lg"
-            >
-              {link.label}
-            </a>
-          ))}
-
-          {/* Language toggle */}
-          <div
-            className="inline-flex items-center self-start rounded-full p-0.5 text-xs font-semibold mt-1 mb-1"
-            style={{ backgroundColor: "#f0f1f5", border: "1px solid #dde1ea" }}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="md:hidden fixed left-0 right-0 top-16 z-40 max-h-[calc(100dvh-4rem)] overflow-y-auto bg-white border-t border-slate-100 shadow-lg px-[clamp(1rem,2vw,2.5rem)] py-5 flex flex-col gap-1"
           >
-            <button
-              onClick={() => setLocale("en")}
-              className="px-3 py-1.5 rounded-full transition-colors"
-              style={
-                locale === "en"
-                  ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
-                  : { color: "#64748b" }
-              }
-              aria-pressed={locale === "en"}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setLocale("si")}
-              className="px-3 py-1.5 rounded-full transition-colors"
-              style={
-                locale === "si"
-                  ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
-                  : { color: "#64748b" }
-              }
-              aria-pressed={locale === "si"}
-            >
-              සිංහල
-            </button>
-          </div>
+            {links.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 text-base font-medium text-slate-700 hover:text-[color:var(--brand-blue)] hover:bg-blue-50 active:bg-blue-50 rounded-lg"
+              >
+                {link.label}
+              </a>
+            ))}
 
-          <a href="#contact" className="mt-1">
-            <Button variant="outline" size="lg" className="w-full gap-2 font-semibold rounded-full border-slate-200" style={{ color: "var(--brand-navy)" }}>
-              <Phone className="size-4" />
-              {t("contactMe")}
-            </Button>
-          </a>
+            {/* Language toggle */}
+            <div
+              className="inline-flex items-center self-start rounded-full p-0.5 text-xs font-semibold mt-2 mb-2"
+              style={{ backgroundColor: "#f0f1f5", border: "1px solid #dde1ea" }}
+            >
+              <button
+                onClick={() => setLocale("en")}
+                className="px-3.5 py-2 rounded-full transition-colors"
+                style={
+                  locale === "en"
+                    ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
+                    : { color: "#64748b" }
+                }
+                aria-pressed={locale === "en"}
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLocale("si")}
+                className="px-3.5 py-2 rounded-full transition-colors"
+                style={
+                  locale === "si"
+                    ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
+                    : { color: "#64748b" }
+                }
+                aria-pressed={locale === "si"}
+              >
+                සිංහල
+              </button>
+            </div>
 
-          {isLoaded && (
-            isSignedIn ? (
-              <div className="mt-2 flex items-center gap-2 px-1">
-                <UserButton />
-                <span className="text-sm text-slate-500">{t("account")}</span>
-              </div>
-            ) : (
-              <>
-                <SignInButton mode="modal">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setMobileOpen(false)}
-                    className="mt-1 w-full font-semibold rounded-full border-slate-200"
-                    style={{ color: "var(--brand-navy)" }}
-                  >
-                    {t("signIn")}
-                  </Button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <Button
-                    size="lg"
-                    onClick={() => setMobileOpen(false)}
-                    className="mt-1 btn-brand-copper w-full text-white font-semibold rounded-full"
-                  >
-                    {t("signUp")}
-                  </Button>
-                </SignUpButton>
-              </>
-            )
-          )}
-        </motion.div>
-      )}
+            <a href="#contact" onClick={() => setMobileOpen(false)} className="mt-1">
+              <Button variant="outline" size="lg" className="w-full gap-2 font-semibold rounded-full border-slate-200 h-12 text-base" style={{ color: "var(--brand-navy)" }}>
+                <Phone className="size-4" />
+                {t("contactMe")}
+              </Button>
+            </a>
+
+            {isLoaded && (
+              isSignedIn ? (
+                <div className="mt-3 flex items-center gap-2 px-1 py-1">
+                  <UserButton />
+                  <span className="text-sm text-slate-500">{t("account")}</span>
+                </div>
+              ) : (
+                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
+                  <SignInButton mode="modal">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => setMobileOpen(false)}
+                      className="w-full font-semibold rounded-full border-slate-200 h-12 text-base"
+                      style={{ color: "var(--brand-navy)" }}
+                    >
+                      {t("signIn")}
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button
+                      size="lg"
+                      onClick={() => setMobileOpen(false)}
+                      className="btn-brand-copper w-full text-white font-semibold rounded-full h-12 text-base"
+                    >
+                      {t("signUp")}
+                    </Button>
+                  </SignUpButton>
+                </div>
+              )
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   );
 }
