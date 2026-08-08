@@ -29,8 +29,34 @@ async function testBrevo(apiKey: string) {
   return { success: true, message: `Connected as ${data.email ?? data.companyName ?? "account"}` };
 }
 
-async function testLLM(baseUrl: string, apiKey: string, model: string) {
+async function testAnthropic(baseUrl: string, apiKey: string, model: string) {
+  const url = `${(baseUrl || "https://api.anthropic.com").replace(/\/$/, "")}/v1/messages`;
+  const res = await fetchWithTimeout(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 8,
+      messages: [{ role: "user", content: "Reply with the single word: OK" }],
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    return { success: false, message: `Anthropic responded ${res.status}: ${body.slice(0, 200)}` };
+  }
+  const data = await res.json();
+  const reply = data.content?.[0]?.text?.trim();
+  return { success: true, message: reply ? `Model replied: "${reply}"` : "Connected — model responded successfully" };
+}
+
+async function testLLM(providerId: string, baseUrl: string, apiKey: string, model: string) {
   if (!apiKey || !model) return { success: false, message: "API key and model are required" };
+  if (providerId === "anthropic") return testAnthropic(baseUrl, apiKey, model);
+
   const url = `${(baseUrl || "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
   const res = await fetchWithTimeout(url, {
     method: "POST",
@@ -92,7 +118,7 @@ export async function POST(req: NextRequest) {
     if (section === "brevo") {
       result = await testBrevo(apiKey);
     } else if (section === "llm") {
-      result = await testLLM(incoming.baseUrl ?? "", apiKey, incoming.model ?? "");
+      result = await testLLM(incoming.providerId ?? "", incoming.baseUrl ?? "", apiKey, incoming.model ?? "");
     } else {
       result = await testEmbedding(incoming.baseUrl ?? "", apiKey, incoming.model ?? "");
     }

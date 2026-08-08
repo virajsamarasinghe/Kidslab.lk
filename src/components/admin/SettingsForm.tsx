@@ -77,7 +77,7 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
   }
 
   return (
-    <div className="p-8 max-w-2xl">
+    <div className="p-8">
       <div className="mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
@@ -96,72 +96,83 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
         </div>
       </div>
 
-      <Card className="pcb-card border-slate-100 shadow-sm p-6">
-        {loading ? (
-          <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
-        ) : (
-          <div className="space-y-4">
-            {fields.map(f => (
-              <div key={f.key}>
-                <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
-                  {f.label}
-                </Label>
-                <Input
-                  type={f.type ?? "text"}
-                  value={values[f.key] ?? ""}
-                  onChange={e => update(f.key, e.target.value)}
-                  placeholder={f.placeholder}
-                  className="border-slate-200 text-sm"
-                />
-                {f.helper && <p className="text-[11px] text-slate-400 mt-1">{f.helper}</p>}
-              </div>
-            ))}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+        <Card className="pcb-card border-slate-100 shadow-sm p-6">
+          {loading ? (
+            <p className="text-slate-400 text-sm text-center py-8">Loading…</p>
+          ) : (
+            <div className="space-y-4">
+              {fields.map(f => (
+                <div key={f.key}>
+                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                    {f.label}
+                  </Label>
+                  <Input
+                    type={f.type ?? "text"}
+                    value={values[f.key] ?? ""}
+                    onChange={e => update(f.key, e.target.value)}
+                    placeholder={f.placeholder}
+                    className="border-slate-200 text-sm"
+                  />
+                  {f.helper && <p className="text-[11px] text-slate-400 mt-1">{f.helper}</p>}
+                </div>
+              ))}
 
-            {result && (
-              <div
-                className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
-                  result.success
-                    ? "bg-green-50 border-green-200 text-green-700"
-                    : "bg-red-50 border-red-200 text-red-600"
-                }`}
-              >
-                {result.success ? (
-                  <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
-                ) : (
-                  <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
-                )}
-                <span>{result.message}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-3 pt-2">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
-              >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                {saving ? "Saving…" : "Save"}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleTest}
-                disabled={testing}
-                className="rounded-full text-sm font-semibold border-slate-200 gap-1.5"
-                style={{ color: "var(--brand-navy)" }}
-              >
-                {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                {testing ? "Testing…" : "Test Connection"}
-              </Button>
-              {saved && (
-                <span className="text-xs font-medium text-green-600 flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Saved
-                </span>
+              {result && (
+                <div
+                  className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
+                    result.success
+                      ? "bg-green-50 border-green-200 text-green-700"
+                      : "bg-red-50 border-red-200 text-red-600"
+                  }`}
+                >
+                  {result.success ? (
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                  ) : (
+                    <XCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                  )}
+                  <span>{result.message}</span>
+                </div>
               )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <Button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="btn-brand-navy text-white font-semibold rounded-full text-sm gap-1.5"
+                >
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  {saving ? "Saving…" : "Save"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleTest}
+                  disabled={testing}
+                  className="rounded-full text-sm font-semibold border-slate-200 gap-1.5"
+                  style={{ color: "var(--brand-navy)" }}
+                >
+                  {testing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                  {testing ? "Testing…" : "Test Connection"}
+                </Button>
+                {saved && (
+                  <span className="text-xs font-medium text-green-600 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Saved
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        )}
-      </Card>
+          )}
+        </Card>
+
+        <Card className="pcb-card border-slate-100 shadow-sm p-6 h-fit">
+          <h3 className="font-semibold text-slate-900 text-sm mb-2">How this is used</h3>
+          <p className="text-slate-500 text-sm leading-relaxed">
+            {section === "brevo"
+              ? "Powers transactional emails sent from the platform, like the welcome email new students receive after registering. The API key is stored securely and never shown again after saving."
+              : "The API key is stored securely and never shown again after saving."}
+          </p>
+        </Card>
+      </div>
     </div>
   );
 }
