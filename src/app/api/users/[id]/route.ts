@@ -22,7 +22,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
   await connectDB();
   const { id } = await params;
-  const user = await User.findById(id).select("-password").lean();
+  const user = await User.findOne({ _id: id, role: "user" }).select("-password").lean();
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(user);
 }
@@ -39,7 +39,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   await connectDB();
   const { id } = await params;
 
-  const user = await User.findByIdAndUpdate(id, parsed, { new: true }).select("-password").lean();
+  const user = await User.findOneAndUpdate({ _id: id, role: "user" }, parsed, { new: true }).select("-password").lean();
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(user);
 }
@@ -50,7 +50,7 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
 
   await connectDB();
   const { id } = await params;
-  const user = await User.findByIdAndDelete(id);
+  const user = await User.findOneAndDelete({ _id: id, role: "user" });
   if (user) logActivity(session, "deleted", "user", id, { name: user.name, email: user.email });
   return NextResponse.json({ success: true });
 }

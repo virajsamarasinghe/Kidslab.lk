@@ -3,16 +3,16 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
-import { ADMIN_ROLES, outranks } from "@/lib/roles";
-import { validatePassword } from "@/lib/password";
+import { ADMIN_ROLES, ROLE_LABELS, outranks, type AdminRole } from "@/lib/roles";
+import { generateTemporaryPassword } from "@/lib/password";
+import { sendAdminInviteEmail } from "@/lib/brevo";
 import { z } from "zod";
 import { parseBody } from "@/lib/validate";
 
 const CreateAdminSchema = z.object({
-  name:     z.string().trim().max(120).default(""),
-  email:    z.string().trim().toLowerCase().email("Enter a valid email address"),
-  password: z.string().default(""),
-  role:     z.enum(ADMIN_ROLES),
+  name:  z.string().trim().max(120).default(""),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address"),
+  role:  z.enum(ADMIN_ROLES),
 }).strict();
 import User from "@/models/User";
 
@@ -44,8 +44,9 @@ export async function GET() {
 
 /**
  * Adds an admin — either by promoting an existing account or creating a new
- * one. A password is required only in the create case, since existing accounts
- * (including Clerk-backed ones) already have their own credential.
+ * one. A brand-new account gets a system-generated temporary password, sent by
+ * email along with the login link; existing accounts (including Clerk-backed
+ * ones) already have their own credential and just get the new role.
  */
 export async function POST(req: NextRequest) {
   const guard = await requireCapability("admins:manage");
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
 
   const parsed = await parseBody(req, CreateAdminSchema);
   if (parsed instanceof NextResponse) return parsed;
-  const { name, email, password, role } = parsed;
+  const { name, email, role } = parsed;
 
   // Prevents a super admin from being minted by someone who isn't one already.
   if (!outranks(guard.role, role) && guard.role !== role) {
@@ -87,20 +88,26 @@ export async function POST(req: NextRequest) {
   if (!name) {
     return NextResponse.json({ error: "Name is required for a new account" }, { status: 400 });
   }
-  const policy = validatePassword(password, [email, name]);
-  if (!policy.valid) {
-    return NextResponse.json({ error: policy.error }, { status: 400 });
-  }
 
+  const password = generateTemporaryPassword([email, name]);
   const created = await User.create({
     name,
     email,
     password: await bcrypt.hash(password, 10),
     role,
     status: "active",
+    mustChangePassword: true,
   });
 
   logActivity(guard, "created", "admin", String(created._id), { email, role });
+
+  const emailSent = await sendAdminInviteEmail({
+    name,
+    email,
+    password,
+    roleLabel: ROLE_LABELS[role as AdminRole],
+  });
+
   return NextResponse.json(
     {
       id: String(created._id),
@@ -110,6 +117,10 @@ export async function POST(req: NextRequest) {
       status: created.status,
       avatar: "",
       promoted: false,
+      emailSent,
+      // Only surfaced when the email failed to send — this is the one chance
+      // to hand the password over, since it's never stored or shown again.
+      ...(emailSent ? {} : { temporaryPassword: password }),
     },
     { status: 201 }
   );

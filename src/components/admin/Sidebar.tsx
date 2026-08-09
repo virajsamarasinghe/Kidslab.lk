@@ -279,23 +279,40 @@ export default function AdminSidebar({
         }}
       >
         {/* Brand */}
-        <div className="h-16 flex items-center px-5 relative shrink-0">
-          <div className={`bg-white rounded-lg shadow-sm px-2.5 py-1.5 flex items-center ${collapsed ? "lg:mx-auto lg:px-2" : ""}`}>
-            <Image
-              src="/logo.png"
-              alt="kidslab.lk"
-              width={301}
-              height={121}
-              className={`h-7 w-auto object-contain ${collapsed ? "lg:hidden" : ""}`}
-              priority
-            />
-            <span className={`hidden ${collapsed ? "lg:block" : ""} text-[11px] font-black tracking-tight`} style={{ color: "var(--brand-navy)" }}>
-              KL
+        <div className={`h-16 flex items-center gap-2.5 relative shrink-0 px-4 ${collapsed ? "lg:px-0 lg:justify-center" : ""}`}>
+          {/* Expanded: white logo card + Admin badge, sharing one baseline */}
+          <div className={`flex items-center gap-2.5 min-w-0 ${collapsed ? "lg:hidden" : ""}`}>
+            <span className="bg-white rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.5)] h-10 px-2.5 flex items-center shrink-0">
+              <Image
+                src="/logo.png"
+                alt="kidslab.lk"
+                width={301}
+                height={121}
+                className="h-6 w-auto object-contain"
+                priority
+              />
+            </span>
+            <span
+              className="h-10 flex items-center px-2 rounded-lg border text-[10px] font-bold tracking-[0.18em] uppercase shrink-0"
+              style={{
+                borderColor: "color-mix(in srgb, var(--brand-yellow) 32%, transparent)",
+                backgroundColor: "color-mix(in srgb, var(--brand-yellow) 12%, transparent)",
+                color: "var(--brand-yellow)",
+              }}
+            >
+              Admin
             </span>
           </div>
-          <p className={`text-slate-500 text-[10px] ml-2.5 font-semibold tracking-[0.15em] uppercase ${collapsed ? "lg:hidden" : ""}`}>
-            Admin
-          </p>
+
+          {/* Collapsed: compact brand mark of the same 40px height */}
+          <span
+            className={`hidden ${collapsed ? "lg:flex" : ""} w-10 h-10 rounded-xl items-center justify-center shrink-0 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.5)]`}
+            style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}
+            title="kidslab.lk Admin"
+          >
+            <span className="text-[13px] font-black tracking-tight text-white">KL</span>
+          </span>
+
           <button
             onClick={onCloseMobile}
             className="ml-auto text-slate-400 hover:text-white lg:hidden"
@@ -304,7 +321,7 @@ export default function AdminSidebar({
             <X className="w-5 h-5" />
           </button>
           <div
-            className="absolute bottom-0 left-5 right-5 h-px"
+            className="absolute bottom-0 left-4 right-4 h-px"
             style={{
               background:
                 "linear-gradient(90deg, transparent, color-mix(in srgb, var(--brand-yellow) 45%, transparent) 50%, transparent)",
@@ -356,7 +373,7 @@ export default function AdminSidebar({
 
         {/* Footer: profile + quick actions */}
         <div
-          className="shrink-0 border-t border-white/10 p-3 relative"
+          className={`shrink-0 border-t border-white/10 py-3 relative ${collapsed ? "px-3" : "px-4"}`}
           onMouseEnter={() => collapsed && setFooterFlyoutOpen(true)}
           onMouseLeave={() => collapsed && setFooterFlyoutOpen(false)}
         >
@@ -365,19 +382,19 @@ export default function AdminSidebar({
               className="w-full flex items-center justify-center py-1"
               aria-label="Account"
             >
-              <span className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}>
+              <span className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shrink-0 ring-1 ring-white/15" style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}>
                 {profile.avatar ? (
-                  <Image src={profile.avatar} alt={profile.name} width={32} height={32} className="w-full h-full object-cover" />
+                  <Image src={profile.avatar} alt={profile.name} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   <ShieldCheck className="w-4 h-4 text-white" />
                 )}
               </span>
             </button>
           ) : (
-            <div className="flex items-center gap-2.5 px-1 py-1">
-              <span className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}>
+            <div className="flex items-center gap-2.5 py-1">
+              <span className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shrink-0 ring-1 ring-white/15" style={{ background: "linear-gradient(135deg, var(--brand-red), var(--brand-yellow))" }}>
                 {profile.avatar ? (
-                  <Image src={profile.avatar} alt={profile.name} width={36} height={36} className="w-full h-full object-cover" />
+                  <Image src={profile.avatar} alt={profile.name} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   <ShieldCheck className="w-4 h-4 text-white" />
                 )}

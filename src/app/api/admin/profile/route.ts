@@ -56,6 +56,7 @@ export async function PATCH(req: NextRequest) {
     user.password = await bcrypt.hash(newPassword, 10);
     // Invalidates every session issued before now, including other devices.
     user.passwordChangedAt = new Date();
+    user.mustChangePassword = false;
   }
 
   await user.save();

@@ -6,6 +6,7 @@ import AdminNavbar from "./Navbar";
 import { AdminProfileProvider, type AdminProfile } from "./AdminProfileContext";
 import { AdminSummaryProvider } from "./AdminSummaryContext";
 import { ConfirmProvider } from "./ConfirmContext";
+import ForcePasswordChangeGate from "./ForcePasswordChangeGate";
 
 const COLLAPSE_STORAGE_KEY = "kidslab_admin_sidebar_collapsed";
 
@@ -28,6 +29,7 @@ export default function AdminShell({ children, profile }: { children: ReactNode;
 
   return (
     <AdminProfileProvider initial={profile}>
+      <ForcePasswordChangeGate>
       <ConfirmProvider>
         <AdminSummaryProvider>
           <div className="min-h-screen" style={{ backgroundColor: "var(--brand-paper)" }}>
@@ -51,6 +53,7 @@ export default function AdminShell({ children, profile }: { children: ReactNode;
           </div>
         </AdminSummaryProvider>
       </ConfirmProvider>
+      </ForcePasswordChangeGate>
     </AdminProfileProvider>
   );
 }

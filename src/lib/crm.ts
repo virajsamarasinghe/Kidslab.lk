@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import Subscriber from "@/models/Subscriber";
 import Contact, { type PipelineStage } from "@/models/Contact";
+import { getSuppressedEmails } from "@/lib/email-optout";
 import type { CampaignSegment } from "@/models/Campaign";
 
 export const UNIFIED_CONTACTS_TAG = "unified-contacts";
@@ -168,27 +169,48 @@ export const getLeadCountSince = unstable_cache(countLeadsSince, ["unified-lead-
   tags: [UNIFIED_CONTACTS_TAG],
 });
 
-/** Resolves a campaign audience segment into a list of {email, name} recipients. */
+/**
+ * Addresses the public registration form synthesises when a lead gives a phone
+ * number but no email (`<digits>@kidslab.lk`). They exist only to satisfy the
+ * unique index — nobody reads them, and mailing them means guaranteed hard
+ * bounces against our own domain, which is the fastest way to wreck a sending
+ * reputation. Never include them in a campaign audience.
+ */
+function isDeliverable(email: string): boolean {
+  return !/^\d+@kidslab\.lk$/i.test(email.trim());
+}
+
+/**
+ * Resolves a campaign audience segment into a list of {email, name} recipients.
+ *
+ * Opt-outs and undeliverable placeholder addresses are stripped here rather
+ * than at the send site, so the recipient count stored on the campaign matches
+ * what actually goes out.
+ */
 export async function resolveSegment(segment: CampaignSegment): Promise<{ email: string; name: string }[]> {
   await connectDB();
 
+  const suppressed = await getSuppressedEmails();
+  const clean = (list: { email: string; name: string }[]) =>
+    list.filter(r => r.email && isDeliverable(r.email) && !suppressed.has(r.email.toLowerCase()));
+
   if (segment === "all_subscribers") {
     const subs = await Subscriber.find().lean();
-    return subs.map(s => ({ email: s.email, name: "" }));
+    return clean(subs.map(s => ({ email: s.email, name: "" })));
   }
   if (segment === "all_students") {
     const users = await User.find({ role: "user" }).select("email name").lean();
-    return users.map(u => ({ email: u.email, name: u.name }));
+    return clean(users.map(u => ({ email: u.email, name: u.name })));
   }
   if (segment === "active_students") {
     const users = await User.find({ role: "user", status: "active" }).select("email name").lean();
-    return users.map(u => ({ email: u.email, name: u.name }));
+    return clean(users.map(u => ({ email: u.email, name: u.name })));
   }
   if (segment === "inactive_students") {
     const users = await User.find({ role: "user", status: "inactive" }).select("email name").lean();
-    return users.map(u => ({ email: u.email, name: u.name }));
+    return clean(users.map(u => ({ email: u.email, name: u.name })));
   }
   // all_contacts
   const contacts = await getUnifiedContacts();
-  return contacts.map(c => ({ email: c.email, name: c.name }));
+  return clean(contacts.map(c => ({ email: c.email, name: c.name })));
 }

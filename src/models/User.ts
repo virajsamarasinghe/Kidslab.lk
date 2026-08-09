@@ -27,6 +27,8 @@ export interface IUser extends Document {
   lockedUntil?: Date;
   /** Sessions issued before this instant are rejected — see `requireCapability`. */
   passwordChangedAt?: Date;
+  /** Set on invite-created admin accounts; forces a password change before anything else. */
+  mustChangePassword: boolean;
   /** Set by "sign out everywhere"; invalidates every existing session. */
   sessionsRevokedAt?: Date;
   /** Base32 TOTP secret. Present once enrolment starts, active only when `twoFactorEnabled`. */
@@ -58,6 +60,7 @@ const UserSchema = new Schema<IUser>(
     failedLoginAttempts: { type: Number, default: 0 },
     lockedUntil:         { type: Date },
     passwordChangedAt:   { type: Date },
+    mustChangePassword:  { type: Boolean, default: false },
     sessionsRevokedAt:   { type: Date },
     twoFactorSecret:        { type: String, select: false },
     twoFactorEnabled:       { type: Boolean, default: false },

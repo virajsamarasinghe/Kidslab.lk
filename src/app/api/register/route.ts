@@ -64,9 +64,12 @@ export async function POST(req: NextRequest) {
 
     // Only send a welcome email when the user provided a real address
     if (email?.trim()) {
-      sendWelcomeEmail({ name: name.trim(), email: resolvedEmail }).catch((err) =>
-        console.error("[register] failed to send welcome email", err)
-      );
+      sendWelcomeEmail({
+        name: name.trim(),
+        email: resolvedEmail,
+        phone: phone.trim(),
+        interestedCourse: interestedCourse ?? "Robotics & AI",
+      }).catch((err) => console.error("[register] failed to send welcome email", err));
     }
 
     return NextResponse.json(

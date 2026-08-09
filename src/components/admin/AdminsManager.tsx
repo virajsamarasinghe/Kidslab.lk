@@ -37,7 +37,7 @@ export default function AdminsManager() {
   const [result, setResult] = useState<Result>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "viewer" as AdminRole });
+  const [form, setForm] = useState({ name: "", email: "", role: "viewer" as AdminRole });
   const [adding, setAdding] = useState(false);
 
   const load = useCallback(async () => {
@@ -59,13 +59,16 @@ export default function AdminsManager() {
     });
     const data = await res.json();
     if (res.ok) {
-      setResult({
-        success: true,
-        message: data.promoted
-          ? `${data.email} already had an account — promoted to ${ROLE_LABELS[data.role as AdminRole]}.`
-          : `Created ${data.email} as ${ROLE_LABELS[data.role as AdminRole]}.`,
-      });
-      setForm({ name: "", email: "", password: "", role: "viewer" });
+      let message: string;
+      if (data.promoted) {
+        message = `${data.email} already had an account — promoted to ${ROLE_LABELS[data.role as AdminRole]}.`;
+      } else if (data.emailSent) {
+        message = `Created ${data.email} as ${ROLE_LABELS[data.role as AdminRole]} — an email with their login link and temporary password is on its way.`;
+      } else {
+        message = `Created ${data.email} as ${ROLE_LABELS[data.role as AdminRole]}, but the invite email couldn't be sent. Share this temporary password with them yourself: ${data.temporaryPassword}`;
+      }
+      setResult({ success: true, message });
+      setForm({ name: "", email: "", role: "viewer" });
       await load();
     } else {
       setResult({ success: false, message: data.error ?? "Could not add that admin" });
@@ -191,17 +194,18 @@ export default function AdminsManager() {
           {result.success
             ? <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
             : <XCircle className="w-4 h-4 mt-0.5 shrink-0" />}
-          <span>{result.message}</span>
+          <span className="break-words">{result.message}</span>
         </div>
       )}
 
       <Card className="pcb-card border-slate-100 shadow-sm p-6 mb-6">
         <h2 className="text-sm font-semibold text-slate-900 mb-1">Add an administrator</h2>
         <p className="text-[11px] text-slate-400 mb-4">
-          If the email already belongs to a site user, that account is promoted instead — leave the
-          password blank in that case.
+          If the email already belongs to a site user, that account is promoted instead. Otherwise a
+          new account is created with a system-generated password, emailed to them along with their
+          login link — they&apos;ll be asked to set their own password the moment they sign in.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
           <div>
             <Label htmlFor="new-admin-name" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</Label>
             <Input
@@ -220,17 +224,6 @@ export default function AdminsManager() {
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               placeholder="jane@kidslab.lk"
-              className="border-slate-200 text-sm"
-            />
-          </div>
-          <div>
-            <Label htmlFor="new-admin-password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Password</Label>
-            <Input
-              id="new-admin-password"
-              type="password"
-              value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              placeholder="At least 8 characters"
               className="border-slate-200 text-sm"
             />
           </div>

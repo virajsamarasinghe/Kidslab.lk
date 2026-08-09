@@ -6,6 +6,8 @@
  * `Password1!`). No forced rotation, no character-class requirements.
  */
 
+import { randomInt } from "crypto";
+
 export const MIN_PASSWORD_LENGTH = 12;
 export const MAX_PASSWORD_LENGTH = 128;
 
@@ -81,4 +83,27 @@ export function validatePassword(password: string, context: string[] = []): Pass
   }
 
   return { valid: true };
+}
+
+// Ambiguous-looking characters (0/O, 1/l/I) are left out so a password read
+// off a phone screen or typed by hand doesn't get mistyped.
+const TEMP_PASSWORD_CHARSET = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%";
+
+/**
+ * Generates a random password for a newly invited admin account.
+ *
+ * Retries against {@link validatePassword} rather than hand-tuning the
+ * generator to satisfy every rule (sequences, low variety) — the policy is
+ * the single source of truth, and a retry is cheap since a random 18-char
+ * string from this charset almost always passes on the first attempt.
+ */
+export function generateTemporaryPassword(context: string[] = []): string {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    let candidate = "";
+    for (let i = 0; i < 18; i++) {
+      candidate += TEMP_PASSWORD_CHARSET[randomInt(TEMP_PASSWORD_CHARSET.length)];
+    }
+    if (validatePassword(candidate, context).valid) return candidate;
+  }
+  throw new Error("Could not generate a password satisfying the password policy");
 }

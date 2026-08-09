@@ -8,6 +8,7 @@ export interface AdminProfile {
   email: string;
   avatar: string;
   role: Role;
+  mustChangePassword: boolean;
 }
 
 interface AdminProfileContextValue extends AdminProfile {

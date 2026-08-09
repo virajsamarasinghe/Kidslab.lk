@@ -9,6 +9,7 @@ import Navbar from "@/components/Navbar";
 import RegisterModal from "@/components/RegisterModal";
 import SubscribePopup from "@/components/SubscribePopup";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
+import ChatWidget from "@/components/ChatWidget";
 import type { GoogleReview } from "@/lib/google-reviews";
 import { LocaleProvider, useLocale } from "@/lib/locale-context";
 import { RegisterModalProvider, useRegisterModal } from "@/lib/register-modal-context";
@@ -314,6 +315,10 @@ function TypingHeadline({
     }
 
     if (phase === "pausing") {
+      if (sentenceIndex === sentences.length - 1) {
+        // Settle on the last sentence instead of looping forever.
+        return;
+      }
       const id = setTimeout(() => setPhase("deleting"), 1400);
       return () => clearTimeout(id);
     }
@@ -335,40 +340,50 @@ function TypingHeadline({
   return (
     <>
       <span className="sr-only">{srText}</span>
-      <span aria-hidden="true">
-        {segments.map((seg, i) => {
-          const start = consumed;
-          consumed += seg.text.length;
-          const visible = Math.max(0, Math.min(seg.text.length, count - start));
-          const shown = seg.text.slice(0, visible);
-          if (!shown) return null;
-          return seg.gradient ? (
-            <span
-              key={i}
-              className="bg-clip-text text-transparent"
-              style={{ backgroundImage: seg.gradient }}
-            >
-              {shown}
-            </span>
-          ) : (
-            <span key={i}>{shown}</span>
-          );
-        })}
-        <motion.span
-          className="inline-block align-middle"
-          style={{
-            width: 3,
-            height: "0.85em",
-            marginLeft: "0.15em",
-            backgroundColor: "var(--brand-red)",
-          }}
-          animate={idle ? { opacity: [1, 1, 0, 0] } : { opacity: 1 }}
-          transition={
-            idle
-              ? { duration: 1, times: [0, 0.5, 0.5, 1], repeat: Infinity, ease: "linear" }
-              : { duration: 0 }
-          }
-        />
+      {/* Grid-stack every sentence so the tallest one reserves the box's
+          height/width up front — the layout no longer shifts as the
+          visible layer types and deletes shorter or longer sentences. */}
+      <span className="relative grid" aria-hidden="true">
+        {sentences.map((seg, i) => (
+          <span key={i} className="invisible [grid-area:1/1]">
+            {seg.map((s) => s.text).join("")}
+          </span>
+        ))}
+        <span className="[grid-area:1/1]">
+          {segments.map((seg, i) => {
+            const start = consumed;
+            consumed += seg.text.length;
+            const visible = Math.max(0, Math.min(seg.text.length, count - start));
+            const shown = seg.text.slice(0, visible);
+            if (!shown) return null;
+            return seg.gradient ? (
+              <span
+                key={i}
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: seg.gradient }}
+              >
+                {shown}
+              </span>
+            ) : (
+              <span key={i}>{shown}</span>
+            );
+          })}
+          <motion.span
+            className="inline-block align-middle"
+            style={{
+              width: 3,
+              height: "0.85em",
+              marginLeft: "0.15em",
+              backgroundColor: "var(--brand-red)",
+            }}
+            animate={idle ? { opacity: [1, 1, 0, 0] } : { opacity: 1 }}
+            transition={
+              idle
+                ? { duration: 1, times: [0, 0.5, 0.5, 1], repeat: Infinity, ease: "linear" }
+                : { duration: 0 }
+            }
+          />
+        </span>
       </span>
     </>
   );
@@ -1694,18 +1709,21 @@ function HomeContent({
         </footer>
       </motion.main>
 
-      {/* ── Floating WhatsApp button — standalone floating pill on every
-             breakpoint, same corner position as desktop ── */}
+      {/* ── Floating WhatsApp button — sits one slot above the AI assistant
+             launcher, which occupies the bottom corner ── */}
       <a
         href="https://wa.me/94703906478"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"
-        className="fixed bottom-4 right-4 md:bottom-5 md:right-5 xl:bottom-6 xl:right-6 z-40 flex items-center justify-center w-12 h-12 md:w-11 md:h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
+        className="fixed bottom-20 right-4 md:bottom-[5.25rem] md:right-5 xl:bottom-[5.5rem] xl:right-6 z-40 flex items-center justify-center w-12 h-12 md:w-11 md:h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
         style={{ backgroundColor: "#25D366" }}
       >
         <WhatsAppIcon className="w-5 h-5 text-white" />
       </a>
+
+      {/* Renders nothing unless Settings → AI Assistant is enabled. */}
+      <ChatWidget />
     </>
   );
 }
