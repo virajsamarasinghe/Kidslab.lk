@@ -1,21 +1,30 @@
-import { getSettings } from "@/lib/settings";
+import { unstable_cache, revalidateTag } from "next/cache";
+import { getSettingsSnapshot } from "@/lib/settings";
 import { getActiveCourses } from "@/lib/courses";
-import type { AssistantConfig, ISettings } from "@/models/Settings";
+import type { AssistantConfig } from "@/models/Settings";
 import { DEFAULT_ASSISTANT_PROMPT } from "@/config/assistant";
 import { CONTACT_EMAIL, CONTACT_PHONE, WHATSAPP_URL } from "@/config/site";
 import type { Locale } from "@/lib/locale-context";
 
+/** Cache tag for the course facts baked into the system prompt. */
+export const ASSISTANT_COURSES_TAG = "assistant-courses";
+
+/** Call after any course write so the assistant stops quoting the old syllabus. */
+export function invalidateAssistantCourses() {
+  revalidateTag(ASSISTANT_COURSES_TAG, { expire: 0 });
+}
+
 /**
  * The assistant section as stored, with defaults filled in.
  *
- * `toObject()` matters here for the same reason as in the settings route:
- * `settings.assistant` is a Mongoose subdocument, and reading it directly can
- * hand back internals instead of fields. Settings docs created before this
- * section existed have no `assistant` at all, hence the per-field fallbacks.
+ * Comes from the cached settings snapshot, which is already a plain object —
+ * reading `settings.assistant` off the Mongoose doc would hand back subdocument
+ * internals instead of fields. Settings docs created before this section
+ * existed have no `assistant` at all, hence the per-field fallbacks.
  */
 export async function getAssistantConfig(): Promise<AssistantConfig> {
-  const settings = await getSettings();
-  const stored = settings.toObject<Pick<ISettings, "assistant">>().assistant ?? ({} as Partial<AssistantConfig>);
+  const settings = await getSettingsSnapshot();
+  const stored = settings.assistant ?? ({} as Partial<AssistantConfig>);
 
   return {
     enabled: stored.enabled ?? false,
@@ -29,7 +38,7 @@ export async function getAssistantConfig(): Promise<AssistantConfig> {
 }
 
 /** Course facts, so the assistant quotes the database rather than inventing a syllabus. */
-async function courseFacts(): Promise<string> {
+async function buildCourseFacts(): Promise<string> {
   const courses = await getActiveCourses();
   if (courses.length === 0) return "No course details are loaded right now.";
 
@@ -49,6 +58,18 @@ async function courseFacts(): Promise<string> {
     )
     .join("\n");
 }
+
+/**
+ * Cached course facts — the same string for every visitor, rebuilt from a
+ * populated `find()` that would otherwise run on every single chat message
+ * while the visitor waits for the first token. The long TTL is safe because
+ * {@link invalidateAssistantCourses} runs on every course write; it's only a
+ * backstop for edits made outside the dashboard.
+ */
+const courseFacts = unstable_cache(buildCourseFacts, ["assistant-course-facts"], {
+  revalidate: 900,
+  tags: [ASSISTANT_COURSES_TAG],
+});
 
 /**
  * Assembles the full system prompt: the admin's persona text, then the live

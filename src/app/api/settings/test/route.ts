@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCapability } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { createSmtpTransport, mergeBrevoInput, resolveSmtp, type BrevoSmtpCredentials } from "@/lib/brevo";
+import { tokenLimitField } from "@/lib/llm";
 
 const SECTIONS = ["brevo", "llm", "embedding"] as const;
 type Section = (typeof SECTIONS)[number];
@@ -34,7 +35,11 @@ async function testBrevo(smtp: BrevoSmtpCredentials | null) {
 }
 
 async function testAnthropic(baseUrl: string, apiKey: string, model: string) {
-  const url = `${(baseUrl || "https://api.anthropic.com").replace(/\/$/, "")}/v1/messages`;
+  // A trailing `/v1` is stripped because the docs page linked next to this
+  // field shows the base URL with it, and the path below already has one —
+  // matching how `@/lib/llm` normalizes the stored value.
+  const base = (baseUrl || "https://api.anthropic.com").replace(/\/+$/, "").replace(/\/v1$/, "");
+  const url = `${base}/v1/messages`;
   const res = await fetchWithTimeout(url, {
     method: "POST",
     headers: {
@@ -61,14 +66,19 @@ async function testLLM(providerId: string, baseUrl: string, apiKey: string, mode
   if (!apiKey || !model) return { success: false, message: "API key and model are required" };
   if (providerId === "anthropic") return testAnthropic(baseUrl, apiKey, model);
 
-  const url = `${(baseUrl || "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
+  const resolvedBase = (baseUrl || "https://api.openai.com/v1").replace(/\/$/, "");
+  const url = `${resolvedBase}/chat/completions`;
   const res = await fetchWithTimeout(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: "Reply with the single word: OK" }],
-      max_tokens: 5,
+      // Same field-name rule the live chat path uses, so a model that works
+      // here works there — and so OpenAI's reasoning models don't fail the
+      // test with a 400 about `max_tokens`. Reasoning models spend part of
+      // this budget on hidden tokens, hence the headroom over a one-word reply.
+      [tokenLimitField(providerId, resolvedBase)]: 64,
     }),
   });
   if (!res.ok) {

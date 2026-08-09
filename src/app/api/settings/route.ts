@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireCapability } from "@/lib/auth";
-import { getSettings } from "@/lib/settings";
+import { getSettings, invalidateSettingsSnapshot } from "@/lib/settings";
 import { logActivity } from "@/lib/activity-log";
 import type { ISettings, LLMConfig } from "@/models/Settings";
 
@@ -89,6 +89,9 @@ export async function PUT(req: NextRequest) {
 
     settings.markModified("llm");
     await settings.save();
+    // The chat path reads settings from a cached snapshot; without this an
+    // admin fixing a dead API key would keep seeing the old one fail.
+    invalidateSettingsSnapshot();
     logActivity(session, "updated", "settings", "llm");
     return NextResponse.json(serialize(settings).llm);
   }
@@ -115,6 +118,7 @@ export async function PUT(req: NextRequest) {
 
     settings.markModified("assistant");
     await settings.save();
+    invalidateSettingsSnapshot();
     logActivity(session, "updated", "settings", "assistant");
     return NextResponse.json(serialize(settings).assistant);
   }
@@ -152,6 +156,7 @@ export async function PUT(req: NextRequest) {
   }
 
   await settings.save();
+  invalidateSettingsSnapshot();
   logActivity(session, "updated", "settings", section);
 
   const saved = serialize(settings);

@@ -4,6 +4,7 @@ import { requireCapability } from "@/lib/auth";
 import Course from "@/models/Course";
 import "@/models/Instructor";
 import { logActivity } from "@/lib/activity-log";
+import { invalidateAssistantCourses } from "@/lib/assistant";
 
 const ALLOWED_FIELDS = [
   "title", "description", "ageRange", "level", "duration", "schedule",
@@ -28,6 +29,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     .populate("instructors", "name")
     .lean();
   if (!course) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  invalidateAssistantCourses();
   logActivity(session, "updated", "course", id, { title: course.title });
   return NextResponse.json(course);
 }
@@ -40,5 +42,6 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   const { id } = await params;
   const course = await Course.findByIdAndDelete(id);
   if (course) logActivity(session, "deleted", "course", id, { title: course.title });
+  invalidateAssistantCourses();
   return NextResponse.json({ success: true });
 }

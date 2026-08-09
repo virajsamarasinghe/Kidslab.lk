@@ -1,4 +1,4 @@
-import { getSettings } from "@/lib/settings";
+import { getSettingsSnapshot } from "@/lib/settings";
 import { LLM_PROVIDERS, findProvider } from "@/lib/llm-providers";
 import type { LLMConfig } from "@/models/Settings";
 
@@ -27,23 +27,55 @@ export interface ChatMessage {
  * `priority` is the admin's fallback order (1 tried first, 5 last); entries
  * missing a key or a model are dropped rather than left to fail at request
  * time.
+ *
+ * Reads the cached settings snapshot, so a chat message costs no DB round-trip
+ * on the hot path; a save in the dashboard clears it (see `@/lib/settings`).
  */
 export async function getLLMConfigs(): Promise<ResolvedLLM[]> {
-  const settings = await getSettings();
+  const settings = await getSettingsSnapshot();
   return (settings.llm ?? [])
-    .filter((c: LLMConfig) => c.apiKey && c.model)
+    .filter((c: LLMConfig) => c.apiKey?.trim() && c.model?.trim())
     .sort((a: LLMConfig, b: LLMConfig) => (a.priority ?? 3) - (b.priority ?? 3))
     .map((c: LLMConfig) => {
       const preset = findProvider(LLM_PROVIDERS, c.provider);
+      const apiStyle = preset?.apiStyle ?? "openai";
       return {
         provider: c.provider,
-        baseUrl: (c.baseUrl || preset?.baseUrl || "").replace(/\/$/, ""),
-        apiKey: c.apiKey,
-        model: c.model,
-        apiStyle: preset?.apiStyle ?? "openai",
+        baseUrl: normalizeBaseUrl(c.baseUrl?.trim() || preset?.baseUrl || "", apiStyle),
+        apiKey: c.apiKey.trim(),
+        model: c.model.trim(),
+        apiStyle,
       };
     })
     .filter((c: ResolvedLLM) => Boolean(c.baseUrl));
+}
+
+/**
+ * Trims a stored base URL down to what {@link buildRequest} appends a path to.
+ *
+ * The field is free text next to a link to the vendor's docs, so admins paste
+ * whatever the docs show — and Anthropic documents `https://api.anthropic.com/v1`
+ * while the Messages path we append already starts with `/v1`. Left alone that
+ * produces `/v1/v1/messages` and a 404 the admin has no way to diagnose.
+ */
+function normalizeBaseUrl(url: string, apiStyle: ResolvedLLM["apiStyle"]): string {
+  const trimmed = url.replace(/\/+$/, "");
+  return apiStyle === "anthropic" ? trimmed.replace(/\/v1$/, "") : trimmed;
+}
+
+/**
+ * The field name a provider expects for the reply-length cap.
+ *
+ * OpenAI rejects `max_tokens` outright on its reasoning models (`o4-mini` is in
+ * our dropdown) with a 400 telling you to use `max_completion_tokens`, which
+ * their non-reasoning chat models accept too — so OpenAI itself always gets the
+ * newer name. Every other OpenAI-compatible vendor here (Groq, OpenRouter,
+ * Gemini, Mistral) still expects `max_tokens`.
+ */
+export function tokenLimitField(providerId: string, baseUrl = ""): "max_tokens" | "max_completion_tokens" {
+  return providerId === "openai" || baseUrl.includes("api.openai.com")
+    ? "max_completion_tokens"
+    : "max_tokens";
 }
 
 /**
@@ -88,7 +120,7 @@ function buildRequest(
     },
     body: JSON.stringify({
       model: llm.model,
-      max_tokens: maxTokens,
+      [tokenLimitField(llm.provider, llm.baseUrl)]: maxTokens,
       messages: [{ role: "system", content: system }, ...messages],
       stream: true,
     }),
@@ -126,12 +158,16 @@ function extractDelta(payload: string): string {
  *
  * Throws when every provider fails, so the route can answer with a real status
  * code rather than an empty 200.
+ *
+ * Returns the provider that accepted alongside the stream: with up to five
+ * configured entries and silent fallback between them, "which model actually
+ * answered?" is otherwise unanswerable from the outside.
  */
 export async function streamChat(
   system: string,
   messages: ChatMessage[],
   maxTokens = 700
-): Promise<ReadableStream<Uint8Array>> {
+): Promise<{ stream: ReadableStream<Uint8Array>; llm: ResolvedLLM }> {
   const configs = await getLLMConfigs();
   if (configs.length === 0) {
     throw new Error("No AI provider configured in Settings → AI Providers");
@@ -156,7 +192,14 @@ export async function streamChat(
       continue;
     }
 
-    return toTextStream(res.body);
+    // Logged even on success: a provider that quietly fell through to the
+    // second entry still costs the visitor a round-trip, and the admin has no
+    // other signal that their priority-1 key is dead.
+    if (failures.length > 0) {
+      console.warn(`[chat] fell back to ${llm.provider}/${llm.model} — ${failures.join("; ")}`);
+    }
+
+    return { stream: toTextStream(res.body), llm };
   }
 
   throw new Error(`All AI providers failed — ${failures.join("; ")}`);

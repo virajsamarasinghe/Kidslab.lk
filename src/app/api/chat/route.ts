@@ -48,11 +48,20 @@ export async function POST(req: NextRequest) {
   const system = await buildSystemPrompt(config, parsed.locale);
 
   try {
-    const stream = await streamChat(system, parsed.messages as ChatMessage[], config.maxTokens);
+    const { stream, llm } = await streamChat(
+      system,
+      parsed.messages as ChatMessage[],
+      config.maxTokens
+    );
     return new Response(stream, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-store",
+        // Which configured provider actually answered — the widget ignores it,
+        // but it turns "is it using the model I picked?" into one look at the
+        // network tab. Names only; no key material.
+        "X-LLM-Provider": llm.provider,
+        "X-LLM-Model": llm.model,
         // Without this, a proxy that buffers the response defeats streaming
         // and the widget sits silent until the whole reply is ready.
         "X-Accel-Buffering": "no",

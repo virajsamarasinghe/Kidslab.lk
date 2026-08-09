@@ -4,6 +4,7 @@ import { requireCapability } from "@/lib/auth";
 import Course from "@/models/Course";
 import "@/models/Instructor";
 import { logActivity } from "@/lib/activity-log";
+import { invalidateAssistantCourses } from "@/lib/assistant";
 
 const ALLOWED_FIELDS = [
   "title", "description", "ageRange", "level", "duration", "schedule",
@@ -37,6 +38,7 @@ export async function POST(req: NextRequest) {
   await connectDB();
   const body = await req.json();
   const course = await Course.create(pickAllowed(body));
+  invalidateAssistantCourses();
   logActivity(session, "created", "course", String(course._id), { title: course.title });
   return NextResponse.json(course, { status: 201 });
 }
