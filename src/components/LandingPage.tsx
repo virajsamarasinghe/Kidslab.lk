@@ -287,23 +287,24 @@ function TypingHeadline({
   sentences: TypingSegment[][];
   srText: string;
 }) {
+  const [reduceMotion] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
   const [sentenceIndex, setSentenceIndex] = useState(0);
-  const [count, setCount] = useState(0);
-  const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">("typing");
+  const [count, setCount] = useState(() =>
+    reduceMotion ? sentences[0].reduce((sum, s) => sum + s.text.length, 0) : 0
+  );
+  const [phase, setPhase] = useState<"typing" | "pausing" | "deleting">(() =>
+    reduceMotion ? "pausing" : "typing"
+  );
 
   const segments = sentences[sentenceIndex];
   const totalLength = segments.reduce((sum, s) => sum + s.text.length, 0);
 
   useEffect(() => {
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (reduceMotion) {
-      setCount(sentences[0].reduce((sum, s) => sum + s.text.length, 0));
-      setPhase("pausing");
-      return;
-    }
+    if (reduceMotion) return;
 
     if (phase === "typing") {
       if (count >= totalLength) {
@@ -325,17 +326,26 @@ function TypingHeadline({
 
     if (phase === "deleting") {
       if (count <= 0) {
-        setSentenceIndex((i) => (i + 1) % sentences.length);
-        setPhase("typing");
-        return;
+        const id = setTimeout(() => {
+          setSentenceIndex((i) => (i + 1) % sentences.length);
+          setPhase("typing");
+        }, 0);
+        return () => clearTimeout(id);
       }
       const id = setTimeout(() => setCount((c) => c - 1), 20);
       return () => clearTimeout(id);
     }
-  }, [phase, count, totalLength, sentences]);
+  }, [reduceMotion, phase, count, totalLength, sentences]);
 
   const idle = phase === "pausing";
-  let consumed = 0;
+  const starts: number[] = [];
+  {
+    let acc = 0;
+    for (const seg of segments) {
+      starts.push(acc);
+      acc += seg.text.length;
+    }
+  }
 
   return (
     <>
@@ -351,8 +361,7 @@ function TypingHeadline({
         ))}
         <span className="[grid-area:1/1]">
           {segments.map((seg, i) => {
-            const start = consumed;
-            consumed += seg.text.length;
+            const start = starts[i];
             const visible = Math.max(0, Math.min(seg.text.length, count - start));
             const shown = seg.text.slice(0, visible);
             if (!shown) return null;
