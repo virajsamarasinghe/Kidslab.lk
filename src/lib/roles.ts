@@ -84,22 +84,3 @@ export function can(role: string | undefined, capability: Capability): boolean {
 export function outranks(actor: string | undefined, target: string | undefined): boolean {
   return rankOf(actor) > rankOf(target);
 }
-
-/**
- * Capability required to open each admin page, most specific prefix first.
- * Used by the proxy to gate navigation and by the sidebar to hide links; the
- * API guards are what actually protect the data.
- */
-const ADMIN_PATH_CAPABILITIES: { prefix: string; capability: Capability }[] = [
-  { prefix: "/admin/settings/admins", capability: "admins:manage" },
-  { prefix: "/admin/settings", capability: "settings:manage" },
-  { prefix: "/admin/users", capability: "users:manage" },
-  // Everything else in the dashboard is readable by any admin-tier role; write
-  // actions on those pages are refused by the API, not by the page gate.
-  { prefix: "/admin", capability: "dashboard:read" },
-];
-
-export function capabilityForAdminPath(pathname: string): Capability | null {
-  const match = ADMIN_PATH_CAPABILITIES.find(entry => pathname.startsWith(entry.prefix));
-  return match?.capability ?? null;
-}

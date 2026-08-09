@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { redirect } from "next/navigation";
 import { ADMIN_COOKIE_NAME } from "@/config/site";
 import { can, type Capability, type Role } from "@/lib/roles";
 import { connectDB } from "@/lib/mongodb";
@@ -75,6 +76,26 @@ export async function requireCapability(
       { status: 403 }
     );
   }
+
+  return { id: session.id, email: user.email, role: user.role };
+}
+
+/**
+ * Page guard for server components — redirects instead of returning a response.
+ *
+ * The proxy also gates these paths, but it runs on the edge and can only read
+ * the JWT, which is fixed for 7 days. That makes it a fast first pass, not the
+ * authority: a promotion wouldn't take effect (and a demotion wouldn't take
+ * hold) until the token expired. This check reads the database, so it decides.
+ */
+export async function requirePageCapability(capability: Capability) {
+  const session = await getAdminSession();
+  if (!session) redirect("/login");
+
+  await connectDB();
+  const user = await User.findById(session.id).select("email role status").lean();
+  if (!user || user.status !== "active") redirect("/login");
+  if (!can(user.role, capability)) redirect("/admin");
 
   return { id: session.id, email: user.email, role: user.role };
 }
