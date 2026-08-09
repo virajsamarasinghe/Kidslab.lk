@@ -38,16 +38,17 @@
 }
 
 :root {
-  /* ── Circuit-board palette ──
-     Circuit  — near-black solder-mask green, primary dark surface/CTA
-     Copper   — warm metallic accent, replaces the old red accent
-     Signal   — electric blue, secondary accent / trust cue
-     Paper    — warm off-white, replaces clinical pure white in places */
-  --brand-navy: #0f2418;
-  --brand-red: #e08a3c;
-  --brand-blue: #2b5fe0;
-  --brand-yellow: #fbbf24;
-  --brand-paper: #f7f5ee;
+  /* ── Academy Parent-Focused Palette ──
+     Navy     — deep indigo/slate, trustworthy primary dark surface
+     Coral    — warm coral/red, friendly accent for action items
+     Blue     — rich indigo/blue, secondary accent / trust cue
+     Yellow   — warm gold for highlights and warnings
+     Paper    — soft cream off-white, welcoming and premium background */
+  --brand-navy: #0f172a;
+  --brand-red: #f26457;
+  --brand-blue: #4f46e5;
+  --brand-yellow: #f59e0b;
+  --brand-paper: #fcfbf8;
   --background: oklch(1 0 0);
   --foreground: oklch(0.13 0.02 264);
   --card: oklch(1 0 0);

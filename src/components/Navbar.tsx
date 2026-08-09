@@ -37,8 +37,6 @@ export default function Navbar() {
     };
   }, [mobileOpen]);
 
-  /* Escape closes the sheet — expected of any overlay, and the only
-     keyboard way out for someone on a tablet with a keyboard. */
   useEffect(() => {
     if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -53,51 +51,42 @@ export default function Navbar() {
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 border-b border-slate-100 shadow-sm"
-          : "border-b border-transparent"
+          ? "bg-white/80 border-b border-slate-200/50 shadow-sm"
+          : "bg-white/40 border-b border-transparent"
       }`}
-      style={{
-        backgroundColor: scrolled
-          ? undefined
-          : "color-mix(in srgb, var(--brand-paper) 82%, transparent)",
-      }}
     >
-      <div className="relative w-full px-[clamp(0.875rem,2vw,2.5rem)] h-16 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="relative w-full px-[clamp(0.875rem,2vw,2.5rem)] h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo */}
-        <a href="#" className="flex items-center gap-2 sm:gap-2.5 shrink-0 min-w-0 opacity-100 hover:opacity-80 transition-opacity">
-          <span
-            className="flex items-center justify-center rounded-lg p-0.5 shrink-0"
-            style={{ border: "2px solid var(--brand-yellow)" }}
-          >
+        <a href="#" className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0 group transition-all">
+          <span className="flex items-center justify-center rounded-xl p-1 shrink-0 bg-white shadow-sm ring-1 ring-slate-900/5 group-hover:shadow-md group-hover:scale-105 transition-all duration-300">
             <Image
               src="/logo.png"
               alt="kidslab.lk logo"
               width={52}
               height={52}
-              className="rounded-md object-contain w-8 h-8 sm:w-9 sm:h-9"
+              className="rounded-lg object-contain w-8 h-8 sm:w-10 sm:h-10"
               priority
             />
           </span>
           <span
-            className="font-bold text-base sm:text-lg tracking-tight truncate"
+            className="font-extrabold text-lg sm:text-xl tracking-tight truncate text-slate-900 group-hover:text-indigo-950 transition-colors"
             style={{
-              color: "var(--brand-navy)",
               fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif",
             }}
           >
-            kid<span style={{ color: "var(--brand-red)" }}>s</span>lab.lk
+            kid<span className="text-coral-500" style={{ color: "var(--brand-red)" }}>s</span>lab.lk
           </span>
         </a>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1 md:absolute md:left-1/2 md:-translate-x-1/2">
+        <nav className="hidden md:flex items-center gap-1.5 md:absolute md:left-1/2 md:-translate-x-1/2 bg-white/50 px-2 py-1.5 rounded-full border border-slate-200/50 shadow-sm backdrop-blur-md">
           {links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-[color:var(--brand-blue)] hover:bg-blue-50 rounded-lg transition-all duration-150"
+              className="px-4 py-1.5 text-sm font-semibold text-slate-600 hover:text-indigo-600 hover:bg-white rounded-full transition-all duration-200"
             >
               {link.label}
             </a>
@@ -105,60 +94,57 @@ export default function Navbar() {
         </nav>
 
         {/* CTA */}
-        <div className="flex items-center justify-end gap-1.5 shrink-0">
+        <div className="flex items-center justify-end gap-2 shrink-0">
           {/* Language toggle */}
-          <div
-            className="hidden md:inline-flex items-center rounded-full p-0.5 text-xs font-semibold shrink-0"
-            style={{ backgroundColor: "#f0f1f5", border: "1px solid #dde1ea" }}
-          >
+          <div className="hidden md:inline-flex items-center rounded-full p-1 text-xs font-bold shrink-0 bg-white/50 border border-slate-200/50 shadow-sm backdrop-blur-md">
             <button
               onClick={() => setLocale("en")}
-              className="px-2 py-1 rounded-full transition-colors"
-              style={
+              className={`px-2.5 py-1 rounded-full transition-colors ${
                 locale === "en"
-                  ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
-                  : { color: "#64748b" }
-              }
+                  ? "bg-indigo-950 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
               aria-pressed={locale === "en"}
             >
               EN
             </button>
             <button
               onClick={() => setLocale("si")}
-              className="px-2 py-1 rounded-full transition-colors"
-              style={
+              className={`px-2.5 py-1 rounded-full transition-colors ${
                 locale === "si"
-                  ? { backgroundColor: "var(--brand-navy)", color: "#fff" }
-                  : { color: "#64748b" }
-              }
+                  ? "bg-indigo-950 text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-900"
+              }`}
               aria-pressed={locale === "si"}
             >
               සිං
             </button>
           </div>
+
           <a href="#contact" className="hidden md:block shrink-0">
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 rounded-full border-slate-200 font-semibold hover:border-slate-300 hover:bg-slate-50 transition-all whitespace-nowrap"
-              style={{ color: "var(--brand-navy)" }}
+              className="gap-2 rounded-full border-slate-200/50 bg-white/50 backdrop-blur-md font-semibold text-indigo-950 hover:border-slate-300 hover:bg-white transition-all shadow-sm h-9 px-4"
             >
               <Phone className="size-3.5" />
               {t("contactMe")}
             </Button>
           </a>
-          <div className="hidden md:flex items-center gap-1.5 shrink-0">
+          
+          <div className="hidden md:flex items-center gap-2 shrink-0">
             {isLoaded && (
               isSignedIn ? (
-                <UserButton />
+                <div className="bg-white/50 p-1 rounded-full border border-slate-200/50 shadow-sm backdrop-blur-md">
+                  <UserButton />
+                </div>
               ) : (
                 <>
                   <SignInButton mode="modal">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-full border-slate-200 font-semibold hover:border-slate-300 hover:bg-slate-50 whitespace-nowrap"
-                      style={{ color: "var(--brand-navy)" }}
+                      className="rounded-full border-slate-200/50 bg-white/50 backdrop-blur-md font-semibold text-indigo-950 hover:border-slate-300 hover:bg-white transition-all shadow-sm h-9 px-4"
                     >
                       {t("signIn")}
                     </Button>
@@ -166,7 +152,8 @@ export default function Navbar() {
                   <SignUpButton mode="modal">
                     <Button
                       size="sm"
-                      className="btn-brand-copper rounded-full text-white font-semibold shadow-sm whitespace-nowrap"
+                      className="rounded-full font-bold shadow-md hover:shadow-lg transition-all h-9 px-5 hover:-translate-y-0.5 border-none"
+                      style={{ backgroundColor: "var(--brand-red)", color: "white" }}
                     >
                       {t("signUp")}
                     </Button>
@@ -175,23 +162,19 @@ export default function Navbar() {
               )
             )}
           </div>
-          {/* ── Mobile: compact language toggle stays in the bar itself. ── */}
+
+          {/* ── Mobile: compact language toggle ── */}
           <button
             onClick={() => setLocale(locale === "en" ? "si" : "en")}
             aria-label={locale === "en" ? "Switch to Sinhala" : "Switch to English"}
-            className="md:hidden shrink-0 h-9 min-w-9 px-2 rounded-full text-xs font-bold transition-colors"
-            style={{
-              backgroundColor: "#f0f1f5",
-              border: "1px solid #dde1ea",
-              color: "var(--brand-navy)",
-            }}
+            className="md:hidden shrink-0 h-10 min-w-10 px-2 rounded-full text-xs font-extrabold transition-colors bg-white/80 border border-slate-200/80 text-indigo-950 shadow-sm backdrop-blur-md"
           >
             {locale === "en" ? "සිං" : "EN"}
           </button>
 
           {/* Mobile menu toggle */}
           <button
-            className="md:hidden shrink-0 flex items-center justify-center w-10 h-10 -mr-1.5 rounded-lg text-slate-600 hover:bg-slate-100 active:bg-slate-100"
+            className="md:hidden shrink-0 flex items-center justify-center w-10 h-10 -mr-1.5 rounded-full text-slate-700 hover:bg-white/80 active:bg-white/80 bg-white/50 border border-slate-200/50 shadow-sm backdrop-blur-md transition-all"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-expanded={mobileOpen}
             aria-label={mobileOpen ? t("closeMenu") : t("menu")}
@@ -209,7 +192,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="md:hidden fixed inset-0 top-16 z-40 bg-black/30"
+            className="md:hidden fixed inset-0 top-[4.5rem] z-40 bg-indigo-950/20 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
         )}
@@ -223,34 +206,35 @@ export default function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="md:hidden fixed left-0 right-0 top-16 z-40 max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain bg-white border-t border-slate-100 shadow-xl px-[clamp(0.875rem,2vw,2.5rem)] pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-0.5"
+            className="md:hidden fixed left-0 right-0 top-[4.5rem] z-40 max-h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-2xl px-[clamp(0.875rem,2vw,2.5rem)] pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-1 rounded-b-3xl"
           >
             {links.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-between px-4 min-h-12 py-3 text-[15px] font-medium text-slate-700 hover:text-[color:var(--brand-blue)] hover:bg-blue-50 active:bg-blue-50 rounded-xl transition-colors"
+                className="flex items-center justify-between px-5 min-h-[3.25rem] py-3 text-[15px] font-bold text-slate-700 hover:text-indigo-600 hover:bg-indigo-50/50 active:bg-indigo-50/50 rounded-2xl transition-colors"
               >
                 {link.label}
-                <ChevronRight className="w-4 h-4 text-slate-300" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </a>
             ))}
 
-            <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
               <Button
                 size="lg"
                 onClick={() => {
                   setMobileOpen(false);
                   openRegisterModal();
                 }}
-                className="btn-brand-copper w-full text-white font-semibold rounded-full h-12 text-[15px]"
+                className="w-full text-white font-bold rounded-full h-14 text-[15px] shadow-md border-none hover:-translate-y-0.5 transition-all"
+                style={{ backgroundColor: "var(--brand-red)" }}
               >
                 {t("registerFree")}
               </Button>
               <a href="#contact" onClick={() => setMobileOpen(false)}>
-                <Button variant="outline" size="lg" className="w-full gap-2 font-semibold rounded-full border-slate-200 h-12 text-[15px]" style={{ color: "var(--brand-navy)" }}>
-                  <Phone className="size-4" />
+                <Button variant="outline" size="lg" className="w-full gap-2 font-bold rounded-full border-slate-200 h-14 text-[15px] text-indigo-950 hover:bg-slate-50 transition-colors">
+                  <Phone className="size-4.5" />
                   {t("contactMe")}
                 </Button>
               </a>
@@ -258,30 +242,28 @@ export default function Navbar() {
 
             {isLoaded && (
               isSignedIn ? (
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 px-1 py-1">
+                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-3 px-2 py-1">
                   <UserButton />
-                  <span className="text-sm text-slate-500">{t("account")}</span>
+                  <span className="text-sm font-semibold text-slate-600">{t("account")}</span>
                 </div>
               ) : (
-                <div className="mt-3 pt-3 border-t border-slate-100 flex flex-col gap-2">
+                <div className="mt-4 pt-4 border-t border-slate-100 flex flex-col gap-3">
                   <SignInButton mode="modal">
                     <Button
                       variant="outline"
                       size="lg"
                       onClick={() => setMobileOpen(false)}
-                      className="w-full font-semibold rounded-full border-slate-200 h-12 text-[15px]"
-                      style={{ color: "var(--brand-navy)" }}
+                      className="w-full font-bold rounded-full border-slate-200 h-14 text-[15px] text-indigo-950 hover:bg-slate-50 transition-colors"
                     >
                       {t("signIn")}
                     </Button>
                   </SignInButton>
-                  {/* Navy, not copper — the copper fill is reserved for the
-                      register CTA above so the sheet has one clear primary. */}
                   <SignUpButton mode="modal">
                     <Button
                       size="lg"
                       onClick={() => setMobileOpen(false)}
-                      className="btn-brand-navy w-full text-white font-semibold rounded-full h-12 text-[15px]"
+                      className="w-full text-white font-bold rounded-full h-14 text-[15px] shadow-md border-none hover:-translate-y-0.5 transition-all"
+                      style={{ backgroundColor: "var(--brand-navy)" }}
                     >
                       {t("signUp")}
                     </Button>
