@@ -47,12 +47,16 @@ export async function getBrevoCredentials(): Promise<BrevoCredentials | null> {
 
 /**
  * Resolves a Brevo config (saved settings, optionally overlaid with unsaved
- * admin-form values) into usable credentials, falling back to env vars.
- * Returns null when either the sender or the SMTP login is incomplete.
+ * admin-form values) into usable credentials. Returns null when either the
+ * sender or the SMTP login is incomplete.
+ *
+ * The config is the single source of truth — credentials come from Settings ->
+ * Brevo Email in the dashboard, never from environment variables, so rotating a
+ * key doesn't need a redeploy and every send path sees the same values.
  */
 export function buildCredentials(brevo: BrevoConfigInput): BrevoCredentials | null {
-  const senderEmail = brevo.senderEmail || process.env.BREVO_SENDER_EMAIL;
-  const senderName = brevo.senderName || process.env.BREVO_SENDER_NAME || SITE_NAME;
+  const senderEmail = brevo.senderEmail;
+  const senderName = brevo.senderName || SITE_NAME;
   const smtp = resolveSmtp(brevo);
 
   if (!senderEmail || !smtp) return null;
@@ -61,12 +65,12 @@ export function buildCredentials(brevo: BrevoConfigInput): BrevoCredentials | nu
 
 /** Resolves just the SMTP half of a config — a sender address isn't needed to test the relay. */
 export function resolveSmtp(brevo: BrevoConfigInput): BrevoSmtpCredentials | null {
-  const user = brevo.smtpUser || process.env.BREVO_SMTP_USER;
-  const key = brevo.smtpKey || process.env.BREVO_SMTP_KEY;
+  const user = brevo.smtpUser;
+  const key = brevo.smtpKey;
   if (!user || !key) return null;
   return {
-    host: brevo.smtpHost || process.env.BREVO_SMTP_HOST || DEFAULT_SMTP_HOST,
-    port: Number(brevo.smtpPort || process.env.BREVO_SMTP_PORT || DEFAULT_SMTP_PORT),
+    host: brevo.smtpHost || DEFAULT_SMTP_HOST,
+    port: Number(brevo.smtpPort) || DEFAULT_SMTP_PORT,
     user,
     key,
   };
@@ -246,7 +250,7 @@ export async function sendWelcomeEmail({
 }: SendWelcomeEmailParams) {
   const creds = await getBrevoCredentials();
   if (!creds) {
-    console.warn("[brevo] No SMTP credentials/sender configured — skipping welcome email");
+    console.warn("[brevo] No SMTP credentials/sender saved in Settings → Brevo Email — skipping welcome email");
     return;
   }
 
@@ -312,7 +316,7 @@ export async function sendAdminInviteEmail({
 }: SendAdminInviteEmailParams): Promise<boolean> {
   const creds = await getBrevoCredentials();
   if (!creds) {
-    console.warn("[brevo] No SMTP credentials/sender configured — skipping admin invite email");
+    console.warn("[brevo] No SMTP credentials/sender saved in Settings → Brevo Email — skipping admin invite email");
     return false;
   }
 
