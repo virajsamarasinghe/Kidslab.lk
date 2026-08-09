@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import AdminShell from "@/components/admin/AdminShell";
 import { isAdminRole } from "@/lib/roles";
 import type { AdminProfile } from "@/components/admin/AdminProfileContext";
-import { getAdminSession } from "@/lib/auth";
+import { requirePageCapability } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 
@@ -20,14 +20,13 @@ export const metadata: Metadata = {
  * takes effect on the next page load rather than the next login.
  */
 async function loadProfile(): Promise<AdminProfile> {
-  const session = await getAdminSession();
-  if (!session) redirect("/login");
+  // Covers the revoked/deactivated/stale-session cases in one place, so this
+  // layout can't drift from the checks the API guards apply.
+  const session = await requirePageCapability("dashboard:read");
 
   await connectDB();
-  const user = await User.findById(session.id).select("name email avatar role status");
-  if (!user || user.status !== "active" || !isAdminRole(user.role)) {
-    redirect("/login");
-  }
+  const user = await User.findById(session.id).select("name email avatar role");
+  if (!user || !isAdminRole(user.role)) redirect("/login");
 
   return {
     name: user.name || "Administrator",

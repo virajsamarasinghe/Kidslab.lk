@@ -3,6 +3,7 @@ import { requireCapability } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { buildCredentials, mergeBrevoInput, sendTestEmail } from "@/lib/brevo";
 import { logActivity } from "@/lib/activity-log";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -14,6 +15,9 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export async function POST(req: NextRequest) {
   const session = await requireCapability("settings:manage");
   if (session instanceof NextResponse) return session;
+
+  const limited = await enforceRateLimit("test-email", session.id, 10, 60 * 60);
+  if (limited) return limited;
 
   const body = await req.json();
   const to = typeof body.email === "string" ? body.email.trim() : "";

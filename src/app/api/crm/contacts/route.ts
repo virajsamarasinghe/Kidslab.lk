@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import { getUnifiedContacts, invalidateUnifiedContacts } from "@/lib/crm";
 import Contact from "@/models/Contact";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET(req: NextRequest) {
   const session = await requireCapability("dashboard:read");
@@ -42,6 +43,8 @@ export async function POST(req: NextRequest) {
     },
     { upsert: true, new: true }
   ).lean();
+
+  logActivity(session, "saved", "contact", String(body.email).toLowerCase());
 
   invalidateUnifiedContacts();
   return NextResponse.json(contact, { status: 201 });

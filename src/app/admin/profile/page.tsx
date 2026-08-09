@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useAdminProfile } from "@/components/admin/AdminProfileContext";
 import { useConfirm } from "@/components/admin/ConfirmContext";
+import TwoFactorPanel from "@/components/admin/TwoFactorPanel";
 
 type Notice = { success: boolean; message: string } | null;
 
@@ -215,6 +216,10 @@ export default function AdminProfilePage() {
             </Button>
           </div>
         </Card>
+
+        <div className="mt-6">
+          <TwoFactorPanel />
+        </div>
       </div>
     </div>
   );

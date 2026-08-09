@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import { getBrevoCredentials, sendEmail } from "@/lib/brevo";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { resolveSegment } from "@/lib/crm";
 import { logActivity } from "@/lib/activity-log";
 import Campaign, { CAMPAIGN_SEGMENTS, type CampaignSegment } from "@/models/Campaign";
@@ -33,6 +34,11 @@ export async function POST(req: NextRequest) {
   if (!CAMPAIGN_SEGMENTS.includes(segment)) {
     return NextResponse.json({ error: "Invalid segment" }, { status: 400 });
   }
+
+  // Blasts are irreversible and metered by Brevo — cap how often one admin
+  // can fire them, so a stuck retry loop can't drain the sending quota.
+  const limited = await enforceRateLimit("campaign-send", session.id, 5, 60 * 60);
+  if (limited) return limited;
 
   const creds = await getBrevoCredentials();
   if (!creds) {

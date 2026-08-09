@@ -24,12 +24,33 @@ export interface AdminSession {
   role: Role;
 }
 
-export async function verifyToken(token: string) {
-  const { payload } = await jwtVerify(token, SECRET);
-  return payload as unknown as AdminSession;
+export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+
+/**
+ * Cookie attributes for the admin session, shared by login and logout so the
+ * two always match — a clearing cookie whose attributes differ from the one
+ * that was set is ignored by the browser, leaving the session live.
+ *
+ * `secure` is on outside development so the cookie is never sent over plain
+ * HTTP; `sameSite: lax` keeps it off cross-site POSTs, which is what stands in
+ * for CSRF tokens here.
+ */
+export function sessionCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    path: "/",
+    sameSite: "lax" as const,
+    secure: process.env.NODE_ENV === "production",
+    maxAge,
+  };
 }
 
-export async function getAdminSession(): Promise<AdminSession | null> {
+export async function verifyToken(token: string) {
+  const { payload } = await jwtVerify(token, SECRET);
+  return payload as unknown as AdminSession & { iat?: number };
+}
+
+export async function getAdminSession(): Promise<(AdminSession & { iat?: number }) | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE)?.value;
   if (!token) return null;
@@ -38,6 +59,22 @@ export async function getAdminSession(): Promise<AdminSession | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * True when this token predates the account's last password change.
+ *
+ * Changing a password has to end sessions that were opened with the old one —
+ * otherwise a password reset after a compromise leaves the attacker signed in
+ * for the rest of the token's 7-day life. `iat` is in seconds, so the stored
+ * timestamp is floored to seconds before comparing.
+ */
+function isStaleSession(
+  session: { iat?: number },
+  passwordChangedAt: Date | undefined
+): boolean {
+  if (!passwordChangedAt || session.iat == null) return false;
+  return session.iat < Math.floor(passwordChangedAt.getTime() / 1000);
 }
 
 /**
@@ -66,8 +103,10 @@ export async function requireCapability(
   }
 
   await connectDB();
-  const user = await User.findById(session.id).select("email role status").lean();
-  if (!user || user.status !== "active") {
+  const user = await User.findById(session.id)
+    .select("email role status passwordChangedAt")
+    .lean();
+  if (!user || user.status !== "active" || isStaleSession(session, user.passwordChangedAt)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (!can(user.role, capability)) {
@@ -93,8 +132,12 @@ export async function requirePageCapability(capability: Capability) {
   if (!session) redirect("/login");
 
   await connectDB();
-  const user = await User.findById(session.id).select("email role status").lean();
-  if (!user || user.status !== "active") redirect("/login");
+  const user = await User.findById(session.id)
+    .select("email role status passwordChangedAt")
+    .lean();
+  if (!user || user.status !== "active" || isStaleSession(session, user.passwordChangedAt)) {
+    redirect("/login");
+  }
   if (!can(user.role, capability)) redirect("/admin");
 
   return { id: session.id, email: user.email, role: user.role };

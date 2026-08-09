@@ -3,9 +3,13 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { sendWelcomeEmail } from "@/lib/brevo";
+import { enforceRateLimit, clientIp } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   try {
+    const limited = await enforceRateLimit("register", clientIp(req), 10, 60 * 60);
+    if (limited) return limited;
+
     const body = await req.json();
     const { name, phone, email, age, parentName, city, interestedCourse } = body;
 

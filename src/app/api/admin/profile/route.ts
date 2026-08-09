@@ -3,6 +3,8 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import User from "@/models/User";
+import { validatePassword } from "@/lib/password";
+import { logActivity } from "@/lib/activity-log";
 
 export async function GET() {
   const session = await requireCapability("dashboard:read");
@@ -47,13 +49,17 @@ export async function PATCH(req: NextRequest) {
     if (!valid) {
       return NextResponse.json({ error: "Current password is incorrect" }, { status: 401 });
     }
-    if (newPassword.length < 8) {
-      return NextResponse.json({ error: "New password must be at least 8 characters" }, { status: 400 });
+    const policy = validatePassword(newPassword, [user.email, user.name]);
+    if (!policy.valid) {
+      return NextResponse.json({ error: policy.error }, { status: 400 });
     }
     user.password = await bcrypt.hash(newPassword, 10);
+    // Invalidates every session issued before now, including other devices.
+    user.passwordChangedAt = new Date();
   }
 
   await user.save();
+  logActivity(session, newPassword ? "changed password" : "updated profile", "admin", session.id);
 
   return NextResponse.json({ name: user.name, email: user.email, avatar: user.avatar });
 }

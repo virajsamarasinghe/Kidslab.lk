@@ -21,6 +21,17 @@ export interface IUser extends Document {
    * devices instead of living in one browser's localStorage.
    */
   notificationsSeen: Map<string, Date>;
+  /** Consecutive failed admin logins; reset to 0 on success. */
+  failedLoginAttempts: number;
+  /** Set when the failure threshold is hit; logins are refused until it passes. */
+  lockedUntil?: Date;
+  /** Sessions issued before this instant are rejected — see `requireCapability`. */
+  passwordChangedAt?: Date;
+  /** Base32 TOTP secret. Present once enrolment starts, active only when `twoFactorEnabled`. */
+  twoFactorSecret?: string;
+  twoFactorEnabled: boolean;
+  /** bcrypt hashes of single-use recovery codes; each is deleted as it's spent. */
+  twoFactorRecoveryCodes: string[];
   createdAt: Date;
 }
 
@@ -42,6 +53,12 @@ const UserSchema = new Schema<IUser>(
     status:           { type: String, enum: ["active", "inactive"], default: "active" },
     enrolledCourses:  [{ type: Schema.Types.ObjectId, ref: "Course" }],
     notificationsSeen: { type: Map, of: Date, default: () => new Map() },
+    failedLoginAttempts: { type: Number, default: 0 },
+    lockedUntil:         { type: Date },
+    passwordChangedAt:   { type: Date },
+    twoFactorSecret:        { type: String, select: false },
+    twoFactorEnabled:       { type: Boolean, default: false },
+    twoFactorRecoveryCodes: { type: [String], default: [], select: false },
   },
   { timestamps: true }
 );

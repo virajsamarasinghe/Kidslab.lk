@@ -4,10 +4,10 @@ import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
 import { ADMIN_ROLES, isAdminRole, outranks } from "@/lib/roles";
+import { validatePassword } from "@/lib/password";
 import User from "@/models/User";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 8;
 
 /** Lists every account holding an admin-tier role. */
 export async function GET() {
@@ -88,11 +88,9 @@ export async function POST(req: NextRequest) {
   if (!name) {
     return NextResponse.json({ error: "Name is required for a new account" }, { status: 400 });
   }
-  if (password.length < MIN_PASSWORD_LENGTH) {
-    return NextResponse.json(
-      { error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters` },
-      { status: 400 }
-    );
+  const policy = validatePassword(password, [email, name]);
+  if (!policy.valid) {
+    return NextResponse.json({ error: policy.error }, { status: 400 });
   }
 
   const created = await User.create({

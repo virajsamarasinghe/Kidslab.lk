@@ -5,6 +5,13 @@ import { getUnifiedContacts } from "@/lib/crm";
 import User from "@/models/User";
 import Subscriber from "@/models/Subscriber";
 
+/**
+ * Upper bound on exported rows. These handlers buffer the whole result set in
+ * memory and serialise it to a single string, so an unbounded `find()` turns a
+ * grown dataset into an out-of-memory crash. The cap fails loudly instead.
+ */
+const MAX_EXPORT_ROWS = 50_000;
+
 /** Wraps a CSV field in quotes and escapes embedded quotes/newlines per RFC 4180. */
 function csvField(value: unknown): string {
   const str = String(value ?? "");
@@ -20,7 +27,7 @@ function toCsv(headers: string[], rows: unknown[][]): string {
 const EXPORTERS: Record<string, () => Promise<{ filename: string; csv: string }>> = {
   async users() {
     await connectDB();
-    const users = await User.find({ role: "user" }).select("-password").sort({ createdAt: -1 }).lean();
+    const users = await User.find({ role: "user" }).select("-password").sort({ createdAt: -1 }).limit(MAX_EXPORT_ROWS).lean();
     const csv = toCsv(
       ["Name", "Email", "Phone", "Age", "City", "Interested Course", "Status", "Joined"],
       users.map(u => [u.name, u.email, u.phone, u.age, u.city, u.interestedCourse, u.status, new Date(u.createdAt).toISOString()])
@@ -29,7 +36,7 @@ const EXPORTERS: Record<string, () => Promise<{ filename: string; csv: string }>
   },
   async subscribers() {
     await connectDB();
-    const subs = await Subscriber.find().sort({ createdAt: -1 }).lean();
+    const subs = await Subscriber.find().sort({ createdAt: -1 }).limit(MAX_EXPORT_ROWS).lean();
     const csv = toCsv(
       ["Email", "Source", "Subscribed"],
       subs.map(s => [s.email, s.source, new Date(s.createdAt).toISOString()])

@@ -24,6 +24,10 @@ export default function LoginPage() {
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Set once the server reports the account has 2FA; the form then collects a
+  // code and re-submits the same credentials with it.
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -32,15 +36,30 @@ export default function LoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        email,
+        password,
+        ...(twoFactorCode ? { twoFactorCode } : {}),
+      }),
     });
     const data = await res.json();
     setLoading(false);
+
     if (res.ok) {
       router.push("/admin");
-    } else {
-      setError(data.error ?? "Login failed");
+      return;
     }
+
+    if (data.twoFactorRequired) {
+      setTwoFactorRequired(true);
+      setTwoFactorCode("");
+      // No error text on the first prompt — nothing has gone wrong yet.
+      setError(data.error ?? "");
+      return;
+    }
+
+    setTwoFactorRequired(false);
+    setError(data.error ?? "Login failed");
   }
 
   return (
@@ -192,6 +211,35 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {twoFactorRequired && (
+              <div>
+                <Label
+                  htmlFor="two-factor-code"
+                  className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block"
+                >
+                  Authentication Code
+                </Label>
+                <div className="relative">
+                  <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input
+                    id="two-factor-code"
+                    // Not type="number": that strips leading zeros and shows spinners.
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    autoFocus
+                    placeholder="123456"
+                    className="pl-9 border-slate-200 text-sm h-11 rounded-xl tracking-[0.3em]"
+                    value={twoFactorCode}
+                    onChange={e => setTwoFactorCode(e.target.value)}
+                    required
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">
+                  Enter the 6-digit code from your authenticator app, or one of your recovery codes.
+                </p>
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl">
                 {error}
@@ -203,7 +251,7 @@ export default function LoginPage() {
               disabled={loading}
               className="btn-brand-navy w-full text-white font-semibold h-11 rounded-full text-sm tracking-[-0.01em] shadow-sm gap-1.5"
             >
-              {loading ? "Signing in…" : "Sign In to Dashboard"}
+              {loading ? "Signing in…" : twoFactorRequired ? "Verify & Sign In" : "Sign In to Dashboard"}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </Button>
           </form>

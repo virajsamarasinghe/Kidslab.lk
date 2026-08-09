@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import { invalidateUnifiedContacts } from "@/lib/crm";
 import Contact from "@/models/Contact";
+import { logActivity } from "@/lib/activity-log";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ email: string }> }) {
   const session = await requireCapability("content:write");
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ema
     { upsert: true, new: true }
   ).lean();
 
+  logActivity(session, "added note", "contact", decodeURIComponent(email).toLowerCase());
   invalidateUnifiedContacts();
   return NextResponse.json(contact);
 }
