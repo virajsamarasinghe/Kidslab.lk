@@ -23,7 +23,11 @@ export async function GET() {
         greeting: config.greeting,
         suggestions: config.suggestions.slice(0, 4),
       },
-      { headers: { "Cache-Control": "public, max-age=60" } }
+      // Deliberately uncached: the admin toggle has to take effect on the next
+      // page load, not up to a cache lifetime later. Any shared/CDN caching
+      // here makes the switch look broken — an admin flips it off, reloads,
+      // and the widget is still there.
+      { headers: { "Cache-Control": "no-store" } }
     );
   } catch {
     // The marketing page must render even when Mongo is unreachable — a

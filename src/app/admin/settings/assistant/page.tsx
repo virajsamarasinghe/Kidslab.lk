@@ -26,11 +26,16 @@ export default function AssistantSettingsPage() {
   const [values, setValues] = useState<AssistantSettings | null>(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  /** Whether LLM Config has a usable provider — the other half of "is it live?". */
+  const [hasProvider, setHasProvider] = useState(true);
 
   useEffect(() => {
     fetch("/api/settings")
       .then(r => (r.ok ? r.json() : null))
-      .then(data => setValues(data?.assistant ?? null))
+      .then((data: { assistant?: AssistantSettings; llm?: { apiKey: string; model: string }[] } | null) => {
+        setValues(data?.assistant ?? null);
+        setHasProvider((data?.llm ?? []).some(p => p.apiKey && p.model));
+      })
       .catch(() => {});
   }, []);
 
@@ -104,20 +109,52 @@ export default function AssistantSettingsPage() {
       ) : (
         <div className="space-y-5">
           <Card className="pcb-card border-slate-100 shadow-sm p-6">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={values.enabled}
-                onChange={e => update("enabled", e.target.checked)}
-                className="mt-0.5 w-4 h-4 rounded border-slate-300 accent-[color:var(--brand-navy)]"
-              />
-              <span>
-                <span className="font-semibold text-slate-900 text-sm block">Show the assistant on the site</span>
-                <span className="text-[13px] text-slate-500">
-                  The widget stays hidden until this is on <em>and</em> at least one provider in LLM Config has a key and model.
+            <div className="flex items-start justify-between gap-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={values.enabled}
+                  onChange={e => update("enabled", e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-slate-300 accent-[color:var(--brand-navy)]"
+                />
+                <span>
+                  <span className="font-semibold text-slate-900 text-sm block">
+                    Show the assistant on the landing page
+                  </span>
+                  <span className="text-[13px] text-slate-500">
+                    Turn this off to remove the chat bubble from the public site. Visitors see the change on their
+                    next page load.
+                  </span>
                 </span>
+              </label>
+
+              <span
+                className={`shrink-0 flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${
+                  values.enabled && hasProvider
+                    ? "bg-green-50 text-green-700"
+                    : "bg-slate-100 text-slate-500"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    values.enabled && hasProvider ? "bg-green-500" : "bg-slate-400"
+                  }`}
+                />
+                {values.enabled && hasProvider ? "Live on site" : "Hidden"}
               </span>
-            </label>
+            </div>
+
+            {/* The toggle alone isn't enough — say so rather than letting an
+                admin switch it on and wonder why nothing appears. */}
+            {values.enabled && !hasProvider && (
+              <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-800">
+                The assistant is switched on but still hidden: no provider in{" "}
+                <a href="/admin/settings/llm" className="font-semibold underline">
+                  LLM Config
+                </a>{" "}
+                has both an API key and a model yet.
+              </p>
+            )}
           </Card>
 
           <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
