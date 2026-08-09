@@ -4,7 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { logActivity } from "@/lib/activity-log";
 import type { ISettings, LLMConfig } from "@/models/Settings";
 
-const SECTIONS = ["brevo", "llm", "embedding"] as const;
+const SECTIONS = ["brevo", "llm", "embedding", "assistant"] as const;
 type Section = (typeof SECTIONS)[number];
 
 function maskSecret(value: string) {
@@ -23,14 +23,16 @@ function maskSecret(value: string) {
  * the whole unmasked settings doc through `$__parent`.
  */
 function serialize(settings: ISettings) {
-  const { brevo, llm, embedding } = settings.toObject<
-    Pick<ISettings, "brevo" | "llm" | "embedding">
+  const { brevo, llm, embedding, assistant } = settings.toObject<
+    Pick<ISettings, "brevo" | "llm" | "embedding" | "assistant">
   >();
 
   return {
     brevo: { ...brevo, smtpKey: maskSecret(brevo.smtpKey) },
     llm: llm.map((entry: LLMConfig) => ({ ...entry, apiKey: maskSecret(entry.apiKey) })),
     embedding: { ...embedding, apiKey: maskSecret(embedding.apiKey) },
+    // No masking: the assistant section holds copy and a prompt, no secrets.
+    assistant,
   };
 }
 
@@ -89,6 +91,32 @@ export async function PUT(req: NextRequest) {
     await settings.save();
     logActivity(session, "updated", "settings", "llm");
     return NextResponse.json(serialize(settings).llm);
+  }
+
+  if (section === "assistant") {
+    const data = (body.data ?? {}) as Record<string, unknown>;
+    const current = settings.assistant;
+
+    settings.assistant = {
+      enabled: typeof data.enabled === "boolean" ? data.enabled : current.enabled,
+      title: (data.title as string) ?? current.title,
+      greeting: (data.greeting as string) ?? current.greeting,
+      // Blank rows are how an admin deletes a suggestion chip in the UI.
+      suggestions: Array.isArray(data.suggestions)
+        ? data.suggestions.map(String).map(s => s.trim()).filter(Boolean).slice(0, 4)
+        : current.suggestions,
+      // Falling back to the stored prompt on an empty string keeps a cleared
+      // textarea from silently leaving the assistant with no instructions.
+      systemPrompt: (data.systemPrompt as string)?.trim() || current.systemPrompt,
+      includeCourses:
+        typeof data.includeCourses === "boolean" ? data.includeCourses : current.includeCourses,
+      maxTokens: Math.min(4000, Math.max(100, Number(data.maxTokens) || current.maxTokens || 700)),
+    };
+
+    settings.markModified("assistant");
+    await settings.save();
+    logActivity(session, "updated", "settings", "assistant");
+    return NextResponse.json(serialize(settings).assistant);
   }
 
   const incoming = (body.data ?? {}) as Record<string, string>;

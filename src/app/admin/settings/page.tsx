@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Send, BrainCircuit, Layers3, ShieldCheck, ArrowRight } from "lucide-react";
+import { Send, BrainCircuit, Layers3, ShieldCheck, ArrowRight, Bot } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useAdminProfile } from "@/components/admin/AdminProfileContext";
 import { can } from "@/lib/roles";
@@ -10,6 +10,7 @@ const sections = [
   { key: "admins",    label: "Administrators",   href: "/admin/settings/admins",    icon: ShieldCheck,  desc: "Who can sign in to the dashboard, and what each of them may do.", capability: "admins:manage" },
   { key: "brevo",     label: "Brevo Email",     href: "/admin/settings/brevo",     icon: Send,         desc: "Transactional email for welcome messages & notifications." },
   { key: "llm",       label: "LLM Config",       href: "/admin/settings/llm",       icon: BrainCircuit, desc: "Connect any OpenAI-compatible chat model provider." },
+  { key: "assistant", label: "AI Assistant",     href: "/admin/settings/assistant", icon: Bot,          desc: "The chat widget on the public site — its prompt, greeting & starter questions." },
   { key: "embedding", label: "Embedding Model",  href: "/admin/settings/embedding", icon: Layers3,      desc: "Connect an embeddings endpoint for search & similarity." },
 ] as const;
 
@@ -17,6 +18,7 @@ interface SettingsSnapshot {
   brevo: { smtpUser: string; smtpKey: string; senderEmail: string };
   llm: { apiKey: string; model: string }[];
   embedding: { apiKey: string; model: string };
+  assistant: { enabled: boolean };
 }
 
 function isConfigured(
@@ -29,6 +31,11 @@ function isConfigured(
   // Brevo sends over SMTP, so a sender plus SMTP login is what "configured" means.
   if (key === "brevo") return Boolean(data.brevo?.smtpUser && data.brevo?.smtpKey && data.brevo?.senderEmail);
   if (key === "llm") return (data.llm ?? []).some(entry => entry.apiKey && entry.model);
+  // The assistant is a feature toggle rather than a credential — "configured"
+  // here means it's actually live for visitors, which needs a usable provider too.
+  if (key === "assistant") {
+    return Boolean(data.assistant?.enabled) && (data.llm ?? []).some(e => e.apiKey && e.model);
+  }
   return Boolean(data.embedding?.apiKey && data.embedding?.model);
 }
 
@@ -91,7 +98,9 @@ export default function AdminSettingsOverview() {
                       ? ""
                       : key === "admins"
                         ? `${adminCount} active`
-                        : configured ? "Configured" : "Not configured"}
+                        : key === "assistant"
+                          ? configured ? "Live" : "Off"
+                          : configured ? "Configured" : "Not configured"}
                   </span>
                 </div>
                 <h3 className="font-bold text-slate-900 text-base mb-1.5">{label}</h3>
