@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUp, MessageCircle, Sparkles, X } from "lucide-react";
+import { ArrowUp, UserRound, X } from "lucide-react";
 import { useLocale } from "@/lib/locale-context";
 
 interface WidgetConfig {
@@ -163,7 +163,8 @@ export default function ChatWidget() {
                 style={{ background: "var(--brand-red)" }}
               />
               <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/10 ring-1 ring-white/20">
-                <Sparkles className="h-[18px] w-[18px]" style={{ color: "var(--brand-yellow)" }} />
+                <UserRound className="h-[20px] w-[20px]" style={{ color: "var(--brand-yellow)" }} />
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-[var(--brand-navy)] bg-emerald-400" />
               </div>
               <div className="relative min-w-0 flex-1">
                 <p className="truncate text-[15px] font-semibold leading-tight">{config.title}</p>
@@ -283,9 +284,14 @@ export default function ChatWidget() {
             exit={{ opacity: 0, rotate: 60, scale: 0.6 }}
             transition={{ duration: 0.16 }}
           >
-            {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
+            {open ? <X className="h-5 w-5" /> : <UserRound className="h-6 w-6" />}
           </motion.span>
         </AnimatePresence>
+
+        {/* Online status indicator, matching typical customer-support widgets. */}
+        {!open && (
+          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-400" />
+        )}
       </motion.button>
     </>
   );

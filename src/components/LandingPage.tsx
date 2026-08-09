@@ -316,10 +316,6 @@ function TypingHeadline({
     }
 
     if (phase === "pausing") {
-      if (sentenceIndex === sentences.length - 1) {
-        // Settle on the last sentence instead of looping forever.
-        return;
-      }
       const id = setTimeout(() => setPhase("deleting"), 1400);
       return () => clearTimeout(id);
     }
