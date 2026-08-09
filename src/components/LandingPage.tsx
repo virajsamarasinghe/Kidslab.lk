@@ -611,7 +611,7 @@ function HomeContent({
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-body-xl text-slate-500 mt-4 lg:mt-5 max-w-2xl mx-auto"
+                className="text-body-xl text-slate-500 mt-2 lg:mt-3 max-w-2xl mx-auto"
               >
                 {t("hero.subtitlePrefix")}
                 <span className="font-semibold text-slate-800">
@@ -624,7 +624,7 @@ function HomeContent({
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="mt-6 lg:mt-7 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3"
+                className="mt-5 lg:mt-6 flex flex-col sm:flex-row sm:flex-wrap justify-center gap-3"
               >
                 <motion.div
                   className="rounded-full w-full sm:w-auto"
@@ -668,7 +668,7 @@ function HomeContent({
                 /* Two tidy columns on a phone — free-wrapping these four
                    chips produced a ragged 3-line block that read as
                    overflow rather than a list. */
-                className="mt-6 lg:mt-7 grid grid-cols-2 gap-x-4 gap-y-2.5 text-left sm:flex sm:flex-wrap sm:justify-center sm:gap-5 sm:text-center"
+                className="mt-5 lg:mt-6 grid grid-cols-2 gap-x-4 gap-y-2.5 text-left sm:flex sm:flex-wrap sm:justify-center sm:gap-5 sm:text-center"
               >
                 {[t("hero.trust1"), t("hero.trust2"), t("hero.trust3"), t("hero.trust4")].map(
                   (label) => (
@@ -690,7 +690,7 @@ function HomeContent({
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.58 }}
-              className="mt-9 sm:mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 xl:gap-6 max-w-4xl mx-auto"
+              className="mt-7 sm:mt-9 lg:mt-11 xl:mt-12 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 xl:gap-6 max-w-4xl mx-auto"
             >
               {stats.map(({ value, label }, i) => (
                 <div

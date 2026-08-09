@@ -178,7 +178,7 @@
 /* Display — hero headings */
 .text-display-xl {
   font-family: var(--font-display), var(--font-sans), var(--font-sinhala), system-ui, sans-serif;
-  font-size: clamp(2rem, calc(0.77rem + 5.26vw), 5.5rem);
+  font-size: clamp(1.75rem, calc(0.67rem + 4.6vw), 4.75rem);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.02em;
