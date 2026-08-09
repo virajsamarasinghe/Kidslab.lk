@@ -10,10 +10,12 @@ import {
   SortableContext, useSortable, verticalListSortingStrategy, arrayMove,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
+import { GripVertical, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PIPELINE_STAGES, type Contact, type PipelineStage } from "@/types/crm";
+import { CrmHeader } from "@/components/admin/crm/CrmHeader";
+import { CrmAvatar } from "@/components/admin/crm/CrmAvatar";
 
 const STAGE_LABELS: Record<PipelineStage, string> = {
   lead: "Lead",
@@ -50,10 +52,16 @@ function groupByStage(contacts: Contact[]): Columns {
 function ContactCard({ contact, dragging }: { contact: Contact; dragging?: boolean }) {
   return (
     <Card
-      className={`pcb-card border-slate-100 shadow-sm p-3.5 ${dragging ? "shadow-lg rotate-2" : ""}`}
+      className={`pcb-card relative overflow-hidden border-slate-100 shadow-sm p-3.5 pl-4 transition-shadow hover:shadow-md ${
+        dragging ? "shadow-lg rotate-2" : ""
+      }`}
     >
-      <div className="flex items-start gap-2">
-        <GripVertical className="w-3.5 h-3.5 text-slate-300 mt-0.5 shrink-0" />
+      <span
+        className="absolute left-0 top-0 bottom-0 w-[3px]"
+        style={{ backgroundColor: STAGE_ACCENTS[contact.stage] }}
+      />
+      <div className="flex items-start gap-2.5">
+        <CrmAvatar name={contact.name} email={contact.email} />
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-slate-900 text-sm truncate">{contact.name || contact.email}</p>
           <p className="text-slate-400 text-xs truncate mt-0.5">{contact.email}</p>
@@ -63,6 +71,7 @@ function ContactCard({ contact, dragging }: { contact: Contact; dragging?: boole
             </Badge>
           </div>
         </div>
+        <GripVertical className="w-3.5 h-3.5 text-slate-300 mt-0.5 shrink-0" />
       </div>
     </Card>
   );
@@ -95,7 +104,15 @@ function StageColumn({ stage, contacts, colIdx }: { stage: PipelineStage; contac
       <div className="flex items-center gap-2 mb-3 px-1">
         <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: STAGE_ACCENTS[stage] }} />
         <h2 className="text-sm font-semibold text-slate-700">{STAGE_LABELS[stage]}</h2>
-        <span className="text-xs text-slate-400 ml-auto">{contacts.length}</span>
+        <span
+          className="text-[11px] font-semibold ml-auto px-2 py-0.5 rounded-full"
+          style={{
+            color: STAGE_ACCENTS[stage],
+            backgroundColor: `color-mix(in srgb, ${STAGE_ACCENTS[stage]} 12%, transparent)`,
+          }}
+        >
+          {contacts.length}
+        </span>
       </div>
       <SortableContext items={contacts.map(c => c.email)} strategy={verticalListSortingStrategy}>
         <div
@@ -208,17 +225,30 @@ export default function CrmPipelinePage() {
     }
   }
 
+  const allContacts = PIPELINE_STAGES.flatMap(stage => columns[stage]);
+  const totalContacts = allContacts.length;
+  const enrolledCount = columns.enrolled.length;
+  const alumniCount = columns.alumni.length;
+  const conversionRate =
+    totalContacts > 0 ? Math.round(((enrolledCount + alumniCount) / totalContacts) * 100) : 0;
+
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-bold text-slate-900 tracking-tight"
-          style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-        >
-          Pipeline
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">Drag contacts through the enrollment journey.</p>
-      </div>
+      <CrmHeader
+        title="Pipeline"
+        subtitle="Drag contacts through the enrollment journey."
+        actions={
+          !loading && totalContacts > 0 ? (
+            <span
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full text-green-700 bg-green-50"
+              title="Contacts that reached Enrolled or Alumni"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              {conversionRate}% conversion · {totalContacts} contacts
+            </span>
+          ) : undefined
+        }
+      />
 
       {loading ? (
         <p className="text-slate-400 text-sm text-center py-12">Loading…</p>

@@ -14,6 +14,7 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Campaign, CampaignSegment } from "@/types/crm";
+import { CrmHeader } from "@/components/admin/crm/CrmHeader";
 
 const SEGMENTS: { value: CampaignSegment; label: string }[] = [
   { value: "all_contacts", label: "All Contacts" },
@@ -31,8 +32,13 @@ const STATUS_COLORS: Record<Campaign["status"], string> = {
   failed: "bg-red-50 text-red-600 border-red-200",
 };
 
-const selectClass =
-  "h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-sm outline-none transition-colors focus-visible:border-slate-400";
+const STATUS_DOTS: Record<Campaign["status"], string> = {
+  draft: "#94a3b8",
+  sending: "#d97706",
+  sent: "#16a34a",
+  partial: "#d97706",
+  failed: "#dc2626",
+};
 
 export default function CrmCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -102,15 +108,10 @@ export default function CrmCampaignsPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8">
-        <h1
-          className="text-2xl font-bold text-slate-900 tracking-tight"
-          style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-        >
-          Email Marketing
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">Send bulk email campaigns via your connected Brevo account.</p>
-      </div>
+      <CrmHeader
+        title="Email Marketing"
+        subtitle="Send bulk email campaigns via your connected Brevo account."
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-6 mb-8">
         <Card className="pcb-card border-slate-100 shadow-sm p-6">
@@ -120,12 +121,24 @@ export default function CrmCampaignsPage() {
           </h2>
           <div className="space-y-4">
             <div>
-              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Audience</Label>
-              <select className={selectClass} value={segment} onChange={e => setSegment(e.target.value as CampaignSegment)}>
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 block">Audience</Label>
+              <div className="flex flex-wrap gap-2">
                 {SEGMENTS.map(s => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                  <button
+                    key={s.value}
+                    type="button"
+                    onClick={() => setSegment(s.value)}
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
+                      segment === s.value
+                        ? "text-white border-transparent"
+                        : "text-slate-500 border-slate-200 bg-white hover:border-slate-300"
+                    }`}
+                    style={segment === s.value ? { backgroundColor: "var(--brand-navy)" } : undefined}
+                  >
+                    {s.label}
+                  </button>
                 ))}
-              </select>
+              </div>
             </div>
             <div>
               <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Subject</Label>
@@ -192,9 +205,22 @@ export default function CrmCampaignsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">Loading…</td></tr>
+                Array.from({ length: 4 }, (_, i) => (
+                  <tr key={i} className="border-b border-slate-50">
+                    {Array.from({ length: 5 }, (_, j) => (
+                      <td key={j} className="px-5 py-3.5">
+                        <span className="block h-4 w-full max-w-[8rem] rounded bg-slate-100 animate-pulse" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
               ) : campaigns.length === 0 ? (
-                <tr><td colSpan={5} className="px-5 py-12 text-center text-slate-400">No campaigns sent yet</td></tr>
+                <tr>
+                  <td colSpan={5} className="px-5 py-16 text-center">
+                    <Megaphone className="w-6 h-6 text-slate-300 mx-auto mb-2" />
+                    <p className="text-slate-400 text-sm">No campaigns sent yet</p>
+                  </td>
+                </tr>
               ) : campaigns.map(c => (
                 <tr key={c._id} className="border-b border-slate-50 hover:bg-slate-50/70 transition-colors">
                   <td className="px-5 py-3.5 font-semibold text-slate-900 max-w-[240px] truncate">{c.subject}</td>
@@ -206,6 +232,12 @@ export default function CrmCampaignsPage() {
                       {c.status === "sent" && <CheckCircle2 className="w-3 h-3 mr-1" />}
                       {c.status === "partial" && <AlertTriangle className="w-3 h-3 mr-1" />}
                       {c.status === "failed" && <XCircle className="w-3 h-3 mr-1" />}
+                      {(c.status === "draft" || c.status === "sending") && (
+                        <span
+                          className={`w-1.5 h-1.5 rounded-full mr-1.5 ${c.status === "sending" ? "animate-pulse" : ""}`}
+                          style={{ backgroundColor: STATUS_DOTS[c.status] }}
+                        />
+                      )}
                       {c.status}
                     </Badge>
                   </td>

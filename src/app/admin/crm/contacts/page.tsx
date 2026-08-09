@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, MessageSquarePlus, Send, Download, AlertTriangle } from "lucide-react";
+import { X, MessageSquarePlus, Send, Download, AlertTriangle, Users2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,8 @@ import { DataTable } from "@/components/admin/DataTable";
 import { useListResource } from "@/hooks/useCrudResource";
 import type { Contact, PipelineStage } from "@/types/crm";
 import { useConfirm } from "@/components/admin/ConfirmContext";
+import { CrmHeader } from "@/components/admin/crm/CrmHeader";
+import { CrmAvatar } from "@/components/admin/crm/CrmAvatar";
 
 const STAGE_LABELS: Record<PipelineStage, string> = {
   lead: "Lead",
@@ -25,6 +27,14 @@ const STAGE_COLORS: Record<PipelineStage, string> = {
   registered: "bg-amber-50 text-amber-700 border-amber-200",
   enrolled: "bg-green-50 text-green-700 border-green-200",
   alumni: "bg-purple-50 text-purple-700 border-purple-200",
+};
+
+const STAGE_DOTS: Record<PipelineStage, string> = {
+  lead: "#94a3b8",
+  contacted: "var(--brand-blue)",
+  registered: "var(--brand-yellow)",
+  enrolled: "#16a34a",
+  alumni: "#9333ea",
 };
 
 const SOURCE_LABELS: Record<Contact["source"], string> = {
@@ -93,19 +103,10 @@ export default function CrmContactsPage() {
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1
-            className="text-2xl font-bold text-slate-900 tracking-tight"
-            style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
-          >
-            Contacts
-          </h1>
-          <p className="text-slate-500 text-sm mt-1">
-            {total} contact{total !== 1 ? "s" : ""} · students & subscribers unified
-          </p>
-        </div>
-      </div>
+      <CrmHeader
+        title="Contacts"
+        subtitle={`${total} contact${total !== 1 ? "s" : ""} · students & subscribers unified`}
+      />
 
       {stageError && (
         <div className="flex items-center gap-2.5 text-sm px-4 py-3 rounded-xl border bg-red-50 border-red-200 text-red-600 mb-6">
@@ -147,27 +148,51 @@ export default function CrmContactsPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">Loading…</td></tr>
+                Array.from({ length: 6 }, (_, i) => (
+                  <tr key={i} className="border-b border-slate-50">
+                    {Array.from({ length: 6 }, (_, j) => (
+                      <td key={j} className="px-5 py-3.5">
+                        <span className="block h-4 w-full max-w-[9rem] rounded bg-slate-100 animate-pulse" />
+                      </td>
+                    ))}
+                  </tr>
+                ))
               ) : contacts.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-400">No contacts found</td></tr>
+                <tr>
+                  <td colSpan={6} className="px-5 py-16 text-center">
+                    <Users2 className="w-6 h-6 text-slate-300 mx-auto mb-2" />
+                    <p className="text-slate-400 text-sm">No contacts found</p>
+                  </td>
+                </tr>
               ) : contacts.map(c => (
                 <tr key={c.email} className="border-b border-slate-50 hover:bg-slate-50/70 transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-slate-900 whitespace-nowrap">{c.name || "—"}</td>
+                  <td className="px-5 py-3 whitespace-nowrap">
+                    <div className="flex items-center gap-2.5">
+                      <CrmAvatar name={c.name} email={c.email} />
+                      <span className="font-semibold text-slate-900">{c.name || "—"}</span>
+                    </div>
+                  </td>
                   <td className="px-5 py-3.5 text-slate-500">{c.email}</td>
                   <td className="px-5 py-3.5">
                     <Badge className="text-xs bg-slate-50 text-slate-500 border-slate-200">{SOURCE_LABELS[c.source]}</Badge>
                   </td>
                   <td className="px-5 py-3.5">
-                    <select
-                      value={c.stage}
-                      onChange={e => updateStage(c.email, e.target.value as PipelineStage)}
-                      disabled={savingStage}
-                      className={`text-xs font-medium rounded-full border px-2.5 py-1.5 outline-none ${STAGE_COLORS[c.stage]}`}
-                    >
-                      {Object.entries(STAGE_LABELS).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                      ))}
-                    </select>
+                    <div className="relative inline-flex">
+                      <span
+                        className="absolute left-2.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full pointer-events-none"
+                        style={{ backgroundColor: STAGE_DOTS[c.stage] }}
+                      />
+                      <select
+                        value={c.stage}
+                        onChange={e => updateStage(c.email, e.target.value as PipelineStage)}
+                        disabled={savingStage}
+                        className={`text-xs font-medium rounded-full border pl-6 pr-2.5 py-1.5 outline-none cursor-pointer ${STAGE_COLORS[c.stage]}`}
+                      >
+                        {Object.entries(STAGE_LABELS).map(([value, label]) => (
+                          <option key={value} value={value}>{label}</option>
+                        ))}
+                      </select>
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-slate-400 text-xs">{c.notes.length}</td>
                   <td className="px-5 py-3.5">
@@ -191,9 +216,12 @@ export default function CrmContactsPage() {
           <div className="flex-1 bg-black/30 backdrop-blur-sm" onClick={() => setActive(null)} />
           <div className="w-full max-w-md bg-white shadow-2xl overflow-y-auto flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <div className="min-w-0">
-                <h3 className="font-semibold text-slate-900 text-base truncate">{active.name || active.email}</h3>
-                <p className="text-slate-400 text-xs truncate">{active.email}</p>
+              <div className="min-w-0 flex items-center gap-3">
+                <CrmAvatar name={active.name} email={active.email} size="md" />
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-slate-900 text-base truncate">{active.name || active.email}</h3>
+                  <p className="text-slate-400 text-xs truncate">{active.email}</p>
+                </div>
               </div>
               <button onClick={() => setActive(null)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 shrink-0">
                 <X className="w-4 h-4" />
