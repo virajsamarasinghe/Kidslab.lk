@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { DataTable } from "@/components/admin/DataTable";
 import { useListResource } from "@/hooks/useCrudResource";
 import type { Contact, PipelineStage } from "@/types/crm";
+import { useConfirm } from "@/components/admin/ConfirmContext";
 
 const STAGE_LABELS: Record<PipelineStage, string> = {
   lead: "Lead",
@@ -33,6 +34,7 @@ const SOURCE_LABELS: Record<Contact["source"], string> = {
 };
 
 export default function CrmContactsPage() {
+  const confirm = useConfirm();
   const {
     items: contacts, setItems: setContacts, total, page, setPage, totalPages,
     search, setSearch, loading, error, reload,
@@ -44,6 +46,12 @@ export default function CrmContactsPage() {
   const [stageError, setStageError] = useState("");
 
   async function updateStage(email: string, stage: PipelineStage) {
+    const ok = await confirm({
+      title: `Move this contact to "${stage}"?`,
+      description: `${email} will be updated in the pipeline.`,
+      confirmLabel: "Move contact",
+    });
+    if (!ok) return;
     setSavingStage(true);
     setStageError("");
     try {

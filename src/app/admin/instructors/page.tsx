@@ -13,12 +13,14 @@ import {
   AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Instructor } from "@/types/instructor";
+import { useConfirm } from "@/components/admin/ConfirmContext";
 
 const EMPTY: Omit<Instructor, "_id" | "createdAt"> = {
   name: "", title: "", bio: "", photo: "", email: "",
 };
 
 export default function AdminInstructors() {
+  const confirm = useConfirm();
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -49,6 +51,12 @@ export default function AdminInstructors() {
 
   async function handleSave() {
     if (!form?.name) return;
+    const ok = await confirm({
+      title: form._id ? "Save changes to this instructor?" : "Add this instructor?",
+      description: `${form.name}'s profile will be ${form._id ? "updated" : "added"} on the public site.`,
+      confirmLabel: form._id ? "Save changes" : "Add instructor",
+    });
+    if (!ok) return;
     setSaving(true);
     setActionError("");
     try {

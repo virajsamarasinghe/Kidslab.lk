@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { useConfirm } from "./ConfirmContext";
 import {
   type ProviderPreset, CUSTOM_PROVIDER_ID, CUSTOM_MODEL_VALUE, findProvider,
 } from "@/lib/llm-providers";
@@ -38,6 +39,7 @@ const PRIORITY_LABELS: Record<number, string> = {
 // same form — for "llm" we render one card per stored entry plus an "Add
 // provider" affordance; for "embedding" we render a single card as before.
 export default function ProviderConfigForm({ section, title, description, icon: Icon, providers, keyPlaceholder }: ProviderConfigFormProps) {
+  const confirm = useConfirm();
   const isList = section === "llm";
   const [loading, setLoading] = useState(true);
   const [entries, setEntries] = useState<StoredEntry[]>([]);
@@ -57,13 +59,23 @@ export default function ProviderConfigForm({ section, title, description, icon: 
     setEntries(prev => [...prev, { priority: 3 }]);
   }
 
-  function removeEntry(index: number) {
+  async function removeEntry(index: number) {
     const entry = entries[index];
+    const isSaved = isList && entry && entry.provider !== undefined;
+    if (isSaved) {
+      const ok = await confirm({
+        title: "Remove this provider?",
+        description: "Its stored API key is deleted. Anything relying on it stops working until another provider is configured.",
+        confirmLabel: "Remove provider",
+        destructive: true,
+      });
+      if (!ok) return;
+    }
     setEntries(prev => prev.filter((_, i) => i !== index));
     // Entries loaded from the server always carry a `provider` key (even ""
     // for an unset one); a freshly added, unsaved row does not — skip the
     // API call for those since there's nothing persisted to delete yet.
-    if (isList && entry && entry.provider !== undefined) {
+    if (isSaved) {
       fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -142,6 +154,7 @@ interface ProviderEntryCardProps {
 function ProviderEntryCard({
   section, providers, keyPlaceholder, index, stored, showPriority, showRemove, onRemove, onSaved,
 }: ProviderEntryCardProps) {
+  const confirm = useConfirm();
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [result, setResult] = useState<Result>(null);
@@ -222,6 +235,12 @@ function ProviderEntryCard({
   }
 
   async function handleSave() {
+    const ok = await confirm({
+      title: "Save this provider?",
+      description: "The stored credentials for this provider are replaced with the values on screen.",
+      confirmLabel: "Save provider",
+    });
+    if (!ok) return;
     setSaving(true);
     setSaved(false);
     const res = await fetch("/api/settings", {

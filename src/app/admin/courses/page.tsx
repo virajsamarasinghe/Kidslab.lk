@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Course } from "@/types/course";
 import type { Instructor } from "@/types/instructor";
+import { useConfirm } from "@/components/admin/ConfirmContext";
 
 const EMPTY: Omit<Course, "_id"> = {
   title: "", description: "", ageRange: "8–16",
@@ -31,6 +32,7 @@ const LEVEL_COLORS: Record<string, string> = {
 };
 
 export default function AdminCourses() {
+  const confirm = useConfirm();
   const [courses, setCourses] = useState<Course[]>([]);
   const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,6 +78,14 @@ export default function AdminCourses() {
 
   async function handleSave() {
     if (!form) return;
+    const ok = await confirm({
+      title: form._id ? "Save changes to this course?" : "Create this course?",
+      description: form._id
+        ? "The course will be updated for everyone viewing the site."
+        : "The course will be added and visible on the site if marked active.",
+      confirmLabel: form._id ? "Save changes" : "Create course",
+    });
+    if (!ok) return;
     setSaving(true);
     setActionError("");
     try {
@@ -102,6 +112,14 @@ export default function AdminCourses() {
   }
 
   async function handleToggle(c: Course) {
+    const ok = await confirm({
+      title: c.isActive ? "Deactivate this course?" : "Activate this course?",
+      description: c.isActive
+        ? `"${c.title}" will stop appearing on the public site.`
+        : `"${c.title}" will start appearing on the public site.`,
+      confirmLabel: c.isActive ? "Deactivate" : "Activate",
+    });
+    if (!ok) return;
     setActionError("");
     try {
       const res = await fetch(`/api/courses/${c._id}`, {

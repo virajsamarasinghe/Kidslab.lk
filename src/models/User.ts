@@ -15,6 +15,12 @@ export interface IUser extends Document {
   role: Role;
   status: "active" | "inactive";
   enrolledCourses: mongoose.Types.ObjectId[];
+  /**
+   * Per-admin "notifications read up to" checkpoints, keyed by badge.
+   * Stored server-side so the state follows the account across browsers and
+   * devices instead of living in one browser's localStorage.
+   */
+  notificationsSeen: Map<string, Date>;
   createdAt: Date;
 }
 
@@ -35,6 +41,7 @@ const UserSchema = new Schema<IUser>(
     role:             { type: String, enum: ALL_ROLES, default: "user" },
     status:           { type: String, enum: ["active", "inactive"], default: "active" },
     enrolledCourses:  [{ type: Schema.Types.ObjectId, ref: "Course" }],
+    notificationsSeen: { type: Map, of: Date, default: () => new Map() },
   },
   { timestamps: true }
 );

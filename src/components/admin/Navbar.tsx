@@ -7,11 +7,11 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Menu, PanelLeftClose, PanelLeftOpen, ChevronDown, ChevronRight, UserCog, LogOut,
   ShieldCheck, Search, Bell, ExternalLink, Maximize2, Minimize2, House,
-  Users, Mail, KanbanSquare, type LucideIcon,
+  Users, Mail, KanbanSquare, CheckCheck, type LucideIcon,
 } from "lucide-react";
 import { useAdminProfile } from "./AdminProfileContext";
 import { ROLE_LABELS } from "@/lib/roles";
-import { useAdminSummary } from "./AdminSummaryContext";
+import { useAdminSummary, useNotificationActions } from "./AdminSummaryContext";
 import { breadcrumbFor, type SummaryKey } from "./nav-config";
 import CommandPalette from "./CommandPalette";
 
@@ -75,6 +75,7 @@ export default function AdminNavbar({
   const pathname = usePathname();
   const profile = useAdminProfile();
   const summary = useAdminSummary();
+  const { markAllRead } = useNotificationActions();
   const [menuOpen, setMenuOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -243,16 +244,27 @@ export default function AdminNavbar({
                 {...popover}
                 className="absolute right-0 mt-2 w-[19rem] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200/80 bg-white shadow-2xl overflow-hidden origin-top-right"
               >
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-100">
                   <p className="text-sm font-semibold text-slate-900">Notifications</p>
-                  {totalNew > 0 && (
-                    <span
-                      className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ backgroundColor: "var(--brand-yellow)", color: "var(--brand-navy)" }}
-                    >
-                      {totalNew} new
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {totalNew > 0 && (
+                      <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: "var(--brand-yellow)", color: "var(--brand-navy)" }}
+                      >
+                        {totalNew} new
+                      </span>
+                    )}
+                    {totalNew > 0 && (
+                      <button
+                        onClick={() => { void markAllRead(); }}
+                        className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition-colors"
+                        title="Clear all notifications"
+                      >
+                        <CheckCheck className="w-3.5 h-3.5" /> Clear all
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {notifications.length === 0 ? (

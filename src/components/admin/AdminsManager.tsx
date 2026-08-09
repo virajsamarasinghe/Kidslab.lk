@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useAdminProfile } from "./AdminProfileContext";
 import { ADMIN_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS, type AdminRole } from "@/lib/roles";
+import { useConfirm } from "./ConfirmContext";
 
 const selectClass =
   "h-8 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-sm outline-none transition-colors focus-visible:border-slate-400 disabled:opacity-50 disabled:cursor-not-allowed";
@@ -28,6 +29,7 @@ interface AdminRow {
 type Result = { success: boolean; message: string } | null;
 
 export default function AdminsManager() {
+  const confirm = useConfirm();
   const router = useRouter();
   const profile = useAdminProfile();
   const [admins, setAdmins] = useState<AdminRow[]>([]);
@@ -93,34 +95,50 @@ export default function AdminsManager() {
     setBusyId(null);
   }
 
-  /** Confirms first when the change would affect the signed-in admin's own access. */
-  function confirmSelfAction(row: AdminRow, what: string) {
-    return (
-      !row.isSelf ||
-      confirm(`${what} applies to your own account — you may lose access to this page. Continue?`)
-    );
+  /** Appended to the prompt when the change targets the signed-in admin. */
+  function selfWarning(row: AdminRow) {
+    return row.isSelf ? " This is your own account — you may lose access to this page." : "";
   }
 
-  function changeRole(row: AdminRow, role: AdminRole) {
+  async function changeRole(row: AdminRow, role: AdminRole) {
     if (role === row.role) return;
-    if (!confirmSelfAction(row, `Changing your role to ${ROLE_LABELS[role]}`)) {
+    const ok = await confirm({
+      title: `Change ${row.email} to ${ROLE_LABELS[role]}?`,
+      description: `${ROLE_DESCRIPTIONS[role]}${selfWarning(row)}`,
+      confirmLabel: "Change role",
+      destructive: row.isSelf,
+    });
+    if (!ok) {
       void load(); // Snap the select back to the stored value.
       return;
     }
     void patchAdmin(row, { role });
   }
 
-  function toggleStatus(row: AdminRow) {
+  async function toggleStatus(row: AdminRow) {
     const next = row.status === "active" ? "inactive" : "active";
-    if (next === "inactive" && !confirmSelfAction(row, "Deactivating this account")) return;
+    const ok = await confirm({
+      title: next === "inactive" ? `Deactivate ${row.email}?` : `Reactivate ${row.email}?`,
+      description: next === "inactive"
+        ? `They will be signed out and blocked from logging in.${selfWarning(row)}`
+        : "They will be able to sign in to the dashboard again.",
+      confirmLabel: next === "inactive" ? "Deactivate" : "Reactivate",
+      destructive: next === "inactive",
+    });
+    if (!ok) return;
     void patchAdmin(row, { status: next });
   }
 
   async function revokeAdmin(row: AdminRow) {
-    const warning = row.isSelf
-      ? "Revoke your OWN dashboard access? You will be signed out of the admin area."
-      : `Revoke dashboard access for ${row.email}? Their account is kept as a regular user.`;
-    if (!confirm(warning)) return;
+    const ok = await confirm({
+      title: row.isSelf ? "Revoke your own access?" : `Revoke access for ${row.email}?`,
+      description: row.isSelf
+        ? "You will be signed out of the admin area. Your account is kept as a regular user."
+        : "Their account is kept as a regular user, with registration history intact.",
+      confirmLabel: "Revoke access",
+      destructive: true,
+    });
+    if (!ok) return;
 
     setBusyId(row.id);
     setResult(null);

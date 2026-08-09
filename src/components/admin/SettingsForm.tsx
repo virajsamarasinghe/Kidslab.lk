@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { useConfirm } from "./ConfirmContext";
 
 export interface SettingsField {
   key: string;
@@ -28,6 +29,7 @@ interface SettingsFormProps {
 type Result = { success: boolean; message: string } | null;
 
 export default function SettingsForm({ section, title, description, icon: Icon, fields, allowTestEmail }: SettingsFormProps) {
+  const confirm = useConfirm();
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,6 +56,12 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
   }
 
   async function handleSave() {
+    const ok = await confirm({
+      title: `Save ${title} settings?`,
+      description: "These credentials are used for live sending — saving replaces the stored values.",
+      confirmLabel: "Save settings",
+    });
+    if (!ok) return;
     setSaving(true);
     setSaved(false);
     const res = await fetch("/api/settings", {
@@ -81,6 +89,12 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
   }
 
   async function handleSendTestEmail() {
+    const ok = await confirm({
+      title: `Send a test email to ${testEmail.trim()}?`,
+      description: "A real email will be delivered to that address.",
+      confirmLabel: "Send test",
+    });
+    if (!ok) return;
     setSendingTest(true);
     setResult(null);
     // Posts the on-screen values too, so the config can be tried before saving.

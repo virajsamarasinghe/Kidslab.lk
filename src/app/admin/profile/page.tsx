@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { useAdminProfile } from "@/components/admin/AdminProfileContext";
+import { useConfirm } from "@/components/admin/ConfirmContext";
 
 type Notice = { success: boolean; message: string } | null;
 
 export default function AdminProfilePage() {
+  const confirm = useConfirm();
   const profile = useAdminProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,6 +54,15 @@ export default function AdminProfilePage() {
       setNotice({ success: false, message: "New passwords do not match" });
       return;
     }
+
+    const ok = await confirm({
+      title: newPassword ? "Change your password?" : "Save profile changes?",
+      description: newPassword
+        ? "You'll keep your current session, but the new password applies from now on."
+        : "Your name and email on the dashboard will be updated.",
+      confirmLabel: "Save changes",
+    });
+    if (!ok) return;
 
     setSaving(true);
     setNotice(null);

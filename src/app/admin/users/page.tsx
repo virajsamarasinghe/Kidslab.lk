@@ -14,8 +14,10 @@ import {
 import { DataTable } from "@/components/admin/DataTable";
 import { useListResource } from "@/hooks/useCrudResource";
 import type { User } from "@/types/user";
+import { useConfirm } from "@/components/admin/ConfirmContext";
 
 export default function AdminUsers() {
+  const confirm = useConfirm();
   const {
     items: users, total, page, setPage, totalPages, search, setSearch, loading, error, reload,
   } = useListResource<User>("/api/users", { itemsKey: "users" });
@@ -32,6 +34,12 @@ export default function AdminUsers() {
 
   async function handleSave() {
     if (!editUser) return;
+    const ok = await confirm({
+      title: "Save changes to this student?",
+      description: `${editUser.name || editUser.email}'s record will be updated.`,
+      confirmLabel: "Save changes",
+    });
+    if (!ok) return;
     setSaving(true);
     await fetch(`/api/users/${editUser._id}`, {
       method: "PUT",
