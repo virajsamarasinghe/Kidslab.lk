@@ -4,6 +4,13 @@ import { requireCapability } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
 import { ADMIN_ROLES, isAdminRole } from "@/lib/roles";
 import User from "@/models/User";
+import { z } from "zod";
+import { parseBody } from "@/lib/validate";
+
+const UpdateAdminSchema = z.object({
+  role:   z.enum(ADMIN_ROLES).optional(),
+  status: z.enum(["active", "inactive"]).optional(),
+}).strict();
 
 /**
  * Would this change leave nobody able to manage admins?
@@ -26,7 +33,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (guard instanceof NextResponse) return guard;
 
   const { id } = await params;
-  const body = await req.json();
+  const parsed = await parseBody(req, UpdateAdminSchema);
+  if (parsed instanceof NextResponse) return parsed;
+  const body = parsed;
 
   await connectDB();
   const target = await User.findById(id);

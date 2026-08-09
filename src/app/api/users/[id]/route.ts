@@ -2,6 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import User from "@/models/User";
+import { z } from "zod";
+import { parseBody } from "@/lib/validate";
+
+const UserUpdateSchema = z.object({
+  name:             z.string().trim().min(1).max(120).optional(),
+  phone:            z.string().trim().max(40).optional(),
+  age:              z.number().int().min(0).max(120).optional(),
+  parentName:       z.string().trim().max(120).optional(),
+  city:             z.string().trim().max(120).optional(),
+  interestedCourse: z.string().trim().max(200).optional(),
+  status:           z.enum(["active", "inactive"]).optional(),
+}).strict();
 import { logActivity } from "@/lib/activity-log";
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -19,14 +31,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const session = await requireCapability("users:manage");
   if (session instanceof NextResponse) return session;
 
+  // The previous allow-list filtered which *keys* were accepted but not their
+  // values, so `age: "abc"` or `status: "anything"` went straight to Mongo.
+  const parsed = await parseBody(req, UserUpdateSchema);
+  if (parsed instanceof NextResponse) return parsed;
+
   await connectDB();
   const { id } = await params;
-  const body = await req.json();
-  const allowed = ["name", "phone", "age", "parentName", "city", "interestedCourse", "status"];
-  const update: Record<string, unknown> = {};
-  for (const key of allowed) if (key in body) update[key] = body[key];
 
-  const user = await User.findByIdAndUpdate(id, update, { new: true }).select("-password").lean();
+  const user = await User.findByIdAndUpdate(id, parsed, { new: true }).select("-password").lean();
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(user);
 }

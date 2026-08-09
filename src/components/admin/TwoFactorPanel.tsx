@@ -28,6 +28,7 @@ export default function TwoFactorPanel() {
   const [copied, setCopied] = useState(false);
 
   const [disablePassword, setDisablePassword] = useState("");
+  const [signingOut, setSigningOut] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/two-factor");
@@ -96,6 +97,25 @@ export default function TwoFactorPanel() {
     setBusy(false);
   }
 
+  async function signOutEverywhere() {
+    const ok = await confirm({
+      title: "Sign out of all devices?",
+      description: "Every session, including this one, ends immediately. You'll need to sign in again.",
+      confirmLabel: "Sign out everywhere",
+      destructive: true,
+    });
+    if (!ok) return;
+
+    setSigningOut(true);
+    const res = await fetch("/api/admin/sessions", { method: "DELETE" });
+    if (res.ok) {
+      window.location.href = "/login";
+      return;
+    }
+    setSigningOut(false);
+    setNotice({ success: false, message: "Could not sign out other sessions" });
+  }
+
   function copyCodes() {
     if (!recoveryCodes) return;
     void navigator.clipboard.writeText(recoveryCodes.join("\n"));
@@ -133,6 +153,8 @@ export default function TwoFactorPanel() {
 
       {notice && (
         <div
+          role="status"
+          aria-live="polite"
           className={`mb-4 text-sm px-4 py-3 rounded-xl border ${
             notice.success
               ? "bg-green-50 border-green-200 text-green-700"
@@ -191,6 +213,7 @@ export default function TwoFactorPanel() {
           </p>
           <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
             <Input
+              aria-label="Confirm your password to turn off two-factor"
               type="password"
               value={disablePassword}
               onChange={e => setDisablePassword(e.target.value)}
@@ -230,11 +253,15 @@ export default function TwoFactorPanel() {
             </div>
           </div>
           <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+            <Label
+              htmlFor="two-factor-enrol-code"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block"
+            >
               Enter the 6-digit code to confirm
             </Label>
             <div className="flex gap-2">
               <Input
+                id="two-factor-enrol-code"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 value={code}
@@ -263,6 +290,23 @@ export default function TwoFactorPanel() {
           Set up two-factor
         </Button>
       )}
+
+      <div className="mt-6 border-t border-slate-100 pt-4">
+        <p className="text-sm font-semibold text-slate-900">Active sessions</p>
+        <p className="text-[11px] text-slate-400 mt-0.5 mb-3">
+          Signed-in sessions expire after 8 hours of inactivity, and always within 7 days.
+          Sign out everywhere if you&rsquo;ve used a shared or lost device.
+        </p>
+        <Button
+          variant="outline"
+          onClick={signOutEverywhere}
+          disabled={signingOut}
+          className="rounded-full text-sm font-semibold border-slate-200 gap-1.5"
+        >
+          {signingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldOff className="w-4 h-4" />}
+          Sign out everywhere
+        </Button>
+      </div>
     </Card>
   );
 }

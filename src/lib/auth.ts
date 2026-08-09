@@ -5,15 +5,17 @@ import { redirect } from "next/navigation";
 import { ADMIN_COOKIE_NAME } from "@/config/site";
 import { can, type Capability, type Role } from "@/lib/roles";
 import { connectDB } from "@/lib/mongodb";
+import { SESSION_ABSOLUTE_SECONDS } from "@/lib/session-config";
 import User from "@/models/User";
 
 const SECRET = new TextEncoder().encode(process.env.JWT_SECRET!);
 const COOKIE = ADMIN_COOKIE_NAME;
 
-export async function signToken(payload: Record<string, string>) {
+export async function signToken(payload: Record<string, string | number>) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
+    // Matches the absolute cap; the idle window is enforced by the cookie.
     .setExpirationTime("7d")
     .sign(SECRET);
 }
@@ -24,7 +26,14 @@ export interface AdminSession {
   role: Role;
 }
 
-export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+/** Extra claims carried in the token but not part of the caller-facing session. */
+export interface SessionClaims {
+  iat?: number;
+  /** Epoch seconds when credentials were last presented; survives sliding renewal. */
+  authTime?: number;
+}
+
+export { SESSION_IDLE_SECONDS, SESSION_ABSOLUTE_SECONDS } from "@/lib/session-config";
 
 /**
  * Cookie attributes for the admin session, shared by login and logout so the
@@ -47,10 +56,10 @@ export function sessionCookieOptions(maxAge: number) {
 
 export async function verifyToken(token: string) {
   const { payload } = await jwtVerify(token, SECRET);
-  return payload as unknown as AdminSession & { iat?: number };
+  return payload as unknown as AdminSession & SessionClaims;
 }
 
-export async function getAdminSession(): Promise<(AdminSession & { iat?: number }) | null> {
+export async function getAdminSession(): Promise<(AdminSession & SessionClaims) | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(COOKIE)?.value;
   if (!token) return null;
@@ -70,11 +79,24 @@ export async function getAdminSession(): Promise<(AdminSession & { iat?: number 
  * timestamp is floored to seconds before comparing.
  */
 function isStaleSession(
-  session: { iat?: number },
-  passwordChangedAt: Date | undefined
+  session: { iat?: number; authTime?: number },
+  passwordChangedAt: Date | undefined,
+  sessionsRevokedAt?: Date
 ): boolean {
-  if (!passwordChangedAt || session.iat == null) return false;
-  return session.iat < Math.floor(passwordChangedAt.getTime() / 1000);
+  const issuedAt = session.iat;
+  if (issuedAt == null) return false;
+
+  for (const cutoff of [passwordChangedAt, sessionsRevokedAt]) {
+    if (cutoff && issuedAt < Math.floor(cutoff.getTime() / 1000)) return true;
+  }
+
+  // Sliding renewal refreshes `iat`, so the absolute cap is measured from
+  // `authTime` — the moment credentials were actually presented.
+  const authTime = session.authTime;
+  if (authTime != null && Date.now() / 1000 - authTime > SESSION_ABSOLUTE_SECONDS) {
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -104,9 +126,13 @@ export async function requireCapability(
 
   await connectDB();
   const user = await User.findById(session.id)
-    .select("email role status passwordChangedAt")
+    .select("email role status passwordChangedAt sessionsRevokedAt")
     .lean();
-  if (!user || user.status !== "active" || isStaleSession(session, user.passwordChangedAt)) {
+  if (
+    !user ||
+    user.status !== "active" ||
+    isStaleSession(session, user.passwordChangedAt, user.sessionsRevokedAt)
+  ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   if (!can(user.role, capability)) {
@@ -133,9 +159,13 @@ export async function requirePageCapability(capability: Capability) {
 
   await connectDB();
   const user = await User.findById(session.id)
-    .select("email role status passwordChangedAt")
+    .select("email role status passwordChangedAt sessionsRevokedAt")
     .lean();
-  if (!user || user.status !== "active" || isStaleSession(session, user.passwordChangedAt)) {
+  if (
+    !user ||
+    user.status !== "active" ||
+    isStaleSession(session, user.passwordChangedAt, user.sessionsRevokedAt)
+  ) {
     redirect("/login");
   }
   if (!can(user.role, capability)) redirect("/admin");

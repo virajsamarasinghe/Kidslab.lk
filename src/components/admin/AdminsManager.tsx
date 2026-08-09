@@ -180,6 +180,8 @@ export default function AdminsManager() {
 
       {result && (
         <div
+          role="status"
+          aria-live="polite"
           className={`mb-6 flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
             result.success
               ? "bg-green-50 border-green-200 text-green-700"
@@ -201,8 +203,9 @@ export default function AdminsManager() {
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</Label>
+            <Label htmlFor="new-admin-name" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</Label>
             <Input
+              id="new-admin-name"
               value={form.name}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               placeholder="Jane Perera"
@@ -210,8 +213,9 @@ export default function AdminsManager() {
             />
           </div>
           <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Email</Label>
+            <Label htmlFor="new-admin-email" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Email</Label>
             <Input
+              id="new-admin-email"
               type="email"
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
@@ -220,8 +224,9 @@ export default function AdminsManager() {
             />
           </div>
           <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Password</Label>
+            <Label htmlFor="new-admin-password" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Password</Label>
             <Input
+              id="new-admin-password"
               type="password"
               value={form.password}
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
@@ -230,8 +235,9 @@ export default function AdminsManager() {
             />
           </div>
           <div>
-            <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Role</Label>
+            <Label htmlFor="new-admin-role" className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Role</Label>
             <select
+              id="new-admin-role"
               className={selectClass}
               value={form.role}
               onChange={e => setForm(f => ({ ...f, role: e.target.value as AdminRole }))}
@@ -289,6 +295,7 @@ export default function AdminsManager() {
                       </td>
                       <td className="py-3 pr-4">
                         <select
+                          aria-label={`Role for ${row.email}`}
                           className={`${selectClass} max-w-[10rem]`}
                           value={row.role}
                           disabled={busy}

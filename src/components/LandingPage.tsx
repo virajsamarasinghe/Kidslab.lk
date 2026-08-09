@@ -1648,16 +1648,21 @@ function HomeContent({
                 </div>
                 <div>
                   <p className="text-label text-slate-500 mb-4">{t("footer.academyHeading")}</p>
-                  {(t.raw("footer.academyLinks") as string[]).map((l) => (
-                    <a
-                      key={l}
-                      href="#"
-                      className="block text-slate-400 hover:text-white py-1.5 md:py-0 md:mb-2.5 transition-colors"
-                      style={{ fontSize: "0.875rem" }}
-                    >
-                      {l}
-                    </a>
-                  ))}
+                  {(t.raw("footer.academyLinks") as string[]).map((l, i) => {
+                    const hrefs = ["#about", "#team", undefined, "#contact"];
+                    const href = hrefs[i];
+                    return (
+                      <a
+                        key={l}
+                        href={href ?? "#"}
+                        onClick={href ? undefined : openRegisterModal}
+                        className="block text-slate-400 hover:text-white py-1.5 md:py-0 md:mb-2.5 transition-colors"
+                        style={{ fontSize: "0.875rem" }}
+                      >
+                        {l}
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             </div>
