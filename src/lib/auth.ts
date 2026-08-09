@@ -126,7 +126,7 @@ export async function requireCapability(
 
   await connectDB();
   const user = await User.findById(session.id)
-    .select("email role status passwordChangedAt sessionsRevokedAt")
+    .select("email role status passwordChangedAt sessionsRevokedAt mustChangePassword")
     .lean();
   if (
     !user ||
@@ -134,6 +134,15 @@ export async function requireCapability(
     isStaleSession(session, user.passwordChangedAt, user.sessionsRevokedAt)
   ) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  // A forced password change blocks everything except the one capability
+  // (`dashboard:read`) that the profile page itself relies on to load and to
+  // submit the new password — every other route stays refused until it's set.
+  if (user.mustChangePassword && capability !== "dashboard:read") {
+    return NextResponse.json(
+      { error: "You must set a new password before continuing", mustChangePassword: true },
+      { status: 403 }
+    );
   }
   if (!can(user.role, capability)) {
     return NextResponse.json(
@@ -159,7 +168,7 @@ export async function requirePageCapability(capability: Capability) {
 
   await connectDB();
   const user = await User.findById(session.id)
-    .select("email role status passwordChangedAt sessionsRevokedAt")
+    .select("email role status passwordChangedAt sessionsRevokedAt mustChangePassword")
     .lean();
   if (
     !user ||
@@ -168,6 +177,9 @@ export async function requirePageCapability(capability: Capability) {
   ) {
     redirect("/login");
   }
+  // Bounces every page but the dashboard root back there, where AdminShell
+  // shows the blocking "set your password" modal — see `requireCapability`.
+  if (user.mustChangePassword && capability !== "dashboard:read") redirect("/admin");
   if (!can(user.role, capability)) redirect("/admin");
 
   return { id: session.id, email: user.email, role: user.role };

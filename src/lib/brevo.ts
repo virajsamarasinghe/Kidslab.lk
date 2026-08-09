@@ -285,3 +285,75 @@ export async function sendWelcomeEmail({
     unsubscribeUrl: unsubscribeUrl(email),
   });
 }
+
+interface SendAdminInviteEmailParams {
+  name: string;
+  email: string;
+  /** Plaintext — this is the only place it's ever visible outside the hash. */
+  password: string;
+  roleLabel: string;
+}
+
+/**
+ * Notifies a newly created admin account of its login link, username and
+ * one-time temporary password. The account is created with
+ * `mustChangePassword: true`, so this password only ever needs to get them
+ * through the door once.
+ *
+ * Returns whether the send succeeded, so the caller (which can't show the
+ * password again after this) can warn the person who created the account if
+ * it didn't go out.
+ */
+export async function sendAdminInviteEmail({
+  name,
+  email,
+  password,
+  roleLabel,
+}: SendAdminInviteEmailParams): Promise<boolean> {
+  const creds = await getBrevoCredentials();
+  if (!creds) {
+    console.warn("[brevo] No SMTP credentials/sender configured — skipping admin invite email");
+    return false;
+  }
+
+  const loginUrl = `${SITE_URL}/login`;
+  const html = renderEmail({
+    title: `Your ${SITE_NAME} admin account`,
+    preheader: `You've been added as a ${roleLabel} — sign in and set your own password.`,
+    heading: `Welcome to the ${SITE_NAME} dashboard`,
+    body: [
+      p(`Hi ${escapeHtml(name || "there")},`),
+      p(
+        `An account has been created for you on the ${escapeHtml(SITE_NAME)} admin dashboard with the <strong>${escapeHtml(roleLabel)}</strong> role. Use the temporary credentials below to sign in.`
+      ),
+      panel(
+        detailRows([
+          { label: "Login link", value: loginUrl },
+          { label: "Email", value: email },
+          { label: "Temporary password", value: password },
+        ])
+      ),
+      button("Sign in", loginUrl),
+      muted(
+        "You'll be asked to choose your own password the moment you sign in — the temporary one above stops working as soon as you do."
+      ),
+      divider(),
+      muted(
+        "Weren't expecting this? Contact your administrator — someone may have added your email by mistake."
+      ),
+    ].join(""),
+  });
+
+  try {
+    await sendEmail(creds, {
+      to: email,
+      name,
+      subject: `Your ${SITE_NAME} admin account`,
+      html,
+    });
+    return true;
+  } catch (err) {
+    console.error("[brevo] admin invite email failed", err);
+    return false;
+  }
+}

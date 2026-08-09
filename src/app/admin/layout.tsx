@@ -25,7 +25,7 @@ async function loadProfile(): Promise<AdminProfile> {
   const session = await requirePageCapability("dashboard:read");
 
   await connectDB();
-  const user = await User.findById(session.id).select("name email avatar role");
+  const user = await User.findById(session.id).select("name email avatar role mustChangePassword");
   if (!user || !isAdminRole(user.role)) redirect("/login");
 
   return {
@@ -33,6 +33,7 @@ async function loadProfile(): Promise<AdminProfile> {
     email: user.email,
     avatar: user.avatar ?? "",
     role: user.role,
+    mustChangePassword: user.mustChangePassword,
   };
 }
 
