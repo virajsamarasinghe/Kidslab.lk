@@ -1,30 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Send, BrainCircuit, Layers3, ArrowRight } from "lucide-react";
+import { Send, BrainCircuit, Layers3, ShieldCheck, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useAdminProfile } from "@/components/admin/AdminProfileContext";
+import { can } from "@/lib/roles";
 
 const sections = [
+  { key: "admins",    label: "Administrators",   href: "/admin/settings/admins",    icon: ShieldCheck,  desc: "Who can sign in to the dashboard, and what each of them may do.", capability: "admins:manage" },
   { key: "brevo",     label: "Brevo Email",     href: "/admin/settings/brevo",     icon: Send,         desc: "Transactional email for welcome messages & notifications." },
   { key: "llm",       label: "LLM Config",       href: "/admin/settings/llm",       icon: BrainCircuit, desc: "Connect any OpenAI-compatible chat model provider." },
   { key: "embedding", label: "Embedding Model",  href: "/admin/settings/embedding", icon: Layers3,      desc: "Connect an embeddings endpoint for search & similarity." },
 ] as const;
 
 interface SettingsSnapshot {
-  brevo: { apiKey: string; senderEmail: string };
+  brevo: { smtpUser: string; smtpKey: string; senderEmail: string };
   llm: { apiKey: string; model: string }[];
   embedding: { apiKey: string; model: string };
 }
 
-function isConfigured(key: (typeof sections)[number]["key"], data: SettingsSnapshot | null): boolean | null {
+function isConfigured(
+  key: (typeof sections)[number]["key"],
+  data: SettingsSnapshot | null,
+  adminCount: number | null
+): boolean | null {
+  if (key === "admins") return adminCount === null ? null : adminCount > 0;
   if (!data) return null;
-  if (key === "brevo") return Boolean(data.brevo?.apiKey && data.brevo?.senderEmail);
+  // Brevo sends over SMTP, so a sender plus SMTP login is what "configured" means.
+  if (key === "brevo") return Boolean(data.brevo?.smtpUser && data.brevo?.smtpKey && data.brevo?.senderEmail);
   if (key === "llm") return (data.llm ?? []).some(entry => entry.apiKey && entry.model);
   return Boolean(data.embedding?.apiKey && data.embedding?.model);
 }
 
 export default function AdminSettingsOverview() {
+  const profile = useAdminProfile();
   const [data, setData] = useState<SettingsSnapshot | null>(null);
+  const [adminCount, setAdminCount] = useState<number | null>(null);
+
+  const canManageAdmins = can(profile.role, "admins:manage");
 
   useEffect(() => {
     fetch("/api/settings")
@@ -32,6 +45,16 @@ export default function AdminSettingsOverview() {
       .then(setData)
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!canManageAdmins) return;
+    fetch("/api/admin/admins")
+      .then(r => (r.ok ? r.json() : []))
+      .then((rows: unknown[]) => setAdminCount(rows.length))
+      .catch(() => {});
+  }, [canManageAdmins]);
+
+  const visibleSections = sections.filter(s => !("capability" in s) || canManageAdmins);
 
   return (
     <div className="p-8">
@@ -46,8 +69,8 @@ export default function AdminSettingsOverview() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-        {sections.map(({ key, label, href, icon: Icon, desc }) => {
-          const configured = isConfigured(key, data);
+        {visibleSections.map(({ key, label, href, icon: Icon, desc }) => {
+          const configured = isConfigured(key, data, adminCount);
           return (
             <a key={href} href={href}>
               <Card className="pcb-card border-slate-100 shadow-sm p-6 h-full hover:shadow-md transition-shadow">
@@ -64,13 +87,17 @@ export default function AdminSettingsOverview() {
                         configured === null ? "bg-slate-200 animate-pulse" : configured ? "bg-green-500" : "bg-slate-300"
                       }`}
                     />
-                    {configured === null ? "" : configured ? "Configured" : "Not configured"}
+                    {configured === null
+                      ? ""
+                      : key === "admins"
+                        ? `${adminCount} active`
+                        : configured ? "Configured" : "Not configured"}
                   </span>
                 </div>
                 <h3 className="font-bold text-slate-900 text-base mb-1.5">{label}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed mb-4">{desc}</p>
                 <span className="text-xs font-semibold flex items-center gap-1" style={{ color: "var(--brand-red)" }}>
-                  Configure <ArrowRight className="w-3 h-3" />
+                  {key === "admins" ? "Manage" : "Configure"} <ArrowRight className="w-3 h-3" />
                 </span>
               </Card>
             </a>
