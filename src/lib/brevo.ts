@@ -1,6 +1,19 @@
+import { randomUUID } from "crypto";
 import nodemailer, { type Transporter } from "nodemailer";
-import { SITE_NAME, SITE_URL } from "@/config/site";
+import { CONTACT_EMAIL, CONTACT_PHONE, SITE_NAME, SITE_URL } from "@/config/site";
 import { getSettings } from "@/lib/settings";
+import { unsubscribeUrl } from "@/lib/email-optout";
+import {
+  button,
+  detailRows,
+  divider,
+  escapeHtml,
+  htmlToText,
+  muted,
+  p,
+  panel,
+  renderEmail,
+} from "@/lib/email-template";
 
 const DEFAULT_SMTP_HOST = "smtp-relay.brevo.com";
 const DEFAULT_SMTP_PORT = 587;
@@ -126,60 +139,149 @@ function getSmtpTransport(smtp: BrevoSmtpCredentials): Transporter {
   return transport;
 }
 
-/** Sends a single transactional/marketing email through the Brevo SMTP relay. */
+export interface SendEmailParams {
+  to: string;
+  name?: string;
+  subject: string;
+  /** Full HTML document, normally the output of `renderEmail`. */
+  html: string;
+  /**
+   * Plain-text alternative. Derived from the HTML when omitted — an HTML-only
+   * message scores worse with spam filters and is unreadable in text clients.
+   */
+  text?: string;
+  /**
+   * `marketing` mail must carry a working unsubscribe. Passing the kind here
+   * (rather than inferring it) is what decides the List-Unsubscribe headers
+   * and the `Precedence: bulk` marker.
+   */
+  kind?: "transactional" | "marketing";
+  /** Required for `marketing`; ignored otherwise. */
+  unsubscribeUrl?: string;
+}
+
+/**
+ * Sends a single email through the Brevo SMTP relay with the headers a
+ * reputable sender is expected to set:
+ *
+ * - `Reply-To` points at a monitored human inbox, since the Brevo sender
+ *   address is usually a no-reply.
+ * - `List-Unsubscribe` + `List-Unsubscribe-Post` give Gmail and Outlook the
+ *   native one-click unsubscribe control. Since Feb 2024 both require it from
+ *   bulk senders, and its absence pushes marketing mail toward spam.
+ * - `Auto-Submitted` stops out-of-office autoresponders from replying to
+ *   machine-generated mail (RFC 3834).
+ * - `X-Entity-Ref-ID` is unique per message so Gmail stops collapsing
+ *   same-subject sends (every "Welcome to kidslab.lk") into one thread and
+ *   hiding the newest behind "show trimmed content".
+ */
 export async function sendEmail(
   creds: BrevoCredentials,
-  { to, name, subject, html }: { to: string; name?: string; subject: string; html: string }
+  { to, name, subject, html, text, kind = "transactional", unsubscribeUrl }: SendEmailParams
 ) {
+  const headers: Record<string, string> = {
+    "X-Entity-Ref-ID": randomUUID(),
+  };
+
+  if (kind === "marketing" && unsubscribeUrl) {
+    headers["List-Unsubscribe"] = `<${unsubscribeUrl}>, <mailto:${CONTACT_EMAIL}?subject=Unsubscribe>`;
+    headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click";
+    headers["Precedence"] = "bulk";
+  } else {
+    headers["Auto-Submitted"] = "auto-generated";
+  }
+
   await getSmtpTransport(creds.smtp).sendMail({
     from: { name: creds.senderName, address: creds.senderEmail },
     to: name ? { name, address: to } : to,
+    replyTo: CONTACT_EMAIL,
     subject,
     html,
+    text: text ?? htmlToText(html),
+    headers,
   });
 }
 
 /** Sends a diagnostic email so an admin can confirm delivery end to end. */
 export async function sendTestEmail(creds: BrevoCredentials, to: string) {
-  await sendEmail(creds, {
-    to,
-    subject: `${SITE_NAME} — SMTP test email`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2>SMTP is working</h2>
-        <p>This is a test email from the ${SITE_NAME} admin dashboard.</p>
-        <p style="color:#666;font-size:13px;">
-          Sent from <strong>${creds.senderEmail}</strong>
-          via ${creds.smtp.host}:${creds.smtp.port}.
-        </p>
-      </div>
-    `,
+  const html = renderEmail({
+    title: `${SITE_NAME} — SMTP test`,
+    preheader: `Your ${SITE_NAME} email configuration is delivering correctly.`,
+    heading: "SMTP is working",
+    body: [
+      p("This is a test message from the KidsLab admin dashboard. If you're reading it, outgoing email is configured correctly and delivering to real inboxes."),
+      panel(
+        detailRows([
+          { label: "Sender", value: creds.senderEmail },
+          { label: "Relay", value: `${creds.smtp.host}:${creds.smtp.port}` },
+          { label: "Sent at", value: new Date().toUTCString() },
+        ])
+      ),
+      muted("No action is needed. This message was triggered manually from Settings → Brevo Email."),
+    ].join(""),
   });
+
+  await sendEmail(creds, { to, subject: `${SITE_NAME} — SMTP test email`, html });
 }
 
 interface SendWelcomeEmailParams {
   name: string;
   email: string;
+  /** Shown back to the registrant so they can confirm what we recorded. */
+  phone?: string;
+  interestedCourse?: string;
 }
 
-export async function sendWelcomeEmail({ name, email }: SendWelcomeEmailParams) {
+/**
+ * Confirms a public seminar registration.
+ *
+ * Fire-and-forget at the call site — a mail outage must not fail the
+ * registration itself — so failures are logged here rather than thrown.
+ */
+export async function sendWelcomeEmail({
+  name,
+  email,
+  phone,
+  interestedCourse,
+}: SendWelcomeEmailParams) {
   const creds = await getBrevoCredentials();
   if (!creds) {
     console.warn("[brevo] No SMTP credentials/sender configured — skipping welcome email");
     return;
   }
 
+  const rows = [
+    { label: "Name", value: name },
+    { label: "Email", value: email },
+    ...(phone ? [{ label: "Phone", value: phone }] : []),
+    ...(interestedCourse ? [{ label: "Interested in", value: interestedCourse }] : []),
+  ];
+
+  const html = renderEmail({
+    title: `Welcome to ${SITE_NAME}`,
+    preheader: "We've received your registration — here's what happens next.",
+    heading: `Welcome, ${escapeHtml(name)}!`,
+    kind: "marketing",
+    unsubscribeUrl: unsubscribeUrl(email),
+    body: [
+      p("Thanks for registering with <strong>KidsLab Robotics &amp; AI Academy</strong>. We're delighted to have you with us."),
+      p("Here's what we have on file:"),
+      panel(detailRows(rows)),
+      p("Our team will contact you shortly on WhatsApp or by phone to confirm your seminar slot and answer any questions."),
+      button("Explore our courses", `${SITE_URL}/#courses`),
+      divider(),
+      muted(
+        `Something not right? Just reply to this email or message us on WhatsApp at ${escapeHtml(CONTACT_PHONE)} and we'll fix it.`
+      ),
+    ].join(""),
+  });
+
   await sendEmail(creds, {
     to: email,
     name,
-    subject: `Welcome to ${SITE_NAME}!`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-        <h2>Welcome, ${name}!</h2>
-        <p>Thanks for registering with ${SITE_NAME}. We're excited to have you on board.</p>
-        <p>You can visit us anytime at <a href="${SITE_URL}">${SITE_URL}</a>.</p>
-        <p>See you soon!</p>
-      </div>
-    `,
+    subject: `Welcome to ${SITE_NAME} — your registration is confirmed`,
+    html,
+    kind: "marketing",
+    unsubscribeUrl: unsubscribeUrl(email),
   });
 }
