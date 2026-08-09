@@ -69,8 +69,9 @@ export default function SriLankaMap({
       borderWidth: 0,
       style: { color: "#fff", fontSize: "12px" },
       formatter: function (this: Highcharts.Point) {
-        const point = this as unknown as { name?: string; value?: number };
-        return `<b>${point.name}</b><br/>${point.value ?? 0} registration${point.value === 1 ? "" : "s"}`;
+        const point = this as unknown as { name?: string; value?: number; z?: number; series: { type: string } };
+        const count = point.series.type === "mapbubble" ? point.z ?? 0 : point.value ?? 0;
+        return `<b>${point.name}</b><br/>${count} registration${count === 1 ? "" : "s"}`;
       },
     },
     series: [
@@ -94,12 +95,6 @@ export default function SriLankaMap({
         color: "var(--brand-navy, #0f2418)" as unknown as string,
         fillOpacity: 0.75,
         marker: { lineColor: "#fff", lineWidth: 1 },
-        tooltip: {
-          pointFormatter: function (this: Highcharts.Point) {
-            const p = this as unknown as { name?: string; z?: number };
-            return `<b>${p.name}</b><br/>${p.z ?? 0} registration${p.z === 1 ? "" : "s"}`;
-          },
-        },
       } as unknown as Highcharts.SeriesMapbubbleOptions,
     ],
   };
