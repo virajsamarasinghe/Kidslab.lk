@@ -31,6 +31,14 @@ export default function AdminShell({ children, profile }: { children: ReactNode;
       <ConfirmProvider>
         <AdminSummaryProvider>
           <div className="min-h-screen" style={{ backgroundColor: "var(--brand-paper)" }}>
+          {/* Visible only on keyboard focus — lets keyboard and screen-reader
+              users jump past the sidebar and navbar on every page. */}
+          <a
+            href="#admin-main"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow-lg focus:ring-2 focus:ring-slate-900"
+          >
+            Skip to main content
+          </a>
             <AdminSidebar collapsed={collapsed} mobileOpen={mobileOpen} onCloseMobile={() => setMobileOpen(false)} />
             <div className={`flex flex-col min-h-screen transition-[margin] duration-200 ease-out ${collapsed ? "lg:ml-20" : "lg:ml-64"}`}>
               <AdminNavbar
@@ -38,7 +46,7 @@ export default function AdminShell({ children, profile }: { children: ReactNode;
                 onToggleCollapsed={toggleCollapsed}
                 onOpenMobile={() => setMobileOpen(true)}
               />
-              <main className="flex-1">{children}</main>
+              <main id="admin-main" className="flex-1">{children}</main>
             </div>
           </div>
         </AdminSummaryProvider>

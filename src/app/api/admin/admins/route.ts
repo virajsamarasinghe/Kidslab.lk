@@ -3,11 +3,18 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import { logActivity } from "@/lib/activity-log";
-import { ADMIN_ROLES, isAdminRole, outranks } from "@/lib/roles";
+import { ADMIN_ROLES, outranks } from "@/lib/roles";
 import { validatePassword } from "@/lib/password";
-import User from "@/models/User";
+import { z } from "zod";
+import { parseBody } from "@/lib/validate";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CreateAdminSchema = z.object({
+  name:     z.string().trim().max(120).default(""),
+  email:    z.string().trim().toLowerCase().email("Enter a valid email address"),
+  password: z.string().default(""),
+  role:     z.enum(ADMIN_ROLES),
+}).strict();
+import User from "@/models/User";
 
 /** Lists every account holding an admin-tier role. */
 export async function GET() {
@@ -44,18 +51,10 @@ export async function POST(req: NextRequest) {
   const guard = await requireCapability("admins:manage");
   if (guard instanceof NextResponse) return guard;
 
-  const body = await req.json();
-  const name = typeof body.name === "string" ? body.name.trim() : "";
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  const password = typeof body.password === "string" ? body.password : "";
-  const role = body.role;
+  const parsed = await parseBody(req, CreateAdminSchema);
+  if (parsed instanceof NextResponse) return parsed;
+  const { name, email, password, role } = parsed;
 
-  if (!EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
-  }
-  if (!isAdminRole(role)) {
-    return NextResponse.json({ error: "Choose a valid role" }, { status: 400 });
-  }
   // Prevents a super admin from being minted by someone who isn't one already.
   if (!outranks(guard.role, role) && guard.role !== role) {
     return NextResponse.json({ error: "You can't grant a role above your own" }, { status: 403 });

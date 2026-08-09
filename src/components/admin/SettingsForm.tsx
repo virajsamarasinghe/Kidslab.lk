@@ -137,29 +137,42 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 {fields.map(f => (
                   <div key={f.key}>
-                    <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                    <Label
+                      htmlFor={`${section}-${f.key}`}
+                      className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block"
+                    >
                       {f.label}
                     </Label>
                     <Input
+                      id={`${section}-${f.key}`}
+                      aria-describedby={f.helper ? `${section}-${f.key}-helper` : undefined}
                       type={f.type ?? "text"}
                       value={values[f.key] ?? ""}
                       onChange={e => update(f.key, e.target.value)}
                       placeholder={f.placeholder}
                       className="border-slate-200 text-sm"
                     />
-                    {f.helper && <p className="text-[11px] text-slate-400 mt-1">{f.helper}</p>}
+                    {f.helper && (
+                      <p id={`${section}-${f.key}-helper`} className="text-[11px] text-slate-400 mt-1">
+                        {f.helper}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>
 
               {allowTestEmail && (
                 <div className="border-t border-slate-100 pt-4">
-                  <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
+                  <Label
+                    htmlFor={`${section}-test-email`}
+                    className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block"
+                  >
                     Send a Test Email
                   </Label>
                   <div className="flex flex-col sm:flex-row gap-2 sm:items-start">
                     <div className="flex-1 min-w-0">
                       <Input
+                        id={`${section}-test-email`}
                         type="email"
                         value={testEmail}
                         onChange={e => { setTestEmail(e.target.value); setResult(null); }}
@@ -186,6 +199,8 @@ export default function SettingsForm({ section, title, description, icon: Icon, 
 
               {result && (
                 <div
+                  role="status"
+                  aria-live="polite"
                   className={`flex items-start gap-2.5 text-sm px-4 py-3 rounded-xl border ${
                     result.success
                       ? "bg-green-50 border-green-200 text-green-700"

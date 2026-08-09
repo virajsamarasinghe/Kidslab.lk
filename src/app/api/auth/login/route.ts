@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/mongodb";
-import { signToken, COOKIE, sessionCookieOptions, SESSION_MAX_AGE_SECONDS } from "@/lib/auth";
+import { signToken, COOKIE, sessionCookieOptions, SESSION_IDLE_SECONDS } from "@/lib/auth";
 import User from "@/models/User";
 import { ADMIN_ROLES } from "@/lib/roles";
 import { enforceRateLimit, clientIp } from "@/lib/rate-limit";
@@ -128,12 +128,19 @@ export async function POST(req: NextRequest) {
       await user.save();
     }
 
-    const token = await signToken({ id: user._id.toString(), email: user.email, role: user.role });
+    const token = await signToken({
+      id: user._id.toString(),
+      email: user.email,
+      role: user.role,
+      // Pins the absolute session cap to this sign-in; sliding renewal in the
+      // proxy refreshes `iat` but must never move this.
+      authTime: Math.floor(Date.now() / 1000),
+    });
 
     logActivity({ email: user.email }, "signed in", "auth", String(user._id), { ip: clientIp(req) });
 
     const res = NextResponse.json({ success: true });
-    res.cookies.set(COOKIE, token, sessionCookieOptions(SESSION_MAX_AGE_SECONDS));
+    res.cookies.set(COOKIE, token, sessionCookieOptions(SESSION_IDLE_SECONDS));
     return res;
   } catch (err) {
     console.error(err);
