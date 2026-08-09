@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import { ChevronRight, Menu, Phone, X } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, useUser } from "@clerk/nextjs";
+import AccountUserButton from "@/components/AccountUserButton";
 import { Button } from "@/components/ui/button";
 import { useLocale } from "@/lib/locale-context";
 import { useRegisterModal } from "@/lib/register-modal-context";
@@ -150,7 +151,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-1.5 shrink-0">
             {isLoaded && (
               isSignedIn ? (
-                <UserButton />
+                <AccountUserButton />
               ) : (
                 <>
                   <SignInButton mode="modal">
@@ -259,7 +260,7 @@ export default function Navbar() {
             {isLoaded && (
               isSignedIn ? (
                 <div className="mt-3 pt-3 border-t border-slate-100 flex items-center gap-2 px-1 py-1">
-                  <UserButton />
+                  <AccountUserButton />
                   <span className="text-sm text-slate-500">{t("account")}</span>
                 </div>
               ) : (

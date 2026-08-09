@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, BookOpen, Mail, UserRound,
   Settings, Send, BrainCircuit, Layers3, Bot,
-  Contact2, KanbanSquare, Megaphone, History, ShieldCheck, type LucideIcon,
+  Contact2, KanbanSquare, Megaphone, History, ShieldCheck, CreditCard, type LucideIcon,
 } from "lucide-react";
 import { can, type Capability } from "@/lib/roles";
 
@@ -28,6 +28,7 @@ export const navItems: NavItemDef[] = [
   { label: "Dashboard",   href: "/admin",             icon: LayoutDashboard },
   { label: "Users",       href: "/admin/users",       icon: Users,    countKey: "users", capability: "users:manage" },
   { label: "Courses",     href: "/admin/courses",     icon: BookOpen },
+  { label: "Payments",    href: "/admin/payments",    icon: CreditCard },
   { label: "Instructors", href: "/admin/instructors", icon: UserRound },
   { label: "Subscribers", href: "/admin/subscribers", icon: Mail,     countKey: "subscribers" },
   { label: "Activity",    href: "/admin/activity",    icon: History },

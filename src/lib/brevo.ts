@@ -361,3 +361,80 @@ export async function sendAdminInviteEmail({
     return false;
   }
 }
+
+interface SendPaymentReceiptEmailParams {
+  name: string;
+  email: string;
+  orderId: string;
+  itemName: string;
+  amount: number;
+  currency: string;
+  /** PayHere's transaction id — what support will ask for in any dispute. */
+  paymentId: string;
+  method?: string;
+}
+
+/**
+ * Confirms a successful PayHere payment.
+ *
+ * Transactional, not marketing: this is a receipt for money the recipient
+ * just spent, so it carries no unsubscribe and must send regardless of any
+ * marketing opt-out.
+ *
+ * Fire-and-forget at the call site — the payment webhook has to answer PayHere
+ * with a 200 promptly, and a mail outage must never make a paid order look
+ * unpaid — so failures are logged here rather than thrown.
+ */
+export async function sendPaymentReceiptEmail({
+  name,
+  email,
+  orderId,
+  itemName,
+  amount,
+  currency,
+  paymentId,
+  method,
+}: SendPaymentReceiptEmailParams) {
+  const creds = await getBrevoCredentials();
+  if (!creds) {
+    console.warn("[brevo] No SMTP credentials saved — skipping payment receipt");
+    return;
+  }
+
+  const formattedAmount = `${currency} ${amount.toLocaleString("en-LK", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+  const html = renderEmail({
+    title: `${SITE_NAME} — payment receipt`,
+    preheader: `We've received your payment of ${formattedAmount}.`,
+    heading: "Payment received",
+    body: [
+      p(`Thank you, ${escapeHtml(name)}. Your payment has been received and your place is confirmed.`),
+      panel(
+        detailRows([
+          { label: "Order", value: orderId },
+          { label: "Item", value: itemName },
+          { label: "Amount", value: formattedAmount },
+          ...(method ? [{ label: "Paid with", value: method }] : []),
+          { label: "Reference", value: paymentId },
+          { label: "Date", value: new Date().toUTCString() },
+        ])
+      ),
+      p("Our team will be in touch shortly with the schedule and joining details."),
+      button("Explore our courses", `${SITE_URL}/#courses`),
+      divider(),
+      muted(
+        `Questions about this payment? Reply to this email or message us on WhatsApp at ${escapeHtml(CONTACT_PHONE)}, quoting order ${escapeHtml(orderId)}.`
+      ),
+    ].join(""),
+  });
+
+  await sendEmail(creds, {
+    to: email,
+    name,
+    subject: `${SITE_NAME} — payment receipt for ${orderId}`,
+    html,
+  });
+}

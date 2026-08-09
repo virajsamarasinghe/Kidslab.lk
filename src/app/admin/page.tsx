@@ -3,6 +3,7 @@ import { getCoreStats } from "@/lib/dashboard-stats";
 import KpiGrid, { KpiGridSkeleton } from "@/components/admin/dashboard/KpiGrid";
 import ChartsRow, { ChartsRowSkeleton } from "@/components/admin/dashboard/ChartsRow";
 import GeoSection, { GeoSectionSkeleton } from "@/components/admin/dashboard/GeoSection";
+import RevenueSection, { RevenueSectionSkeleton } from "@/components/admin/dashboard/RevenueSection";
 import PipelineCard from "@/components/admin/dashboard/PipelineCard";
 import RecentCampaignsCard from "@/components/admin/dashboard/RecentCampaignsCard";
 import RecentRegistrations from "@/components/admin/dashboard/RecentRegistrations";
@@ -55,6 +56,10 @@ export default function AdminDashboard() {
 
       <Suspense fallback={<KpiGridSkeleton />}>
         <KpiSection />
+      </Suspense>
+
+      <Suspense fallback={<RevenueSectionSkeleton />}>
+        <RevenueSection />
       </Suspense>
 
       <Suspense fallback={<ChartsRowSkeleton />}>

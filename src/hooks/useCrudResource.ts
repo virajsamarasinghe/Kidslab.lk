@@ -28,6 +28,9 @@ export function useListResource<T>(endpoint: string, options: UseListResourceOpt
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Full response body, for endpoints that return summary figures alongside
+  // the list (the payments page reads `revenue` and `needsAttention` from it).
+  const [raw, setRaw] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -48,11 +51,15 @@ export function useListResource<T>(endpoint: string, options: UseListResourceOpt
         params.set("limit", String(limit));
       }
       const qs = params.toString();
-      const res = await fetch(`${endpoint}${qs ? `?${qs}` : ""}`);
+      // The endpoint may already carry its own filter query (e.g. `?status=`),
+      // so join with the right separator rather than always appending "?".
+      const separator = endpoint.includes("?") ? "&" : "?";
+      const res = await fetch(`${endpoint}${qs ? `${separator}${qs}` : ""}`);
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json();
       setItems(data[itemsKey] ?? []);
       setTotal(data[totalKey] ?? (data[itemsKey]?.length ?? 0));
+      setRaw(data);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load data");
     } finally {
@@ -63,7 +70,7 @@ export function useListResource<T>(endpoint: string, options: UseListResourceOpt
   useEffect(() => { load(); }, [load]);
 
   return {
-    items, setItems, total, page, setPage, search, setSearch, loading, error, reload: load,
+    items, setItems, total, page, setPage, search, setSearch, loading, error, raw, reload: load,
     totalPages: paginated ? Math.max(1, Math.ceil(total / limit)) : 1,
   };
 }

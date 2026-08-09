@@ -14,9 +14,11 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 /**
  * Endpoints signed by their sender rather than protected by same-origin rules.
  * The Clerk webhook arrives from Svix with no `Origin`, and is verified by
- * signature inside the handler.
+ * signature inside the handler. PayHere's payment notification is the same
+ * shape: a server-to-server POST carrying no session, authenticated by the
+ * `md5sig` checksum the handler recomputes.
  */
-const CSRF_EXEMPT_PATHS = ["/api/webhooks"];
+const CSRF_EXEMPT_PATHS = ["/api/webhooks", "/api/payments/notify"];
 
 /**
  * Rejects cross-site state-changing requests by checking `Origin` against the

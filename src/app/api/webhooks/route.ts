@@ -44,19 +44,46 @@ export async function POST(req: NextRequest) {
     const name =
       [clerk.first_name, clerk.last_name].filter(Boolean).join(" ").trim() ||
       email.split("@")[0];
+    const normalisedEmail = email.toLowerCase();
 
-    await User.findOneAndUpdate(
-      { clerkId: clerk.id },
-      {
-        $setOnInsert: { clerkId: clerk.id, role: "user", status: "active" },
-        $set: { name, email: email.toLowerCase() },
-      },
-      { upsert: true, setDefaultsOnInsert: true }
-    );
+    // Match on either key, rather than upserting on `clerkId` alone.
+    //
+    // Seminar leads created by /api/register already occupy their email
+    // address with no `clerkId`, and `email` is uniquely indexed — so an
+    // insert keyed only on `clerkId` throws a duplicate-key error the moment
+    // one of those parents signs up with Clerk. Adopting the existing row
+    // instead also keeps their history attached: phone, city, enrolled
+    // courses and past payments all survive the link-up.
+    const existing = await User.findOne({
+      $or: [{ clerkId: clerk.id }, { email: normalisedEmail }],
+    });
 
-    // Only on first sign-up, not on later profile edits
-    if (event.type === "user.created") {
-      sendWelcomeEmail({ name, email: email.toLowerCase() }).catch((err) =>
+    if (existing?.clerkId === clerk.id) {
+      // Already linked — Clerk owns the identity fields from here on.
+      existing.name = name;
+      existing.email = normalisedEmail;
+      await existing.save();
+    } else if (existing) {
+      // Adopting a seminar lead. The name on file is deliberately left alone:
+      // /api/register stores the *student's* name there, while Clerk holds the
+      // account holder's (usually the parent), so overwriting would lose it.
+      existing.clerkId = clerk.id;
+      existing.email = normalisedEmail;
+      await existing.save();
+    } else {
+      await User.create({
+        clerkId: clerk.id,
+        name,
+        email: normalisedEmail,
+        role: "user",
+        status: "active",
+      });
+    }
+
+    // Only for a genuinely new account — an adopted lead already had a welcome
+    // email when they registered for the seminar.
+    if (event.type === "user.created" && !existing) {
+      sendWelcomeEmail({ name, email: normalisedEmail }).catch((err) =>
         console.error("[webhooks] failed to send welcome email", err)
       );
     }

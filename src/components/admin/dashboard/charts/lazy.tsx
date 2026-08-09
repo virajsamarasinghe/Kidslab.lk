@@ -29,3 +29,8 @@ export const LazyRankedBarChart = dynamic(() => import("./RankedBarChart"), {
   ssr: false,
   loading: () => <ChartFallback height={200} />,
 });
+
+export const LazyRevenueTrendChart = dynamic(() => import("./RevenueTrendChart"), {
+  ssr: false,
+  loading: () => <ChartFallback height={220} />,
+});
