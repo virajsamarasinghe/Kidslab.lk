@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ShieldCheck, Loader2, UserPlus, CheckCircle2, XCircle, Trash2, ShieldOff, ShieldAlert,
 } from "lucide-react";
@@ -26,14 +27,8 @@ interface AdminRow {
 
 type Result = { success: boolean; message: string } | null;
 
-const ROLE_BADGE: Record<AdminRole, string> = {
-  super_admin: "bg-amber-50 text-amber-700 border-amber-200",
-  admin: "bg-blue-50 text-blue-700 border-blue-200",
-  editor: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  viewer: "bg-slate-100 text-slate-600 border-slate-200",
-};
-
 export default function AdminsManager() {
+  const router = useRouter();
   const profile = useAdminProfile();
   const [admins, setAdmins] = useState<AdminRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,18 +71,21 @@ export default function AdminsManager() {
     setAdding(false);
   }
 
-  async function patchAdmin(id: string, body: Record<string, string>) {
-    setBusyId(id);
+  async function patchAdmin(row: AdminRow, body: Record<string, string>) {
+    setBusyId(row.id);
     setResult(null);
-    const res = await fetch(`/api/admin/admins/${id}`, {
+    const res = await fetch(`/api/admin/admins/${row.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     const data = await res.json();
     if (res.ok) {
-      setAdmins(prev => prev.map(a => (a.id === id ? { ...a, ...data } : a)));
+      setAdmins(prev => prev.map(a => (a.id === row.id ? { ...a, ...data } : a)));
       setResult({ success: true, message: `Updated ${data.email}.` });
+      // Changing your own role or status can revoke the access that renders
+      // this page, so let the server layout re-evaluate and redirect.
+      if (row.isSelf) router.refresh();
     } else {
       setResult({ success: false, message: data.error ?? "Update failed" });
       await load(); // Re-sync the row that optimistically showed a new value.
@@ -95,10 +93,35 @@ export default function AdminsManager() {
     setBusyId(null);
   }
 
-  async function revokeAdmin(row: AdminRow) {
-    if (!confirm(`Revoke dashboard access for ${row.email}? Their account is kept as a regular user.`)) {
+  /** Confirms first when the change would affect the signed-in admin's own access. */
+  function confirmSelfAction(row: AdminRow, what: string) {
+    return (
+      !row.isSelf ||
+      confirm(`${what} applies to your own account — you may lose access to this page. Continue?`)
+    );
+  }
+
+  function changeRole(row: AdminRow, role: AdminRole) {
+    if (role === row.role) return;
+    if (!confirmSelfAction(row, `Changing your role to ${ROLE_LABELS[role]}`)) {
+      void load(); // Snap the select back to the stored value.
       return;
     }
+    void patchAdmin(row, { role });
+  }
+
+  function toggleStatus(row: AdminRow) {
+    const next = row.status === "active" ? "inactive" : "active";
+    if (next === "inactive" && !confirmSelfAction(row, "Deactivating this account")) return;
+    void patchAdmin(row, { status: next });
+  }
+
+  async function revokeAdmin(row: AdminRow) {
+    const warning = row.isSelf
+      ? "Revoke your OWN dashboard access? You will be signed out of the admin area."
+      : `Revoke dashboard access for ${row.email}? Their account is kept as a regular user.`;
+    if (!confirm(warning)) return;
+
     setBusyId(row.id);
     setResult(null);
     const res = await fetch(`/api/admin/admins/${row.id}`, { method: "DELETE" });
@@ -106,6 +129,7 @@ export default function AdminsManager() {
     if (res.ok) {
       setAdmins(prev => prev.filter(a => a.id !== row.id));
       setResult({ success: true, message: `Revoked access for ${row.email}.` });
+      if (row.isSelf) router.refresh();
     } else {
       setResult({ success: false, message: data.error ?? "Could not revoke access" });
     }
@@ -246,25 +270,16 @@ export default function AdminsManager() {
                         <p className="text-slate-400 text-xs">{row.email}</p>
                       </td>
                       <td className="py-3 pr-4">
-                        {row.isSelf ? (
-                          <span
-                            className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${ROLE_BADGE[row.role]}`}
-                            title="You can't change your own role"
-                          >
-                            {ROLE_LABELS[row.role]}
-                          </span>
-                        ) : (
-                          <select
-                            className={`${selectClass} max-w-[10rem]`}
-                            value={row.role}
-                            disabled={busy}
-                            onChange={e => patchAdmin(row.id, { role: e.target.value })}
-                          >
-                            {ADMIN_ROLES.map(r => (
-                              <option key={r} value={r}>{ROLE_LABELS[r]}</option>
-                            ))}
-                          </select>
-                        )}
+                        <select
+                          className={`${selectClass} max-w-[10rem]`}
+                          value={row.role}
+                          disabled={busy}
+                          onChange={e => changeRole(row, e.target.value as AdminRole)}
+                        >
+                          {ADMIN_ROLES.map(r => (
+                            <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="py-3 pr-4">
                         <span
@@ -278,36 +293,28 @@ export default function AdminsManager() {
                       <td className="py-3">
                         <div className="flex items-center justify-end gap-2">
                           {busy && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
-                          {!row.isSelf && (
-                            <>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={busy}
-                                onClick={() =>
-                                  patchAdmin(row.id, {
-                                    status: row.status === "active" ? "inactive" : "active",
-                                  })
-                                }
-                                className="rounded-full text-xs font-semibold border-slate-200 gap-1.5"
-                                title={row.status === "active" ? "Block sign-in" : "Allow sign-in"}
-                              >
-                                {row.status === "active"
-                                  ? <><ShieldOff className="w-3.5 h-3.5" /> Deactivate</>
-                                  : <><ShieldAlert className="w-3.5 h-3.5" /> Reactivate</>}
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={busy}
-                                onClick={() => revokeAdmin(row)}
-                                className="rounded-full text-xs font-semibold border-red-200 text-red-600 gap-1.5"
-                                title="Remove admin access entirely"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" /> Revoke
-                              </Button>
-                            </>
-                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => toggleStatus(row)}
+                            className="rounded-full text-xs font-semibold border-slate-200 gap-1.5"
+                            title={row.status === "active" ? "Block sign-in" : "Allow sign-in"}
+                          >
+                            {row.status === "active"
+                              ? <><ShieldOff className="w-3.5 h-3.5" /> Deactivate</>
+                              : <><ShieldAlert className="w-3.5 h-3.5" /> Reactivate</>}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => revokeAdmin(row)}
+                            className="rounded-full text-xs font-semibold border-red-200 text-red-600 gap-1.5"
+                            title="Remove admin access entirely"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Revoke
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -319,8 +326,9 @@ export default function AdminsManager() {
         )}
 
         <p className="text-[11px] text-slate-400 mt-4">
-          Signed in as <strong>{profile.email}</strong> ({ROLE_LABELS[profile.role]}). Your own row is
-          locked — ask another super admin to change your role.
+          Signed in as <strong>{profile.email}</strong> ({ROLE_LABELS[profile.role]}). You can edit your
+          own row, but the last active super admin can&apos;t be demoted, deactivated or revoked —
+          promote someone else first.
         </p>
       </Card>
     </div>

@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { navForRole, flattenNav, type NavItemDef, type NavGroupDef } from "./nav-config";
 import { useAdminProfile } from "./AdminProfileContext";
+import { ROLE_LABELS } from "@/lib/roles";
 import { useAdminSummary, type Summary } from "./AdminSummaryContext";
 
 function Badge({ count }: { count: number }) {
@@ -384,6 +385,9 @@ export default function AdminSidebar({
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-white truncate">{profile.name || "Administrator"}</p>
                 <p className="text-[11px] text-slate-500 truncate">{profile.email}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mt-0.5">
+                  {ROLE_LABELS[profile.role]}
+                </p>
               </div>
               <a
                 href="/admin/profile"
@@ -415,6 +419,9 @@ export default function AdminSidebar({
                 <div className="px-3 pb-2 mb-1 border-b border-white/10">
                   <p className="text-sm font-semibold text-white truncate">{profile.name || "Administrator"}</p>
                   <p className="text-[11px] text-slate-500 truncate">{profile.email}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mt-0.5">
+                    {ROLE_LABELS[profile.role]}
+                  </p>
                 </div>
                 <a
                   href="/admin/profile"

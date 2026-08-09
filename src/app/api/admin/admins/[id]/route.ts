@@ -34,13 +34,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
   }
 
-  // Self-edits are refused outright: changing your own role is either a
-  // self-demotion lockout or a self-promotion, and neither should be possible
-  // from this screen. Use another super admin's account instead.
-  if (String(target._id) === guard.id) {
-    return NextResponse.json({ error: "You can't change your own role or status" }, { status: 403 });
-  }
-
+  // Self-edits are allowed. The invariant that actually prevents a lockout is
+  // "at least one active super admin must remain", checked below — and it
+  // covers the self case, since the count excludes the target either way.
   const nextRole = body.role;
   const nextStatus = body.status;
   const losingSuperAdmin =
@@ -100,9 +96,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const target = await User.findById(id);
   if (!target || !ADMIN_ROLES.includes(target.role as (typeof ADMIN_ROLES)[number])) {
     return NextResponse.json({ error: "Admin not found" }, { status: 404 });
-  }
-  if (String(target._id) === guard.id) {
-    return NextResponse.json({ error: "You can't revoke your own access" }, { status: 403 });
   }
   if (target.role === "super_admin" && (await wouldOrphanSuperAdmins(String(target._id)))) {
     return NextResponse.json(

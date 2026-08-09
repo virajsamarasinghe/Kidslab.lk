@@ -10,6 +10,7 @@ import {
   Users, Mail, KanbanSquare, type LucideIcon,
 } from "lucide-react";
 import { useAdminProfile } from "./AdminProfileContext";
+import { ROLE_LABELS } from "@/lib/roles";
 import { useAdminSummary } from "./AdminSummaryContext";
 import { breadcrumbFor, type SummaryKey } from "./nav-config";
 import CommandPalette from "./CommandPalette";
@@ -312,7 +313,9 @@ export default function AdminNavbar({
               <span className="text-[13px] font-semibold text-slate-800 truncate max-w-[10rem]">
                 {profile.name || "Administrator"}
               </span>
-              <span className="text-[10px] font-medium text-slate-400 tracking-wide uppercase">Admin</span>
+              <span className="text-[10px] font-medium text-slate-400 tracking-wide uppercase">
+                {ROLE_LABELS[profile.role]}
+              </span>
             </span>
             <ChevronDown className={`hidden sm:block w-3.5 h-3.5 text-slate-400 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
           </button>
@@ -339,6 +342,9 @@ export default function AdminNavbar({
                       {profile.name || "Administrator"}
                     </span>
                     <span className="block text-xs text-slate-500 truncate">{profile.email}</span>
+                    <span className="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                      {ROLE_LABELS[profile.role]}
+                    </span>
                   </span>
                 </div>
                 <div className="p-1.5">
