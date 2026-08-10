@@ -25,7 +25,7 @@ export default function WhyUsSection() {
   const t = useTranslations();
 
   return (
-    <section id="about" className="scroll-mt-20 section-y section-x bg-white relative">
+    <section id="about" className="scroll-mt-20 section-y section-x relative">
       <div className="max-w-screen-2xl mx-auto">
         <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
           <SectionLabel>

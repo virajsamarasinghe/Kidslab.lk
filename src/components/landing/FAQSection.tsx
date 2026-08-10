@@ -11,7 +11,7 @@ export default function FAQSection() {
   const t = useTranslations();
 
   return (
-    <section id="faq" className="scroll-mt-20 section-y section-x bg-white relative">
+    <section id="faq" className="scroll-mt-20 section-y section-x relative">
       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-amber-50/50 rounded-full blur-3xl opacity-50 -z-10 pointer-events-none" />
       <div className="max-w-3xl mx-auto">
         <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">

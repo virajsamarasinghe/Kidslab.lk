@@ -60,7 +60,7 @@ export default function ProgramsSection({ courses }: { courses: Course[] }) {
   };
 
   return (
-    <section id="programs" className="scroll-mt-20 section-y section-x bg-slate-50 relative overflow-hidden">
+    <section id="programs" className="scroll-mt-20 section-y section-x relative overflow-hidden">
       {/* Decorative background blob */}
       <div className="absolute top-40 left-0 w-96 h-96 bg-indigo-100 rounded-full blur-3xl opacity-50 -z-10 pointer-events-none mix-blend-multiply" />
       <div className="absolute bottom-40 right-0 w-96 h-96 bg-rose-100 rounded-full blur-3xl opacity-50 -z-10 pointer-events-none mix-blend-multiply" />

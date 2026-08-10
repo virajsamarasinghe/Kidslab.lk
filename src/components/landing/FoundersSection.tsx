@@ -43,48 +43,26 @@ export default function FoundersSection() {
     <section
       id="team"
       className="scroll-mt-20 py-16 section-x xl:py-20 relative overflow-hidden lg:min-h-[calc(100svh-5rem)] flex flex-col justify-center"
-      style={{
-        background:
-          "linear-gradient(135deg, var(--brand-navy) 0%, #1e1b4b 50%, #0f172a 100%)",
-      }}
     >
-      {/* Decorative blobs for modern glassmorphic feel */}
-      <div
-        className="absolute -left-32 top-0 w-[500px] h-[500px] rounded-full opacity-[0.15] pointer-events-none mix-blend-screen blur-3xl"
-        style={{
-          background: "radial-gradient(circle, var(--brand-blue), transparent)",
-        }}
-      />
-      <div
-        className="absolute -right-32 bottom-0 w-[500px] h-[500px] rounded-full opacity-[0.15] pointer-events-none mix-blend-screen blur-3xl"
-        style={{
-          background: "radial-gradient(circle, var(--brand-red), transparent)",
-        }}
-      />
-
       <div className="max-w-screen-2xl mx-auto relative z-10 w-full">
         {/* Header */}
         <AnimateIn className="text-center mb-8 xl:mb-12">
-          <SectionLabel
-            style={{
-              color: "var(--brand-paper)",
-            }}
-          >
+          <SectionLabel>
             {t("team.eyebrow")}
           </SectionLabel>
-          <h2 className="text-display-lg text-white">
+          <h2 className="text-display-lg text-slate-900">
             {t("team.headingStart")}
             <span
               className="bg-clip-text text-transparent"
               style={{
                 backgroundImage:
-                  "linear-gradient(to right, #93c5fd, #fca5a5)",
+                  "linear-gradient(to right, var(--brand-blue), var(--brand-red))",
               }}
             >
               {t("team.headingHighlight")}
             </span>
           </h2>
-          <p className="text-body-xl text-slate-300 mt-4 max-w-xl mx-auto">
+          <p className="text-body-xl text-slate-600 mt-4 max-w-xl mx-auto">
             {t("team.subtitle")}
           </p>
         </AnimateIn>
@@ -93,52 +71,52 @@ export default function FoundersSection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 xl:gap-8 max-w-xl xl:max-w-3xl mx-auto">
           {founders.map((f, i) => (
             <AnimateIn key={f.name} delay={i * 0.15} className="h-full">
-              <div className="h-full flex flex-col items-center text-center gap-3 rounded-2xl bg-white/5 border border-white/10 px-6 py-6 xl:py-8 backdrop-blur-sm hover:bg-white/10 hover:-translate-y-1 transition-all duration-300 shadow-xl">
+              <div className="h-full flex flex-col items-center text-center gap-3 rounded-3xl bg-white/70 border border-white px-6 py-8 xl:py-10 backdrop-blur-xl hover:-translate-y-1 transition-all duration-300 shadow-xl hover:shadow-2xl">
                 {/* Avatar */}
-                <div className="relative w-20 h-20 xl:w-24 xl:h-24 rounded-full overflow-hidden ring-4 ring-indigo-400/30 shrink-0 mb-2">
+                <div className="relative w-32 h-32 xl:w-40 xl:h-40 rounded-full overflow-hidden ring-4 ring-indigo-100 shadow-md shrink-0 mb-3">
                   <Image
                     src={f.photo}
                     alt={f.name}
                     fill
                     className="object-cover object-top"
-                    sizes="96px"
+                    sizes="160px"
                   />
                 </div>
 
                 {/* Co-Founder badge */}
-                <span className="inline-flex items-center gap-1.5 bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 font-bold rounded-full px-3 py-1 text-[10px] tracking-widest uppercase shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                <span className="inline-flex items-center gap-1.5 bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold rounded-full px-3 py-1 text-[10px] tracking-widest uppercase shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0" />
                   {t("team.coFounder")}
                 </span>
 
                 {/* Name + role */}
                 <div>
-                  <h3 className="text-white font-extrabold tracking-tight text-lg xl:text-xl">
+                  <h3 className="text-slate-900 font-extrabold tracking-tight text-lg xl:text-xl">
                     {f.name}
                   </h3>
-                  <p className="text-indigo-200 font-medium text-sm xl:text-base mt-1">
+                  <p className="text-indigo-600 font-medium text-sm xl:text-base mt-1">
                     {t("team.role")}
                   </p>
                 </div>
 
                 {/* Degree + university */}
                 <div className="flex flex-col items-center gap-1.5 mt-2">
-                  <div className="flex items-center gap-2 text-indigo-100 text-sm font-semibold">
-                    <Award className="w-4 h-4 shrink-0 text-indigo-400" />
+                  <div className="flex items-center gap-2 text-slate-700 text-sm font-semibold">
+                    <Award className="w-4 h-4 shrink-0 text-indigo-500" />
                     {t("team.degree")}
                   </div>
-                  <div className="flex items-center gap-2 text-slate-300 text-sm">
-                    <GraduationCap className="w-4 h-4 shrink-0 text-indigo-400" />
+                  <div className="flex items-center gap-2 text-slate-600 text-sm">
+                    <GraduationCap className="w-4 h-4 shrink-0 text-indigo-500" />
                     {t("team.university")}
                   </div>
                 </div>
 
                 {/* Tags */}
-                <div className="flex flex-wrap justify-center gap-2 mt-4 mb-2">
+                <div className="flex flex-wrap justify-center gap-2 mt-4 mb-3">
                   {(t.raw("team.tags") as string[]).map((tag) => (
                     <span
                       key={tag}
-                      className="bg-white/5 text-indigo-200 border border-white/10 px-3 py-1 rounded-full text-xs font-semibold tracking-wide"
+                      className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1 rounded-full text-xs font-semibold tracking-wide"
                     >
                       {tag}
                     </span>
@@ -150,7 +128,7 @@ export default function FoundersSection() {
                   href={f.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-auto inline-flex items-center gap-2 px-5 py-2 rounded-full border border-[#0A66C2]/50 bg-[#0A66C2]/20 hover:bg-[#0A66C2] hover:border-[#0A66C2] text-[#93c5fd] hover:text-white transition-all duration-300 font-semibold text-sm shadow-md"
+                  className="mt-auto inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[#0A66C2]/30 bg-white hover:bg-[#0A66C2] text-[#0A66C2] hover:text-white transition-all duration-300 font-semibold text-sm shadow-sm"
                 >
                   <LinkedInIcon className="w-4 h-4 shrink-0" />
                   {t("team.linkedin")}
@@ -163,7 +141,7 @@ export default function FoundersSection() {
         {/* Credentials */}
         <AnimateIn delay={0.25} className="mt-10 xl:mt-12">
           <div className="max-w-3xl xl:max-w-4xl mx-auto">
-            <h3 className="text-center text-white/90 font-bold tracking-tight mb-4 xl:mb-6 text-base xl:text-lg">
+            <h3 className="text-center text-slate-800 font-bold tracking-tight mb-4 xl:mb-6 text-base xl:text-lg">
               {t("team.credentialsHeading")}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:gap-5">
@@ -172,14 +150,14 @@ export default function FoundersSection() {
               ).map((c) => (
                 <div
                   key={c.title}
-                  className="flex gap-4 rounded-xl bg-white/5 border border-white/10 px-5 py-4 backdrop-blur-md"
+                  className="flex gap-4 rounded-2xl bg-white/70 border border-white px-5 py-4 backdrop-blur-xl shadow-md hover:shadow-lg transition-all"
                 >
-                  <CheckCircle className="w-5 h-5 shrink-0 mt-0.5 text-indigo-400" />
+                  <CheckCircle className="w-5 h-5 shrink-0 mt-0.5 text-indigo-500" />
                   <div>
-                    <p className="text-white font-semibold text-sm xl:text-base leading-snug">
+                    <p className="text-slate-900 font-semibold text-sm xl:text-base leading-snug">
                       {c.title}
                     </p>
-                    <p className="text-slate-300 text-sm leading-relaxed mt-1">
+                    <p className="text-slate-600 text-sm leading-relaxed mt-1">
                       {c.desc}
                     </p>
                   </div>
@@ -191,17 +169,17 @@ export default function FoundersSection() {
 
         {/* University strip */}
         <AnimateIn delay={0.3} className="mt-8 xl:mt-10">
-          <div className="max-w-3xl xl:max-w-4xl mx-auto bg-white/5 border border-white/10 rounded-2xl px-8 xl:px-12 py-4 flex flex-col sm:flex-row items-center justify-center gap-4 xl:gap-10 backdrop-blur-md shadow-lg">
+          <div className="max-w-3xl xl:max-w-4xl mx-auto bg-white/70 border border-white rounded-2xl px-8 xl:px-12 py-5 flex flex-col sm:flex-row items-center justify-center gap-4 xl:gap-10 backdrop-blur-xl shadow-md">
             <div className="flex items-center gap-3">
-              <GraduationCap className="w-5 h-5 xl:w-6 xl:h-6 text-indigo-400 shrink-0" />
-              <p className="text-slate-200 font-semibold text-sm xl:text-base tracking-wide">
+              <GraduationCap className="w-5 h-5 xl:w-6 xl:h-6 text-indigo-500 shrink-0" />
+              <p className="text-slate-800 font-semibold text-sm xl:text-base tracking-wide">
                 {t("team.universityStrip")}
               </p>
             </div>
-            <div className="hidden sm:block w-px h-6 bg-white/20" />
+            <div className="hidden sm:block w-px h-6 bg-slate-200" />
             <div className="flex items-center gap-3">
-              <MapPin className="w-4 h-4 xl:w-5 xl:h-5 text-slate-400 shrink-0" />
-              <p className="text-slate-400 text-sm xl:text-base">
+              <MapPin className="w-4 h-4 xl:w-5 xl:h-5 text-indigo-500 shrink-0" />
+              <p className="text-slate-600 font-medium text-sm xl:text-base">
                 {t("team.location")}
               </p>
             </div>

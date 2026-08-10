@@ -19,6 +19,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import ProgramsSection from "@/components/landing/ProgramsSection";
 import WhyUsSection from "@/components/landing/WhyUsSection";
 import FoundersSection from "@/components/landing/FoundersSection";
+import SafetySection from "@/components/landing/SafetySection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import FAQSection from "@/components/landing/FAQSection";
 import ContactSection from "@/components/landing/ContactSection";
@@ -83,7 +84,7 @@ function HomeContent({
     <>
       <LoadingScreen />
       <motion.main
-        className="bg-white selection:bg-indigo-500/30"
+        className="selection:bg-indigo-500/30 bg-[url('/light-bg-geometry.png')] bg-cover bg-center bg-fixed bg-no-repeat min-h-screen"
         animate={{ opacity: langFading ? 0.15 : 1 }}
         transition={{ duration: langFading ? 0.13 : 0.28, ease: "easeInOut" }}
       >
@@ -93,6 +94,7 @@ function HomeContent({
         <ProgramsSection courses={courses} />
         <WhyUsSection />
         <FoundersSection />
+        <SafetySection />
         <TestimonialsSection googleReviews={googleReviews} />
         <FAQSection />
         <ContactSection />

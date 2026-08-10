@@ -49,7 +49,7 @@ export default function TestimonialsSection({ googleReviews = [] }: { googleRevi
   );
 
   return (
-    <section className="section-y section-x bg-slate-50 relative overflow-hidden">
+    <section className="section-y section-x relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-50 rounded-full blur-3xl opacity-50 -z-10" />
       <div className="max-w-6xl mx-auto">
         <AnimateIn className="text-center mb-10 sm:mb-14 xl:mb-16">
