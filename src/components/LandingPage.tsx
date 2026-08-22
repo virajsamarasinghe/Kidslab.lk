@@ -134,7 +134,6 @@ const testimonials = [
   },
 ];
 
-const FAQ_COUNT = 10;
 
 const BLUE_GRADIENT = "linear-gradient(to right, var(--brand-blue), #1a3fa0)";
 const COPPER_GRADIENT = "linear-gradient(to right, var(--brand-red), #b8651f)";
@@ -442,6 +441,11 @@ function HomeContent({
   const { openRegisterModal } = useRegisterModal();
   const heroSentences = useMemo(() => getHeroSentences(t), [t]);
   const statLabels = t.raw("stats.labels") as string[];
+  /* Every FAQ entry is rendered — the FAQPage JSON-LD in structured-data.ts
+     mirrors these questions, and Google only credits FAQ markup whose answers
+     are actually visible on the page. Counted from the messages file so
+     adding a question there is the only step needed. */
+  const faqCount = (t.raw("faq.items") as { q: string; a: string }[]).length;
 
   /* Prefer live Google reviews when available; otherwise fall back to the
      hardcoded, translated testimonials so the section never sits empty. */
@@ -1336,7 +1340,7 @@ function HomeContent({
             </AnimateIn>
 
             <div className="flex flex-col gap-3">
-              {Array.from({ length: FAQ_COUNT }).map((_, i) => (
+              {Array.from({ length: faqCount }).map((_, i) => (
                 <AnimateIn key={i} delay={i * 0.04}>
                   <details className="group pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm open:shadow-md transition-shadow duration-300">
                     <summary className="flex items-center justify-between gap-4 cursor-pointer list-none p-6 select-none">
@@ -1416,8 +1420,8 @@ function HomeContent({
                       {
                         id: "whatsapp",
                         label: t("contact.whatsapp"),
-                        value: "+94 70 390 6478",
-                        href: "https://wa.me/94703906478",
+                        value: "+94 76 397 7035",
+                        href: "https://wa.me/94763977035",
                         external: true,
                         accent: "#25D366",
                         hoverBg: "hover:bg-green-50",
@@ -1717,7 +1721,7 @@ function HomeContent({
       {/* ── Floating WhatsApp button — sits one slot above the AI assistant
              launcher, which occupies the bottom corner ── */}
       <a
-        href="https://wa.me/94703906478"
+        href="https://wa.me/94763977035"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Chat on WhatsApp"

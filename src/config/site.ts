@@ -15,10 +15,10 @@ export const SITE_TAGLINE = "Robotics & AI for curious kids";
 export const SITE_LOGO_URL = `${SITE_URL}/logo.png`;
 
 export const CONTACT_EMAIL = "info@kidslab.lk";
-export const CONTACT_PHONE = "+94 70 390 6478";
+export const CONTACT_PHONE = "+94 76 397 7035";
 export const CONTACT_ADDRESS = "Colombo, Sri Lanka";
 
-export const WHATSAPP_URL = "https://wa.me/94703906478";
+export const WHATSAPP_URL = "https://wa.me/94763977035";
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61585638656242";
 
 /** Brand palette, mirrored from the `--brand-*` custom properties in globals.css. */

@@ -33,35 +33,52 @@ const notoSansSinhala = Noto_Sans_Sinhala({
 });
 
 const DESCRIPTION =
-  "Sri Lanka's #1 Robotics & AI academy for children aged 9–14, based in Matara. Hands-on programs designed and taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering, conducted 100% online — open to kids across Sri Lanka. Free introductory seminar on 19 September 2026 — limited seats, register now.";
+  "Sri Lanka's first AI & Robotics academy built for kids — live online classes for children aged 9–14, taught by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Learn robotics, Arduino, and real Artificial Intelligence from home in Colombo, Matara, Kandy, Galle or anywhere in Sri Lanka. Free introductory seminar on 19 September 2026 — limited seats, register now.";
+
+/* Short form for OG/Twitter cards, which truncate hard around ~200 chars. */
+const SOCIAL_DESCRIPTION =
+  "Sri Lanka's first Kids AI & Robotics academy. Live online classes for ages 9–14, taught by University of Ruhuna Computer Engineers. Free seminar on 19 September 2026 — limited seats.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 
   title: {
-    default: `${SITE_NAME} — Online Robotics & AI Academy for Kids | Matara, Sri Lanka`,
+    default: `${SITE_NAME} — Kids AI & Robotics Classes in Sri Lanka | Ages 9–14`,
     template: `%s | ${SITE_NAME}`,
   },
 
   description: DESCRIPTION,
 
   keywords: [
-    "robotics academy Sri Lanka",
+    /* Primary intent — what parents actually type */
+    "kids AI class Sri Lanka",
+    "AI classes for kids Sri Lanka",
+    "best kids robotics and AI classes Sri Lanka",
+    "best robotics class for children Sri Lanka",
+    "robotics classes for kids Sri Lanka",
+    "first kids AI institute Sri Lanka",
+    "AI academy for children Sri Lanka",
+    "artificial intelligence course for kids Sri Lanka",
+    "machine learning for kids Sri Lanka",
+    "coding and AI classes for children Sri Lanka",
+    /* City / district modifiers */
+    "kids AI class Colombo",
+    "robotics class for kids Colombo",
     "robotics academy Matara",
+    "robotics classes Hittatiya Matara",
     "AI academy for kids Matara",
-    "AI academy for kids Sri Lanka",
-    "online coding classes kids Sri Lanka",
-    "STEM education Matara",
-    "STEM education Sri Lanka",
+    "kids robotics class Kandy",
+    "kids robotics class Galle",
+    /* Format & topic */
     "online robotics classes children Sri Lanka",
-    "kidslab.lk",
+    "online coding classes kids Sri Lanka",
+    "Arduino classes for kids Sri Lanka",
+    "STEM education Sri Lanka",
+    "STEM education Matara",
+    "free seminar robotics AI",
     "AI robotics program kids",
     "University of Ruhuna academy",
-    "kids programming Sri Lanka",
-    "robotics classes Matara",
-    "robotics classes Hittatiya Matara",
-    "free seminar robotics AI",
-    "children STEM online Sri Lanka",
+    "kidslab.lk",
   ],
 
   authors: [
@@ -98,8 +115,8 @@ export const metadata: Metadata = {
     locale:      "en_LK",
     url:          SITE_URL,
     siteName:     SITE_NAME,
-    title:       `${SITE_NAME} — Robotics & AI Academy for Kids`,
-    description:  DESCRIPTION,
+    title:       `${SITE_NAME} — Sri Lanka's First Kids AI & Robotics Academy`,
+    description:  SOCIAL_DESCRIPTION,
     images: [
       {
         url:    "/og-cover.png",
@@ -112,13 +129,18 @@ export const metadata: Metadata = {
 
   twitter: {
     card:        "summary_large_image",
-    title:       `${SITE_NAME} — Robotics & AI Academy for Kids`,
-    description:  DESCRIPTION,
+    title:       `${SITE_NAME} — Sri Lanka's First Kids AI & Robotics Academy`,
+    description:  SOCIAL_DESCRIPTION,
     images:      ["/og-cover.png"],
   },
 
   alternates: {
     canonical: SITE_URL,
+    languages: {
+      "en-LK": SITE_URL,
+      "si-LK": SITE_URL,
+      "x-default": SITE_URL,
+    },
   },
 
   verification: {

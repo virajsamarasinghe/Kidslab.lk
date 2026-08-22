@@ -123,19 +123,28 @@ export function buildLandingJsonLd(courses: Course[]) {
       "@type": "WebSite",
       name: "kidslab.lk",
       url: "https://kidslab.lk",
-      description: "Sri Lanka's Robotics & AI academy for children aged 9–14",
+      description:
+        "Sri Lanka's first Artificial Intelligence & Robotics academy for children aged 9–14 — live online classes taught by University of Ruhuna Computer Engineers.",
+      inLanguage: ["en-LK", "si-LK"],
     },
     /* 2. EducationalOrganization */
     {
       "@context": "https://schema.org",
       "@type": ["EducationalOrganization", "LocalBusiness"],
       name: "kidslab.lk",
-      alternateName: "kidslab Academy",
+      alternateName: [
+        "kidslab Academy",
+        "KidsLab Robotics & AI Academy",
+        "kidslab.lk Kids AI Class",
+      ],
+      slogan: "Sri Lanka's first AI & Robotics academy built for kids",
       url: "https://kidslab.lk",
       logo: "https://kidslab.lk/logo.png",
       image: "https://kidslab.lk/logo.png",
       description:
-        "Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna. Classes are held online and open to children across all of Sri Lanka.",
+        "Sri Lanka's first Artificial Intelligence & Robotics academy built specifically for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Children learn electronics, Arduino programming, robot building and real machine-learning concepts. Classes are held live online and open to children across all of Sri Lanka — Colombo, Matara, Kandy, Galle and beyond.",
+      keywords:
+        "kids AI class Sri Lanka, AI classes for children Sri Lanka, best kids robotics and AI classes Sri Lanka, robotics classes for kids Sri Lanka, first kids AI institute Sri Lanka, online AI course for children",
       address: {
         "@type": "PostalAddress",
         streetAddress: "1/108, Pelawaththa Circle Road, Hittatiya Central",
@@ -146,12 +155,36 @@ export function buildLandingJsonLd(courses: Course[]) {
       geo: { "@type": "GeoCoordinates", latitude: 5.9485, longitude: 80.5353 },
       hasMap: "https://www.google.com/maps/search/?api=1&query=1%2F108+Pelawaththa+Circle+Road%2C+Hittatiya+Central%2C+Matara%2C+Sri+Lanka",
       areaServed: [
-        { "@type": "City", name: "Matara" },
         { "@type": "Country", name: "Sri Lanka" },
+        { "@type": "City", name: "Matara" },
+        { "@type": "City", name: "Colombo" },
+        { "@type": "City", name: "Kandy" },
+        { "@type": "City", name: "Galle" },
+        { "@type": "City", name: "Kurunegala" },
+        { "@type": "City", name: "Jaffna" },
+        { "@type": "City", name: "Negombo" },
       ],
-      telephone: "+94703906478",
+      knowsAbout: [
+        "Artificial Intelligence for children",
+        "Machine learning for kids",
+        "Robotics education",
+        "Arduino programming",
+        "Electronics and circuits",
+        "STEM education in Sri Lanka",
+      ],
+      knowsLanguage: ["en", "si"],
+      telephone: "+94763977035",
       email: "info@kidslab.lk",
       foundingDate: "2026",
+      foundingLocation: {
+        "@type": "Place",
+        name: "Matara, Sri Lanka",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Matara",
+          addressCountry: "LK",
+        },
+      },
       founders: [
         { "@type": "Person", name: "Viraj Samarasinghe" },
         { "@type": "Person", name: "Menura Dulkith" },
@@ -169,7 +202,7 @@ export function buildLandingJsonLd(courses: Course[]) {
       },
       sameAs: [
         "https://www.facebook.com/profile.php?id=61585638656242",
-        "https://wa.me/94703906478",
+        "https://wa.me/94763977035",
       ],
     },
     /* 3. Course — one block per active course, or the default when none */
@@ -375,6 +408,46 @@ export function buildLandingJsonLd(courses: Course[]) {
         },
         {
           "@type": "Question",
+          name: "Which is the best Robotics & AI class for kids in Sri Lanka?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Parents comparing options in Sri Lanka usually weigh four things: who actually teaches, whether the child builds something real, whether genuine AI is taught (not just coding), and whether they can try it before paying. kidslab.lk is built around all four — classes are designed and taught by Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering; every child builds a working robot with their own hands; the syllabus covers Artificial Intelligence and machine-learning concepts alongside robotics; and Day 1 is a completely free seminar with no obligation to continue. The full 3-month course is LKR 5,000, payable in installments, and every class is live online so families anywhere in Sri Lanka can join.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Is kidslab.lk Sri Lanka's first AI class institute for kids?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. kidslab.lk is Sri Lanka's first institute built specifically to teach Artificial Intelligence to children aged 9–14, rather than coding or robot kits alone. Most children's tech programs in Sri Lanka stop at Scratch, Python or pre-built robot kits; kidslab.lk takes a child from electronics and Arduino all the way into how machine learning actually works, finishing with a project each child builds and presents.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Where can my child learn Artificial Intelligence (AI) in Sri Lanka?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "kidslab.lk runs live online AI and robotics classes for children aged 9–14 anywhere in Sri Lanka — no travel and no local class centre needed. The 3-month course covers electronics, Arduino programming, sensors, robot building, and an introduction to Artificial Intelligence and machine learning. You can try it first at the free introductory seminar on 19 September 2026 — register at kidslab.lk/register or message us on WhatsApp at +94763977035.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "Do you run kids AI and robotics classes in Colombo, Kandy or Galle?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Yes. Because every class is live online, kidslab.lk students join from Colombo, Kandy, Galle, Kurunegala, Jaffna, Matara and everywhere in between. Our office is in Matara, but no child needs to travel — they need a laptop or desktop with an internet connection, plus a robotics kit we show parents exactly how to buy locally before any payment is made.",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "At what age can a child start learning AI in Sri Lanka?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "Children can start meaningfully at around 9 years old. kidslab.lk teaches ages 9–14 because that is the range where a child can follow a circuit diagram, write simple Arduino code, and still grasp what machine learning is doing — without needing school-level mathematics. No prior coding or electronics experience is required.",
+          },
+        },
+        {
+          "@type": "Question",
           name: "What age group is the Robotics & AI program for?",
           acceptedAnswer: {
             "@type": "Answer",
@@ -434,7 +507,7 @@ export function buildLandingJsonLd(courses: Course[]) {
           name: "What exactly is in the kidslab.lk syllabus?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "The 3-month program moves week by week from electronics and circuit basics, to Arduino microcontroller programming, to sensors and actuators, to building a working robot, and then to an introduction to Artificial Intelligence and machine-learning concepts — finishing with a personal project the child builds and presents. The full week-by-week syllabus is covered during the free seminar and sent in writing to every parent before the paid course begins. Parents can also request it on WhatsApp at +94703906478.",
+            text: "The 3-month program moves week by week from electronics and circuit basics, to Arduino microcontroller programming, to sensors and actuators, to building a working robot, and then to an introduction to Artificial Intelligence and machine-learning concepts — finishing with a personal project the child builds and presents. The full week-by-week syllabus is covered during the free seminar and sent in writing to every parent before the paid course begins. Parents can also request it on WhatsApp at +94763977035.",
           },
         },
         {
@@ -490,7 +563,7 @@ export function buildLandingJsonLd(courses: Course[]) {
           name: "How do I register for the free seminar or the course?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Visit kidslab.lk/register and fill in your child's details. You can also contact us via WhatsApp at +94703906478.",
+            text: "Visit kidslab.lk/register and fill in your child's details. You can also contact us via WhatsApp at +94763977035.",
           },
         },
         {
