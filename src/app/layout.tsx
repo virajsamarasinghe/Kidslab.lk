@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Sinhala, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { SITE_URL, SITE_NAME } from "@/config/site";
+import { SITE_URL, SITE_NAME, GTM_ID } from "@/config/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -219,7 +220,22 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${notoSansSinhala.variable} h-full antialiased`}
         suppressHydrationWarning
       >
+        {/* Google Tag Manager. The official Next integration injects GTM's
+            own loader script and also fires a `pageview` on client-side route
+            changes, which the raw GTM snippet cannot see in an App Router
+            SPA — a hand-pasted snippet would only ever record the first
+            page of a visit. */}
+        <GoogleTagManager gtmId={GTM_ID} />
         <body className="min-h-full flex flex-col bg-white text-slate-900">
+          {/* GTM's no-JavaScript fallback, required immediately after <body>. */}
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
           {children}
           <Analytics />
           <SpeedInsights />

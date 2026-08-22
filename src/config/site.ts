@@ -18,6 +18,9 @@ export const CONTACT_EMAIL = "info@kidslab.lk";
 export const CONTACT_PHONE = "+94 76 397 7035";
 export const CONTACT_ADDRESS = "Colombo, Sri Lanka";
 
+/** Google Tag Manager container ID (kidslab.lk web container). */
+export const GTM_ID = "GTM-K5SF2WC2";
+
 export const WHATSAPP_URL = "https://wa.me/94763977035";
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61585638656242";
 
