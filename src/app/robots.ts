@@ -1,54 +1,33 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/site";
-
-/** Never crawlable, by any agent — dashboard, API surface, admin login. */
-const PRIVATE_PATHS = ["/admin", "/admin/", "/api/", "/login"];
+import { AI_CRAWLER_AGENTS, PRIVATE_PATHS } from "@/config/seo";
+import { getSeoConfig } from "@/lib/seo";
 
 /**
- * Answer-engine crawlers, listed explicitly.
+ * Two groups: everyone, then the answer-engine crawlers by name.
  *
- * `User-agent: *` already allows them, but several of these bots (notably
- * Google-Extended and Applebot-Extended, which control whether the site may
- * be used in AI answers rather than whether it may be crawled) are only
- * honoured when named in their own group. Naming them is what makes
- * kidslab.lk quotable in ChatGPT / Perplexity / Claude / AI Overviews
- * answers to questions like "best kids AI class in Sri Lanka".
+ * `User-agent: *` already allows the AI bots, but several of them (notably
+ * Google-Extended and Applebot-Extended, which control whether the site may be
+ * used in AI answers rather than whether it may be crawled) are only honoured
+ * when named in their own group. Which of them get an Allow is toggled per bot
+ * from Settings -> SEO & AEO; a bot switched off is listed with a full
+ * `Disallow: /` instead of being silently omitted, since omission would leave
+ * it covered by the permissive `*` rule.
  */
-const AI_CRAWLERS = [
-  "GPTBot",
-  "OAI-SearchBot",
-  "ChatGPT-User",
-  "ClaudeBot",
-  "Claude-User",
-  "Claude-SearchBot",
-  "anthropic-ai",
-  "PerplexityBot",
-  "Perplexity-User",
-  "Google-Extended",
-  "Applebot-Extended",
-  "meta-externalagent",
-  "Bytespider",
-  "cohere-ai",
-  "DuckAssistBot",
-  "Amazonbot",
-  "YouBot",
-];
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const seo = await getSeoConfig();
+  const allowed = AI_CRAWLER_AGENTS.filter((agent) => seo.aiCrawlers[agent] !== false);
+  const blocked = AI_CRAWLER_AGENTS.filter((agent) => seo.aiCrawlers[agent] === false);
 
-export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      {
-        userAgent: "*",
-        allow:     "/",
-        disallow:  PRIVATE_PATHS,
-      },
-      {
-        userAgent: AI_CRAWLERS,
-        allow:     "/",
-        disallow:  PRIVATE_PATHS,
-      },
+      { userAgent: "*", allow: "/", disallow: PRIVATE_PATHS },
+      ...(allowed.length > 0
+        ? [{ userAgent: [...allowed], allow: "/", disallow: PRIVATE_PATHS }]
+        : []),
+      ...(blocked.length > 0 ? [{ userAgent: [...blocked], disallow: "/" }] : []),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
-    host:    SITE_URL,
+    host: SITE_URL,
   };
 }

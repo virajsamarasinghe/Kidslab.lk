@@ -1,11 +1,6 @@
 import type { Course } from "@/types/course";
-
-/** Date of the free introductory seminar (ISO, Sri Lanka time, +05:30). */
-const SEMINAR_DATE = "2026-09-19";
-const SEMINAR_START = `${SEMINAR_DATE}T09:00:00+05:30`;
-const SEMINAR_END = `${SEMINAR_DATE}T13:00:00+05:30`;
-/** When seats open — kept ~2 weeks ahead of the seminar. */
-const SEMINAR_OFFER_VALID_FROM = "2026-09-05";
+import { SITE_URL } from "@/config/site";
+import type { SeoConfig } from "@/config/seo";
 
 /* Fallbacks used when no active course exists in the DB. These must stay in
    sync with `programs.card.*` in src/messages/*.json, which the landing page
@@ -18,8 +13,6 @@ const DEFAULT_COURSE = {
   level: "Beginner",
   price: 5000,
   timeRequired: "P3M",
-  startDate: SEMINAR_DATE,
-  endDate: "2026-12-19",
   instructors: [
     { name: "Viraj Samarasinghe", title: "Software Engineer · AI Specialized" },
     { name: "Menura Dulkith", title: "Software Engineer · AI Specialized" },
@@ -51,9 +44,15 @@ function addMonths(iso: string, months: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/** Seminar date + time from the dashboard, stamped with Sri Lanka's +05:30 offset. */
+function seminarInstant(date: string, time: string): string {
+  return `${date}T${time.length === 5 ? `${time}:00` : time}+05:30`;
+}
+
 /** schema.org/Course built from a DB course, or from DEFAULT_COURSE. */
-function courseSchema(c?: Course) {
+function courseSchema(seo: SeoConfig, c?: Course) {
   const months = Number(isoDuration(c?.duration).match(/^P(\d+)M$/)?.[1] ?? 3);
+  const startDate = seo.event.startDate;
   const instructors =
     c && c.instructors.length > 0
       ? c.instructors.map((i) => ({
@@ -74,8 +73,8 @@ function courseSchema(c?: Course) {
     description: c?.description || DEFAULT_COURSE.description,
     provider: {
       "@type": "EducationalOrganization",
-      name: "kidslab.lk",
-      url: "https://kidslab.lk",
+      name: seo.siteName,
+      url: SITE_URL,
     },
     educationalLevel: c?.level || DEFAULT_COURSE.level,
     audience: {
@@ -91,8 +90,8 @@ function courseSchema(c?: Course) {
       price: String(c ? c.price : DEFAULT_COURSE.price),
       priceCurrency: "LKR",
       availability: "https://schema.org/InStock",
-      validFrom: DEFAULT_COURSE.startDate,
-      url: "https://kidslab.lk/register",
+      validFrom: startDate,
+      url: `${SITE_URL}/register`,
       description:
         "Payable in installments within 3 months. Day 1 is a FREE seminar.",
     },
@@ -100,89 +99,90 @@ function courseSchema(c?: Course) {
       "@type": "CourseInstance",
       courseMode: "online",
       ...(c?.schedule ? { courseSchedule: c.schedule } : {}),
-      startDate: DEFAULT_COURSE.startDate,
-      endDate: addMonths(DEFAULT_COURSE.startDate, months),
+      startDate,
+      endDate: addMonths(startDate, months),
       instructor: instructors,
     },
+  };
+}
+
+/** schema.org/FAQPage from the admin-managed Q&A list. */
+export function faqSchema(seo: SeoConfig) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: seo.faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
   };
 }
 
 /**
  * Every JSON-LD block emitted by the landing page.
  *
- * Built on the server from the same `courses` the page renders, so the
- * structured data can't drift from what visitors actually see — previously
- * these were hardcoded and silently went stale whenever an admin edited a
- * course's price or title.
+ * Built on the server from the same `courses` the page renders and the same
+ * `seo` config that produced its `<head>`, so the structured data can't drift
+ * from what visitors actually see — these were previously hardcoded and
+ * silently went stale whenever an admin edited a course's price or title.
+ *
+ * The Person / ProfilePage blocks below stay in code on purpose: they describe
+ * two fixed founders, not business facts that change between deploys, and
+ * modelling credentials in a settings form would be all cost and no benefit.
  */
-export function buildLandingJsonLd(courses: Course[]) {
+export function buildLandingJsonLd(courses: Course[], seo: SeoConfig) {
+  const org = seo.organization;
+
   return [
     /* 1. WebSite */
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "kidslab.lk",
-      url: "https://kidslab.lk",
-      description:
-        "Sri Lanka's first Artificial Intelligence & Robotics academy for children aged 9–14 — live online classes taught by University of Ruhuna Computer Engineers.",
+      name: seo.siteName,
+      url: SITE_URL,
+      description: seo.description,
       inLanguage: ["en-LK", "si-LK"],
     },
     /* 2. EducationalOrganization */
     {
       "@context": "https://schema.org",
       "@type": ["EducationalOrganization", "LocalBusiness"],
-      name: "kidslab.lk",
-      alternateName: [
-        "kidslab Academy",
-        "KidsLab Robotics & AI Academy",
-        "kidslab.lk Kids AI Class",
-      ],
-      slogan: "Sri Lanka's first AI & Robotics academy built for kids",
-      url: "https://kidslab.lk",
-      logo: "https://kidslab.lk/logo.png",
-      image: "https://kidslab.lk/logo.png",
-      description:
-        "Sri Lanka's first Artificial Intelligence & Robotics academy built specifically for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering. Children learn electronics, Arduino programming, robot building and real machine-learning concepts. Classes are held live online and open to children across all of Sri Lanka — Colombo, Matara, Kandy, Galle and beyond.",
-      keywords:
-        "kids AI class Sri Lanka, AI classes for children Sri Lanka, best kids robotics and AI classes Sri Lanka, robotics classes for kids Sri Lanka, first kids AI institute Sri Lanka, online AI course for children",
+      name: seo.siteName,
+      alternateName: org.alternateNames,
+      slogan: org.slogan,
+      url: SITE_URL,
+      logo: `${SITE_URL}/logo.png`,
+      image: `${SITE_URL}/logo.png`,
+      description: org.description,
+      keywords: org.keywords,
       address: {
         "@type": "PostalAddress",
-        streetAddress: "1/108, Pelawaththa Circle Road, Hittatiya Central",
-        addressLocality: "Matara",
-        postalCode: "81000",
-        addressCountry: "LK",
+        streetAddress: org.streetAddress,
+        addressLocality: org.addressLocality,
+        postalCode: org.postalCode,
+        addressCountry: org.addressCountry,
       },
-      geo: { "@type": "GeoCoordinates", latitude: 5.9485, longitude: 80.5353 },
-      hasMap: "https://www.google.com/maps/search/?api=1&query=1%2F108+Pelawaththa+Circle+Road%2C+Hittatiya+Central%2C+Matara%2C+Sri+Lanka",
+      geo: { "@type": "GeoCoordinates", latitude: org.latitude, longitude: org.longitude },
+      hasMap: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        [org.streetAddress, org.addressLocality, "Sri Lanka"].filter(Boolean).join(", ")
+      )}`,
       areaServed: [
         { "@type": "Country", name: "Sri Lanka" },
-        { "@type": "City", name: "Matara" },
-        { "@type": "City", name: "Colombo" },
-        { "@type": "City", name: "Kandy" },
-        { "@type": "City", name: "Galle" },
-        { "@type": "City", name: "Kurunegala" },
-        { "@type": "City", name: "Jaffna" },
-        { "@type": "City", name: "Negombo" },
+        ...org.areaServed.map((city) => ({ "@type": "City", name: city })),
       ],
-      knowsAbout: [
-        "Artificial Intelligence for children",
-        "Machine learning for kids",
-        "Robotics education",
-        "Arduino programming",
-        "Electronics and circuits",
-        "STEM education in Sri Lanka",
-      ],
+      knowsAbout: org.knowsAbout,
       knowsLanguage: ["en", "si"],
-      telephone: "+94763977035",
-      email: "info@kidslab.lk",
-      foundingDate: "2026",
+      telephone: org.telephone,
+      email: org.email,
+      foundingDate: org.foundingDate,
       foundingLocation: {
         "@type": "Place",
-        name: "Matara, Sri Lanka",
+        name: `${org.addressLocality}, Sri Lanka`,
         address: {
           "@type": "PostalAddress",
-          addressLocality: "Matara",
-          addressCountry: "LK",
+          addressLocality: org.addressLocality,
+          addressCountry: org.addressCountry,
         },
       },
       founders: [
@@ -200,51 +200,54 @@ export function buildLandingJsonLd(courses: Course[]) {
           addressCountry: "LK",
         },
       },
-      sameAs: [
-        "https://www.facebook.com/profile.php?id=61585638656242",
-        "https://wa.me/94763977035",
-      ],
+      sameAs: org.sameAs,
     },
     /* 3. Course — one block per active course, or the default when none */
-    ...(courses.length > 0 ? courses.map((c) => courseSchema(c)) : [courseSchema()]),
-    /* 4. Event — Free Seminar */
-    {
-      "@context": "https://schema.org",
-      "@type": "Event",
-      name: "Free Robotics & AI Introductory Seminar — kidslab.lk",
-      description:
-        "A free introductory seminar covering basics of Robotics & AI, mindset building, and motivation. No obligation to enrol. Open to children aged 9–14 and their parents.",
-      image: ["https://kidslab.lk/og-image.png", "https://kidslab.lk/logo.png"],
-      startDate: SEMINAR_START,
-      endDate: SEMINAR_END,
-      eventStatus: "https://schema.org/EventScheduled",
-      eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
-      location: {
-        "@type": "VirtualLocation",
-        url: "https://kidslab.lk/register",
-      },
-      organizer: {
-        "@type": "EducationalOrganization",
-        name: "kidslab.lk",
-        url: "https://kidslab.lk",
-      },
-      offers: {
-        "@type": "Offer",
-        price: "0",
-        priceCurrency: "LKR",
-        availability: "https://schema.org/LimitedAvailability",
-        url: "https://kidslab.lk/register",
-        validFrom: SEMINAR_OFFER_VALID_FROM,
-      },
-      performer: [
-        { "@type": "Person", name: "Viraj Samarasinghe" },
-        { "@type": "Person", name: "Menura Dulkith" },
-      ],
-      audience: {
-        "@type": "Audience",
-        audienceType: "Children aged 9–14 and parents",
-      },
-    },
+    ...(courses.length > 0
+      ? courses.map((c) => courseSchema(seo, c))
+      : [courseSchema(seo)]),
+    /* 4. Event — the free seminar. Dropped entirely once an admin switches it
+       off, so an expired Event can't sit on the site advertising a past date. */
+    ...(seo.event.enabled
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "Event",
+            name: seo.event.name,
+            description: seo.event.description,
+            image: [`${SITE_URL}/og-image.png`, `${SITE_URL}/logo.png`],
+            startDate: seminarInstant(seo.event.startDate, seo.event.startTime),
+            endDate: seminarInstant(seo.event.startDate, seo.event.endTime),
+            eventStatus: "https://schema.org/EventScheduled",
+            eventAttendanceMode: "https://schema.org/OnlineEventAttendanceMode",
+            location: {
+              "@type": "VirtualLocation",
+              url: seo.event.url,
+            },
+            organizer: {
+              "@type": "EducationalOrganization",
+              name: seo.siteName,
+              url: SITE_URL,
+            },
+            offers: {
+              "@type": "Offer",
+              price: "0",
+              priceCurrency: "LKR",
+              availability: "https://schema.org/LimitedAvailability",
+              url: seo.event.url,
+              validFrom: seo.event.offerValidFrom,
+            },
+            performer: [
+              { "@type": "Person", name: "Viraj Samarasinghe" },
+              { "@type": "Person", name: "Menura Dulkith" },
+            ],
+            audience: {
+              "@type": "Audience",
+              audienceType: "Children aged 9–14 and parents",
+            },
+          },
+        ]
+      : []),
     /* 5a. Person — Viraj Samarasinghe */
     {
       "@context": "https://schema.org",
@@ -393,204 +396,7 @@ export function buildLandingJsonLd(courses: Course[]) {
         { "@id": "https://kidslab.lk/#menura-dulkith" },
       ],
     },
-    /* 6. FAQPage — key AEO schema */
-    {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is kidslab.lk?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "kidslab.lk is Sri Lanka's Robotics & AI academy for children aged 9–14, conducted by Computer Engineers from the University of Ruhuna, Faculty of Engineering. All classes are held online — our office is based in Matara, Sri Lanka.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Which is the best Robotics & AI class for kids in Sri Lanka?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Parents comparing options in Sri Lanka usually weigh four things: who actually teaches, whether the child builds something real, whether genuine AI is taught (not just coding), and whether they can try it before paying. kidslab.lk is built around all four — classes are designed and taught by Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering; every child builds a working robot with their own hands; the syllabus covers Artificial Intelligence and machine-learning concepts alongside robotics; and Day 1 is a completely free seminar with no obligation to continue. The full 3-month course is LKR 5,000, payable in installments, and every class is live online so families anywhere in Sri Lanka can join.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Is kidslab.lk Sri Lanka's first AI class institute for kids?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. kidslab.lk is Sri Lanka's first institute built specifically to teach Artificial Intelligence to children aged 9–14, rather than coding or robot kits alone. Most children's tech programs in Sri Lanka stop at Scratch, Python or pre-built robot kits; kidslab.lk takes a child from electronics and Arduino all the way into how machine learning actually works, finishing with a project each child builds and presents.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Where can my child learn Artificial Intelligence (AI) in Sri Lanka?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "kidslab.lk runs live online AI and robotics classes for children aged 9–14 anywhere in Sri Lanka — no travel and no local class centre needed. The 3-month course covers electronics, Arduino programming, sensors, robot building, and an introduction to Artificial Intelligence and machine learning. You can try it first at the free introductory seminar on 19 September 2026 — register at kidslab.lk/register or message us on WhatsApp at +94763977035.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Do you run kids AI and robotics classes in Colombo, Kandy or Galle?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. Because every class is live online, kidslab.lk students join from Colombo, Kandy, Galle, Kurunegala, Jaffna, Matara and everywhere in between. Our office is in Matara, but no child needs to travel — they need a laptop or desktop with an internet connection, plus a robotics kit we show parents exactly how to buy locally before any payment is made.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "At what age can a child start learning AI in Sri Lanka?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Children can start meaningfully at around 9 years old. kidslab.lk teaches ages 9–14 because that is the range where a child can follow a circuit diagram, write simple Arduino code, and still grasp what machine learning is doing — without needing school-level mathematics. No prior coding or electronics experience is required.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What age group is the Robotics & AI program for?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The program is designed for children aged 9 to 14 years old.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How much does the Robotics & AI program cost?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The course fee is LKR 5,000 for 3 months. It can be paid in installments within 3 months. Day 1 is a completely free introductory seminar with no obligation to continue.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "When is the free seminar?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The free introductory seminar is on 19 September 2026, conducted fully online. Seats are limited — register at kidslab.lk/register.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What will my child learn in the Robotics & AI program?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Children learn to build real robots using mechanics, sensors, and microcontrollers. The program also covers Artificial Intelligence basics, machine learning concepts, and hands-on project building — all in one 3-month course.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who teaches the classes at kidslab.lk?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Classes are designed and taught by Viraj Samarasinghe and Menura Dulkith — Computer Engineering graduates from the University of Ruhuna, Faculty of Engineering, who specialize in AI & Robotics.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Are the kidslab.lk instructors qualified to teach children?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. Both instructors, Viraj Samarasinghe and Menura Dulkith, hold a completed BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering, and have taught students and run workshops before starting kidslab.lk. To be clear: they are practising engineers who teach, not government-certified school teachers. The curriculum is written and delivered by the same people who work with robotics and AI professionally, and their full names, photos and LinkedIn profiles are published on kidslab.lk so parents can verify their backgrounds before enrolling.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What are the qualifications of the kidslab.lk founders?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Viraj Samarasinghe and Menura Dulkith both hold a BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering, Sri Lanka — a four-year accredited degree from a UGC-recognised state university. Their specialisations cover Artificial Intelligence, machine learning, robotics and embedded systems, which are the same subjects taught in the kidslab.lk program. Both publish verifiable LinkedIn profiles: linkedin.com/in/virajsamarasinghe and linkedin.com/in/menuradulkith.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What exactly is in the kidslab.lk syllabus?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The 3-month program moves week by week from electronics and circuit basics, to Arduino microcontroller programming, to sensors and actuators, to building a working robot, and then to an introduction to Artificial Intelligence and machine-learning concepts — finishing with a personal project the child builds and presents. The full week-by-week syllabus is covered during the free seminar and sent in writing to every parent before the paid course begins. Parents can also request it on WhatsApp at +94763977035.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "What equipment or robotics kit does my child need for kidslab.lk?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "For the free seminar, nothing beyond a laptop or desktop with an internet connection. For the paid 3-month course, parents receive the exact kit list — microcontroller board, sensors, breadboard and jumper wires — along with where to buy it in Sri Lanka, before paying anything. Early lessons also use free online circuit simulators, so a child can start on time even if the kit has not arrived.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How are children supervised during kidslab.lk online classes?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Every class is live with cameras on and both instructors present for the entire session, so children are never left in a room unattended. Class links are private and issued only to registered students, so no one outside the class can join. Parents are welcome to sit in on any session without notice, and every session is recorded and shared with parents.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Where are the kidslab.lk classes held?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Classes are conducted entirely online, so students can join from anywhere in Sri Lanka. Our office is located at 1/108, Pelawaththa Circle Road, Hittatiya Central, Matara.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Is kidslab.lk based in Matara?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. kidslab.lk's office is located at 1/108, Pelawaththa Circle Road, Hittatiya Central, Matara, Sri Lanka. Since all classes are conducted online, children in Matara and across the rest of Sri Lanka can join equally.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Does kidslab.lk offer robotics and AI classes in Matara?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. kidslab.lk is a Matara-based Robotics & AI academy for children aged 9–14. Classes are held online, so kids in Matara can join live sessions from home without needing to travel.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Can I pay the course fee in installments?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. The LKR 5,000 course fee can be paid in installments spread over 3 months.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "How do I register for the free seminar or the course?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Visit kidslab.lk/register and fill in your child's details. You can also contact us via WhatsApp at +94763977035.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Is kidslab.lk affiliated with the University of Ruhuna?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "The programs are designed and conducted by Computer Engineering graduates and professionals from the University of Ruhuna, Faculty of Engineering.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who is Viraj Samarasinghe?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Viraj Samarasinghe is a Software Engineer specializing in AI, and co-founder of kidslab.lk. He is a Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka, with expertise in Artificial Intelligence, Robotics, and Embedded Systems.",
-          },
-        },
-        {
-          "@type": "Question",
-          name: "Who is Menura Dulkith?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Menura Dulkith is a Software Engineer specializing in AI, and co-founder of kidslab.lk. He is a Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka, with expertise in Artificial Intelligence, Robotics, and Embedded Systems.",
-          },
-        },
-      ],
-    },
+    /* 6. FAQPage — key AEO schema, managed from Settings -> SEO & AEO */
+    faqSchema(seo),
   ];
 }

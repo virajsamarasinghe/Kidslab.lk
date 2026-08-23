@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth";
 import { getSettings, invalidateSettingsSnapshot } from "@/lib/settings";
+import { invalidateSeoCache, mergeSeo } from "@/lib/seo";
+import type { SeoConfig } from "@/config/seo";
 import { logActivity } from "@/lib/activity-log";
 import type { ISettings, LLMConfig } from "@/models/Settings";
 
-const SECTIONS = ["brevo", "llm", "embedding", "assistant"] as const;
+const SECTIONS = ["brevo", "llm", "embedding", "assistant", "seo"] as const;
 type Section = (typeof SECTIONS)[number];
 
 function maskSecret(value: string) {
@@ -23,8 +26,8 @@ function maskSecret(value: string) {
  * the whole unmasked settings doc through `$__parent`.
  */
 function serialize(settings: ISettings) {
-  const { brevo, llm, embedding, assistant } = settings.toObject<
-    Pick<ISettings, "brevo" | "llm" | "embedding" | "assistant">
+  const { brevo, llm, embedding, assistant, seo } = settings.toObject<
+    Pick<ISettings, "brevo" | "llm" | "embedding" | "assistant" | "seo">
   >();
 
   return {
@@ -33,6 +36,10 @@ function serialize(settings: ISettings) {
     embedding: { ...embedding, apiKey: maskSecret(embedding.apiKey) },
     // No masking: the assistant section holds copy and a prompt, no secrets.
     assistant,
+    // Merged rather than raw, so the dashboard form shows the values the
+    // public site is actually emitting — including every shipped default that
+    // has never been overridden.
+    seo: mergeSeo(seo),
   };
 }
 
@@ -121,6 +128,25 @@ export async function PUT(req: NextRequest) {
     invalidateSettingsSnapshot();
     logActivity(session, "updated", "settings", "assistant");
     return NextResponse.json(serialize(settings).assistant);
+  }
+
+  if (section === "seo") {
+    // Whole-section replace: the SEO form always PUTs the complete config it
+    // was given, and `mergeSeo` is what restores a default for any field the
+    // admin blanked. Merging field-by-field here instead would make it
+    // impossible to ever remove a keyword or an FAQ entry.
+    const data = (body.data ?? {}) as Partial<SeoConfig>;
+    settings.seo = mergeSeo(data);
+
+    settings.markModified("seo");
+    await settings.save();
+    invalidateSeoCache();
+    // The public pages are ISR'd (revalidate = 300). Without this an admin
+    // would save a title and still see the old one for up to five minutes.
+    for (const page of settings.seo.pages) revalidatePath(page.path);
+    revalidatePath("/llms.txt");
+    logActivity(session, "updated", "settings", "seo");
+    return NextResponse.json(serialize(settings).seo);
   }
 
   const incoming = (body.data ?? {}) as Record<string, string>;

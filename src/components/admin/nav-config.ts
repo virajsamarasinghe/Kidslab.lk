@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Users, BookOpen, Mail, UserRound,
   Settings, Send, BrainCircuit, Layers3, Bot,
-  Contact2, KanbanSquare, Megaphone, History, ShieldCheck, type LucideIcon,
+  Contact2, KanbanSquare, Megaphone, History, ShieldCheck, Globe, type LucideIcon,
 } from "lucide-react";
 import { can, type Capability } from "@/lib/roles";
 
@@ -56,6 +56,7 @@ export const navGroups: NavGroupDef[] = [
       { label: "LLM Config",      href: "/admin/settings/llm",       icon: BrainCircuit,  capability: "settings:manage" },
       { label: "AI Assistant",    href: "/admin/settings/assistant", icon: Bot,           capability: "settings:manage" },
       { label: "Embedding Model", href: "/admin/settings/embedding", icon: Layers3,       capability: "settings:manage" },
+      { label: "SEO & AEO",       href: "/admin/settings/seo",       icon: Globe,         capability: "settings:manage" },
     ],
   },
 ];

@@ -26,7 +26,7 @@ There is no test suite yet — verify changes with `npm run build` and, for UI c
 
 - `src/app/` — routes. `admin/` (dashboard), `api/` (route handlers), `login/` (admin login), `register/` (public seminar registration page).
 - `src/components/` — `Navbar`, `RegisterModal`, `admin/*`, `ui/*` (shadcn — see below).
-- `src/lib/` — `mongodb.ts` (connection), `auth.ts` (admin JWT), `brevo.ts` (email), `locale-context.tsx`, `register-modal-context.tsx`.
+- `src/lib/` — `mongodb.ts` (connection), `auth.ts` (admin JWT), `brevo.ts` (email), `seo.ts` (live SEO config + `generateMetadata` builder), `structured-data.ts` (JSON-LD), `locale-context.tsx`, `register-modal-context.tsx`.
 - `src/models/` — Mongoose schemas: `User`, `Course`, `Subscriber`.
 - `src/proxy.ts` — this is Next 16's renamed `middleware.ts` (see below). Handles both Clerk session context and the `/admin` JWT-cookie gate in one file.
 
@@ -42,6 +42,15 @@ There is no test suite yet — verify changes with `npm run build` and, for UI c
 - **This Clerk version (`@clerk/nextjs` v7) dropped `<SignedIn>`/`<SignedOut>`.** Use `useUser()` (`{ isLoaded, isSignedIn }`) in client components and gate rendering yourself, or the server-only `<Show when="signed-in">` in server components. `<UserButton>` no longer takes `afterSignOutUrl`.
 - Clerk's dev-vs-production mode is determined by which **keys** you use (`pk_test_`/`sk_test_` vs `pk_live_`/`sk_live_`), not `NODE_ENV`. Going live on kidslab.lk means verifying the domain in the Clerk dashboard and switching to live keys + a separate production webhook endpoint/secret.
 - The Clerk webhook endpoint is `/api/webhooks` (not `/api/webhooks/clerk`) — that's the path actually registered in the Clerk dashboard for this project. If you ever add a second webhook source, don't just nest it under this route; check the dashboard config first.
+
+## SEO / AEO is data, not code
+
+Titles, descriptions, keywords, Organization + Event structured data, the FAQ set, the sitemap page list, robots.txt AI-crawler toggles and `/llms.txt` all come from the `seo` section of the singleton Settings doc, edited at `/admin/settings/seo`. Don't hardcode any of it back into a page.
+
+- `src/config/seo.ts` is the **fallback** layer, not the live source — it holds `SEO_DEFAULTS`, and `mergeSeo` in `src/lib/seo.ts` overlays the stored values field by field. A blank stored field falls back here, so clearing an input in the dashboard restores the default instead of emitting empty markup. Same defaults render when Mongo is unreachable.
+- Read it with `getSeoConfig()` (60s in-process cache, never throws). Anything that writes it must call `invalidateSeoCache()` — `PUT /api/settings` with `section: "seo"` already does, along with `revalidatePath` for each configured page.
+- The Person / ProfilePage JSON-LD blocks in `structured-data.ts` stay hardcoded on purpose: two fixed founders, not business facts that change between deploys.
+- The public pages are ISR'd (`revalidate = 300`). Keep `generateMetadata` reading through `getSeoConfig()` rather than hitting Mongo directly, or `/` and `/register` go dynamic.
 
 ## Environment / secrets hygiene
 

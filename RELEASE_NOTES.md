@@ -1,5 +1,29 @@
 # Release Notes
 
+## v1.1.0 — Dashboard-managed SEO & AEO (2026-08-23)
+
+Everything search engines and AI answer engines see is now editable from the admin dashboard instead of being hardcoded in the source.
+
+### Settings → SEO & AEO (`/admin/settings/seo`)
+- **General** — default title, title template, meta description and the keyword list, with a live Google-result preview and length counters.
+- **Social cards** — separate OG/Twitter title and description, share image and card type, with a preview.
+- **Organization** — legal name, slogan, description, phone, email, full postal address, map coordinates, profile URLs, cities served and subjects taught. Feeds the `EducationalOrganization` / `LocalBusiness` structured data.
+- **Seminar** — the free seminar's name, description, date, times and registration URL, plus a switch that removes the `Event` markup entirely once the date has passed. This date also drives each course's start date in the structured data.
+- **Pages** — per-route title, description, keywords, canonical, share image, `noindex`, sitemap inclusion, priority and change frequency.
+- **FAQ** — the Q&A set published as `FAQPage` structured data and in `/llms.txt`. The biggest single lever on how the site is quoted in AI answers.
+- **Key facts** — short, quotable claims listed at the top of `/llms.txt`.
+- **AI crawlers** — per-bot access for GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended and eleven others; a bot switched off gets an explicit `Disallow: /` in robots.txt.
+- **llms.txt** — a free-text note appended to the generated file.
+
+### New public surface
+- `/llms.txt` — a plain-text fact sheet for AI crawlers, generated from the settings above plus the live course list, so it can't drift from the site.
+
+### Behaviour
+- `sitemap.xml` and `robots.txt` are now generated from the page list and crawler toggles rather than from hardcoded arrays.
+- Saving publishes immediately: the SEO cache is dropped and every affected page is revalidated, so an edit doesn't wait out the 5-minute ISR window.
+- Blank fields fall back to the shipped defaults in `src/config/seo.ts`, so clearing an input restores the built-in value rather than emitting empty markup. The same defaults render if MongoDB is unreachable.
+- No new environment variables.
+
 ## v1.0.0 — First Release (2026-08-08)
 
 Initial public release of the kidslab.lk website: a marketing site for the Robotics & AI academy, a lead/registration pipeline, user accounts, and an admin dashboard.
