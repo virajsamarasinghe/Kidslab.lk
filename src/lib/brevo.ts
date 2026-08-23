@@ -1,19 +1,10 @@
 import { randomUUID } from "crypto";
 import nodemailer, { type Transporter } from "nodemailer";
-import { CONTACT_EMAIL, CONTACT_PHONE, SITE_NAME, SITE_URL } from "@/config/site";
-import { getSettings } from "@/lib/settings";
+import { CONTACT_EMAIL, CONTACT_PHONE, SITE_LEGAL_NAME, SITE_NAME, SITE_URL } from "@/config/site";
+import { getEmailTemplates, getSettings } from "@/lib/settings";
 import { unsubscribeUrl } from "@/lib/email-optout";
-import {
-  button,
-  detailRows,
-  divider,
-  escapeHtml,
-  htmlToText,
-  muted,
-  p,
-  panel,
-  renderEmail,
-} from "@/lib/email-template";
+import { htmlToText } from "@/lib/email-template";
+import { renderEmailTemplate } from "@/lib/email-templates";
 
 const DEFAULT_SMTP_HOST = "smtp-relay.brevo.com";
 const DEFAULT_SMTP_PORT = 587;
@@ -206,26 +197,37 @@ export async function sendEmail(
   });
 }
 
+
+/**
+ * The `{{siteName}}` / `{{contactPhone}}` family of placeholders, available to
+ * every template. Kept here rather than in the config so the values come from
+ * `@/config/site` at send time and can't go stale in the database.
+ */
+function commonVars(): Record<string, string> {
+  return {
+    siteName: SITE_NAME,
+    siteUrl: SITE_URL,
+    legalName: SITE_LEGAL_NAME,
+    contactPhone: CONTACT_PHONE,
+  };
+}
+
 /** Sends a diagnostic email so an admin can confirm delivery end to end. */
 export async function sendTestEmail(creds: BrevoCredentials, to: string) {
-  const html = renderEmail({
-    title: `${SITE_NAME} — SMTP test`,
-    preheader: `Your ${SITE_NAME} email configuration is delivering correctly.`,
-    heading: "SMTP is working",
-    body: [
-      p("This is a test message from the KidsLab admin dashboard. If you're reading it, outgoing email is configured correctly and delivering to real inboxes."),
-      panel(
-        detailRows([
-          { label: "Sender", value: creds.senderEmail },
-          { label: "Relay", value: `${creds.smtp.host}:${creds.smtp.port}` },
-          { label: "Sent at", value: new Date().toUTCString() },
-        ])
-      ),
-      muted("No action is needed. This message was triggered manually from Settings → Brevo Email."),
-    ].join(""),
+  const templates = await getEmailTemplates();
+  const { subject, html } = renderEmailTemplate("smtpTest", templates.smtpTest, {
+    ...commonVars(),
+    sender: creds.senderEmail,
+    relay: `${creds.smtp.host}:${creds.smtp.port}`,
+  }, {
+    rows: [
+      { label: "Sender", value: creds.senderEmail },
+      { label: "Relay", value: `${creds.smtp.host}:${creds.smtp.port}` },
+      { label: "Sent at", value: new Date().toUTCString() },
+    ],
   });
 
-  await sendEmail(creds, { to, subject: `${SITE_NAME} — SMTP test email`, html });
+  await sendEmail(creds, { to, subject, html });
 }
 
 interface SendWelcomeEmailParams {
@@ -261,32 +263,23 @@ export async function sendWelcomeEmail({
     ...(interestedCourse ? [{ label: "Interested in", value: interestedCourse }] : []),
   ];
 
-  const html = renderEmail({
-    title: `Welcome to ${SITE_NAME}`,
-    preheader: "We've received your registration — here's what happens next.",
-    heading: `Welcome, ${escapeHtml(name)}!`,
-    kind: "marketing",
-    unsubscribeUrl: unsubscribeUrl(email),
-    body: [
-      p("Thanks for registering with <strong>KidsLab Robotics &amp; AI Academy</strong>. We're delighted to have you with us."),
-      p("Here's what we have on file:"),
-      panel(detailRows(rows)),
-      p("Our team will contact you shortly on WhatsApp or by phone to confirm your seminar slot and answer any questions."),
-      button("Explore our courses", `${SITE_URL}/#courses`),
-      divider(),
-      muted(
-        `Something not right? Just reply to this email or message us on WhatsApp at ${escapeHtml(CONTACT_PHONE)} and we'll fix it.`
-      ),
-    ].join(""),
-  });
+  const templates = await getEmailTemplates();
+  const unsubscribe = unsubscribeUrl(email);
+  const { subject, html } = renderEmailTemplate("welcome", templates.welcome, {
+    ...commonVars(),
+    name,
+    email,
+    phone: phone ?? "",
+    course: interestedCourse ?? "",
+  }, { rows, unsubscribeUrl: unsubscribe });
 
   await sendEmail(creds, {
     to: email,
     name,
-    subject: `Welcome to ${SITE_NAME} — your registration is confirmed`,
+    subject,
     html,
     kind: "marketing",
-    unsubscribeUrl: unsubscribeUrl(email),
+    unsubscribeUrl: unsubscribe,
   });
 }
 
@@ -321,40 +314,25 @@ export async function sendAdminInviteEmail({
   }
 
   const loginUrl = `${SITE_URL}/login`;
-  const html = renderEmail({
-    title: `Your ${SITE_NAME} admin account`,
-    preheader: `You've been added as a ${roleLabel} — sign in and set your own password.`,
-    heading: `Welcome to the ${SITE_NAME} dashboard`,
-    body: [
-      p(`Hi ${escapeHtml(name || "there")},`),
-      p(
-        `An account has been created for you on the ${escapeHtml(SITE_NAME)} admin dashboard with the <strong>${escapeHtml(roleLabel)}</strong> role. Use the temporary credentials below to sign in.`
-      ),
-      panel(
-        detailRows([
-          { label: "Login link", value: loginUrl },
-          { label: "Email", value: email },
-          { label: "Temporary password", value: password },
-        ])
-      ),
-      button("Sign in", loginUrl),
-      muted(
-        "You'll be asked to choose your own password the moment you sign in — the temporary one above stops working as soon as you do."
-      ),
-      divider(),
-      muted(
-        "Weren't expecting this? Contact your administrator — someone may have added your email by mistake."
-      ),
-    ].join(""),
+  const templates = await getEmailTemplates();
+  const { subject, html } = renderEmailTemplate("adminInvite", templates.adminInvite, {
+    ...commonVars(),
+    name: name || "there",
+    email,
+    roleLabel,
+    loginUrl,
+  }, {
+    // The temporary password is deliberately not exposed as a placeholder —
+    // it belongs in the detail panel, not somewhere an edit could drop it.
+    rows: [
+      { label: "Login link", value: loginUrl },
+      { label: "Email", value: email },
+      { label: "Temporary password", value: password },
+    ],
   });
 
   try {
-    await sendEmail(creds, {
-      to: email,
-      name,
-      subject: `Your ${SITE_NAME} admin account`,
-      html,
-    });
+    await sendEmail(creds, { to: email, name, subject, html });
     return true;
   } catch (err) {
     console.error("[brevo] admin invite email failed", err);

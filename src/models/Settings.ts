@@ -1,6 +1,11 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { DEFAULT_ASSISTANT_PROMPT } from "@/config/assistant";
 import { SEO_DEFAULTS, type SeoConfig } from "@/config/seo";
+import {
+  EMAIL_TEMPLATE_KEYS,
+  type EmailTemplateContent,
+  type EmailTemplates,
+} from "@/config/email-templates";
 
 interface BrevoConfig {
   senderEmail: string;
@@ -53,6 +58,7 @@ export interface AssistantConfig {
 
 export interface ISettings extends Document {
   brevo: BrevoConfig;
+  emailTemplates: EmailTemplates;
   llm: LLMConfig[];
   embedding: EmbeddingConfig;
   assistant: AssistantConfig;
@@ -212,9 +218,41 @@ const SeoSchema = new Schema<SeoConfig>(
   { _id: false }
 );
 
+/**
+ * Admin-edited email copy.
+ *
+ * Every slot is `default: undefined` on purpose. An unwritten slot has to be
+ * distinguishable from one the admin deliberately cleared: `mergeEmailTemplates`
+ * treats `undefined` as "use the shipped copy" and `""` as "don't render this
+ * block at all". A schema default of `""` would collapse the two and make the
+ * optional blocks (button, closing notes) impossible to remove.
+ */
+const EmailTemplateContentSchema = new Schema<EmailTemplateContent>(
+  {
+    subject:     { type: String },
+    preheader:   { type: String },
+    heading:     { type: String },
+    intro:       { type: String },
+    outro:       { type: String },
+    buttonLabel: { type: String },
+    buttonUrl:   { type: String },
+    note:        { type: String },
+    footerNote:  { type: String },
+  },
+  { _id: false }
+);
+
+const EmailTemplatesSchema = new Schema<EmailTemplates>(
+  Object.fromEntries(
+    EMAIL_TEMPLATE_KEYS.map(key => [key, { type: EmailTemplateContentSchema, default: () => ({}) }])
+  ),
+  { _id: false }
+);
+
 const SettingsSchema = new Schema<ISettings>(
   {
     brevo:     { type: BrevoSchema,     default: () => ({}) },
+    emailTemplates: { type: EmailTemplatesSchema, default: () => ({}) },
     llm:       { type: [LLMSchema],     default: () => [] },
     embedding: { type: EmbeddingSchema, default: () => ({}) },
     assistant: { type: AssistantSchema, default: () => ({}) },
