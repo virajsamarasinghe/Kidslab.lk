@@ -101,8 +101,8 @@ export default function CrmCampaignsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
         <h1
           className="text-2xl font-bold text-slate-900 tracking-tight"
           style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
@@ -113,7 +113,7 @@ export default function CrmCampaignsPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_1fr] gap-6 mb-8">
-        <Card className="pcb-card border-slate-100 shadow-sm p-6">
+        <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6">
           <h2 className="font-semibold text-slate-900 text-sm mb-4 flex items-center gap-2">
             <Megaphone className="w-4 h-4" style={{ color: "var(--brand-red)" }} />
             Compose Campaign
@@ -165,7 +165,7 @@ export default function CrmCampaignsPage() {
           </div>
         </Card>
 
-        <Card className="pcb-card border-slate-100 shadow-sm p-6 h-fit">
+        <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 h-fit">
           <h2 className="font-semibold text-slate-900 text-sm mb-2">How this works</h2>
           <p className="text-slate-500 text-sm leading-relaxed">
             Emails are sent one-by-one through your Brevo account (configured under Settings → Brevo Email) to

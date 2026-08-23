@@ -132,8 +132,8 @@ export default function SeoSettingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
@@ -180,7 +180,7 @@ export default function SeoSettingsPage() {
 
           {tab === "general" && (
             <>
-              <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+              <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
                 <h2 className="font-bold text-slate-900 text-sm">Search result</h2>
 
                 {/* Live SERP preview — the fastest way to catch a title that
@@ -251,7 +251,7 @@ export default function SeoSettingsPage() {
                 </div>
               </Card>
 
-              <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+              <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
                 <h2 className="font-bold text-slate-900 text-sm">Site verification</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -282,7 +282,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "social" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <h2 className="font-bold text-slate-900 text-sm">Facebook, WhatsApp &amp; X cards</h2>
 
               <div>
@@ -354,7 +354,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "org" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <div>
                 <h2 className="font-bold text-slate-900 text-sm">Organization &amp; location</h2>
                 <p className="text-[13px] text-slate-500 mt-0.5">
@@ -446,7 +446,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "event" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -475,7 +475,7 @@ export default function SeoSettingsPage() {
                   onChange={e => updateEvent("description", e.target.value)} className={areaClass} />
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="ev-date" className={labelClass}>Date</Label>
                   <Input id="ev-date" type="date" value={values.event.startDate}
@@ -513,7 +513,7 @@ export default function SeoSettingsPage() {
           {tab === "pages" && (
             <div className="space-y-4">
               {values.pages.map((page, i) => (
-                <Card key={i} className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+                <Card key={i} className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex-1">
                       <Label htmlFor={`page-path-${i}`} className={labelClass}>Path</Label>
@@ -669,7 +669,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "faq" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <div>
                 <h2 className="font-bold text-slate-900 text-sm">Frequently asked questions</h2>
                 <p className="text-[13px] text-slate-500 mt-0.5">
@@ -779,7 +779,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "facts" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <div>
                 <h2 className="font-bold text-slate-900 text-sm">Key facts</h2>
                 <p className="text-[13px] text-slate-500 mt-0.5">
@@ -789,7 +789,7 @@ export default function SeoSettingsPage() {
               </div>
 
               {values.answerFacts.map((fact, i) => (
-                <div key={i} className="flex gap-2">
+                <div key={i} className="flex flex-col sm:flex-row gap-2">
                   <Input
                     value={fact.label}
                     onChange={e =>
@@ -797,7 +797,7 @@ export default function SeoSettingsPage() {
                     }
                     placeholder="Course fee"
                     aria-label={`Fact ${i + 1} label`}
-                    className={`${inputClass} max-w-[200px] font-semibold`}
+                    className={`${inputClass} sm:max-w-[200px] font-semibold`}
                   />
                   <Input
                     value={fact.value}
@@ -832,7 +832,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "crawlers" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <div>
                 <h2 className="font-bold text-slate-900 text-sm">AI crawler access</h2>
                 <p className="text-[13px] text-slate-500 mt-0.5">
@@ -865,7 +865,7 @@ export default function SeoSettingsPage() {
           )}
 
           {tab === "llms" && (
-            <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+            <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
               <div>
                 <h2 className="font-bold text-slate-900 text-sm">/llms.txt</h2>
                 <p className="text-[13px] text-slate-500 mt-0.5">

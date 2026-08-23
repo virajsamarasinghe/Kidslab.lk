@@ -40,7 +40,7 @@ export default async function GeoSection() {
   return (
     <>
       <Card className="pcb-card border-slate-100 shadow-sm mb-6">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 pb-2">
           <div>
             <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" style={{ color: "var(--brand-red)" }} />

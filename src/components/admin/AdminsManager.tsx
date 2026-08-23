@@ -161,7 +161,7 @@ export default function AdminsManager() {
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
@@ -198,7 +198,7 @@ export default function AdminsManager() {
         </div>
       )}
 
-      <Card className="pcb-card border-slate-100 shadow-sm p-6 mb-6">
+      <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 mb-6">
         <h2 className="text-sm font-semibold text-slate-900 mb-1">Add an administrator</h2>
         <p className="text-[11px] text-slate-400 mb-4">
           If the email already belongs to a site user, that account is promoted instead. Otherwise a
@@ -254,7 +254,7 @@ export default function AdminsManager() {
         </div>
       </Card>
 
-      <Card className="pcb-card border-slate-100 shadow-sm p-6">
+      <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6">
         <h2 className="text-sm font-semibold text-slate-900 mb-4">
           Current administrators {!loading && <span className="text-slate-400 font-normal">({admins.length})</span>}
         </h2>

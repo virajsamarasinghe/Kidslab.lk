@@ -33,7 +33,7 @@ export default function PipelineCard({
 
   return (
     <Card className="pcb-card border-slate-100 shadow-sm xl:col-span-2">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 pb-2">
         <div>
           <CardTitle className="text-sm font-semibold text-slate-900">Enrollment Pipeline</CardTitle>
           <p className="text-xs text-slate-400 mt-1">{totalContacts} contacts across all stages</p>
