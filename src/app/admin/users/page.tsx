@@ -7,6 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
+  Combobox,
+  ComboboxInputGroup,
+  ComboboxInput,
+  ComboboxClear,
+  ComboboxTrigger,
+  ComboboxPortal,
+  ComboboxPositioner,
+  ComboboxPopup,
+  ComboboxList,
+  ComboboxEmpty,
+  ComboboxItem,
+} from "@/components/ui/combobox";
+import {
   AlertDialog, AlertDialogAction, AlertDialogCancel,
   AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
   AlertDialogHeader, AlertDialogTitle,
@@ -15,6 +28,9 @@ import { DataTable } from "@/components/admin/DataTable";
 import { useListResource } from "@/hooks/useCrudResource";
 import type { User } from "@/types/user";
 import { useConfirm } from "@/components/admin/ConfirmContext";
+import { DISTRICTS } from "@/lib/sri-lanka-locations";
+
+const CITY_OPTIONS = DISTRICTS.map(d => d.name);
 
 export default function AdminUsers() {
   const confirm = useConfirm();
@@ -167,12 +183,40 @@ export default function AdminUsers() {
                   <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">
                     {label}
                   </Label>
-                  <Input
-                    type={type}
-                    value={String(editUser[field] ?? "")}
-                    onChange={e => setEditUser({ ...editUser, [field]: type === "number" ? Number(e.target.value) : e.target.value })}
-                    className="border-slate-200 text-sm"
-                  />
+                  {field === "city" ? (
+                    <Combobox
+                      items={CITY_OPTIONS}
+                      value={String(editUser.city || "") || null}
+                      onValueChange={(value) => setEditUser({ ...editUser, city: value ?? "" })}
+                    >
+                      <ComboboxInputGroup className="border-slate-200">
+                        <ComboboxInput placeholder="Search for a district…" className="text-sm" />
+                        <ComboboxClear />
+                        <ComboboxTrigger />
+                      </ComboboxInputGroup>
+                      <ComboboxPortal>
+                        <ComboboxPositioner>
+                          <ComboboxPopup>
+                            <ComboboxEmpty>No district found.</ComboboxEmpty>
+                            <ComboboxList>
+                              {(item: string) => (
+                                <ComboboxItem key={item} value={item}>
+                                  {item}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxPopup>
+                        </ComboboxPositioner>
+                      </ComboboxPortal>
+                    </Combobox>
+                  ) : (
+                    <Input
+                      type={type}
+                      value={String(editUser[field] ?? "")}
+                      onChange={e => setEditUser({ ...editUser, [field]: type === "number" ? Number(e.target.value) : e.target.value })}
+                      className="border-slate-200 text-sm"
+                    />
+                  )}
                 </div>
               ))}
               <div>
