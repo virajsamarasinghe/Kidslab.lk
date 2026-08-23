@@ -397,9 +397,9 @@ export const SEO_DEFAULTS: SeoConfig = {
       question: "What are the qualifications of the kidslab.lk founders?",
       answer:
         "Viraj Samarasinghe and Menura Dulkith both hold a BSc Eng (Hons) in Computer Engineering from the University of Ruhuna, Faculty of Engineering, Sri Lanka — a four-year accredited degree from a UGC-recognised state university. Their specialisations cover Artificial Intelligence, machine learning, robotics and embedded systems, which are the same subjects taught in the kidslab.lk program. Both publish verifiable LinkedIn profiles: linkedin.com/in/virajsamarasinghe and linkedin.com/in/menuradulkith.",
-      questionSi: "",
+      questionSi: "kidslab.lk නිර්මාතෘවරුන්ගේ සුදුසුකම් මොනවාද?",
       answerSi:
-        "",
+        "Viraj Samarasinghe සහ Menura Dulkith යන දෙදෙනාම ශ්‍රී ලංකාවේ රුහුණු විශ්වවිද්‍යාලයේ ඉංජිනේරු පීඨයෙන් BSc Eng (Hons) පරිගණක ඉංජිනේරු උපාධිය ලබා ඇත — එය UGC පිළිගත් රාජ්‍ය විශ්වවිද්‍යාලයක වසර හතරක උපාධියකි. ඔවුන්ගේ විශේෂඥතාවය කෘත්‍රිම බුද්ධිය, යන්ත්‍ර ඉගෙනුම, රොබෝටික්ස් සහ එම්බඩඩ් පද්ධති ආවරණය කරන අතර, kidslab.lk වැඩසටහනේ උගන්වනුයේ ද එම විෂයයන්මය. දෙදෙනාම සත්‍යාපනය කළ හැකි LinkedIn පැතිකඩ පළ කර ඇත: linkedin.com/in/virajsamarasinghe සහ linkedin.com/in/menuradulkith.",
       showOnPage: false,
     },
     {
@@ -487,18 +487,18 @@ export const SEO_DEFAULTS: SeoConfig = {
       question: "Who is Viraj Samarasinghe?",
       answer:
         "Viraj Samarasinghe is a Software Engineer specializing in AI, and co-founder of kidslab.lk. He is a Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka, with expertise in Artificial Intelligence, Robotics, and Embedded Systems.",
-      questionSi: "",
+      questionSi: "Viraj Samarasinghe යනු කවුරුන්ද?",
       answerSi:
-        "",
+        "Viraj Samarasinghe යනු AI ක්ෂේත්‍රයේ විශේෂඥ මෘදුකාංග ඉංජිනේරුවෙකු වන අතර kidslab.lk හි සම-නිර්මාතෘවරයෙකි. ඔහු ශ්‍රී ලංකාවේ රුහුණු විශ්වවිද්‍යාලයේ ඉංජිනේරු පීඨයේ පරිගණක ඉංජිනේරු උපාධිධාරියෙකු වන අතර, කෘත්‍රිම බුද්ධිය, රොබෝටික්ස් සහ එම්බඩඩ් පද්ධති පිළිබඳ විශේෂඥතාවයක් ඇත.",
       showOnPage: false,
     },
     {
       question: "Who is Menura Dulkith?",
       answer:
         "Menura Dulkith is a Software Engineer specializing in AI, and co-founder of kidslab.lk. He is a Computer Engineering graduate from the University of Ruhuna, Faculty of Engineering, Sri Lanka, with expertise in Artificial Intelligence, Robotics, and Embedded Systems.",
-      questionSi: "",
+      questionSi: "Menura Dulkith යනු කවුරුන්ද?",
       answerSi:
-        "",
+        "Menura Dulkith යනු AI ක්ෂේත්‍රයේ විශේෂඥ මෘදුකාංග ඉංජිනේරුවෙකු වන අතර kidslab.lk හි සම-නිර්මාතෘවරයෙකි. ඔහු ශ්‍රී ලංකාවේ රුහුණු විශ්වවිද්‍යාලයේ ඉංජිනේරු පීඨයේ පරිගණක ඉංජිනේරු උපාධිධාරියෙකු වන අතර, කෘත්‍රිම බුද්ධිය, රොබෝටික්ස් සහ එම්බඩඩ් පද්ධති පිළිබඳ විශේෂඥතාවයක් ඇත.",
       showOnPage: false,
     },
   ],

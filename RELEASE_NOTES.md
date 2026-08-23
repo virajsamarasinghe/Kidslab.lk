@@ -22,7 +22,7 @@ Everything search engines and AI answer engines see is now editable from the adm
 - `sitemap.xml` and `robots.txt` are now generated from the page list and crawler toggles rather than from hardcoded arrays.
 - Saving publishes immediately: the SEO cache is dropped and every affected page is revalidated, so an edit doesn't wait out the 5-minute ISR window.
 - Blank fields fall back to the shipped defaults in `src/config/seo.ts`, so clearing an input restores the built-in value rather than emitting empty markup. The same defaults render if MongoDB is unreachable.
-- The FAQ section on the landing page is now server-rendered from the settings rather than the message files, in Sinhala when a translation exists and English when it doesn't. `faq.items` has been removed from `src/messages/en.json` and `si.json`; the section's heading and subtitle stay there.
+- The FAQ section on the landing page is now server-rendered from the settings rather than the message files, in Sinhala when a translation exists and English when it doesn't. All 24 entries are translated, including the three that are structured-data only today — so switching one on for the page needs no further translation work. `faq.items` has been removed from `src/messages/en.json` and `si.json`; the section's heading and subtitle stay there.
 - No new environment variables.
 
 ## v1.0.0 — First Release (2026-08-08)
