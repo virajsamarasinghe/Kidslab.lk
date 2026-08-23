@@ -2,6 +2,11 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/site";
 import { getSeoConfig } from "@/lib/seo";
 
+/* Same cadence as the landing page and /llms.txt. Without this the file is
+   prerendered once at build time and a page added in the dashboard would
+   never reach the sitemap until the next deploy. */
+export const revalidate = 300;
+
 /**
  * Built from the page list in Settings -> SEO & AEO, so adding a route to the
  * sitemap (or pulling one out of it) is a dashboard edit rather than a deploy.
