@@ -1,16 +1,16 @@
 /**
  * Materialises the shipped SEO/AEO defaults into the database.
  *
- * The site works without this: `getSeoConfig()` falls back to `SEO_DEFAULTS`
- * for anything the `seo` section doesn't carry, so a fresh install renders
- * correctly with an empty database. What this script buys you is a database
- * that *states* the config rather than implying it — every default written out
- * as a real, editable row in Settings -> SEO & AEO from day one, instead of
- * appearing only after an admin presses Publish for the first time.
+ * The app already does this by itself — `getSeoConfig()` seeds off the read it
+ * performs anyway, on the first request after a deploy (see `autoSeed` in
+ * `@/lib/seo`). This script exists for the cases that automatic pass can't
+ * cover: previewing a change before it happens (`--dry-run`), resetting a
+ * config an admin has edited (`--force`), seeding an environment that isn't
+ * taking traffic yet, or running against a database other than the app's own.
  *
- * It runs through the same `mergeSeo()` the request path uses, which is what
- * makes it safe to re-run: stored values win over defaults field by field, so
- * an admin's edits survive. Only genuinely absent or blank fields get filled.
+ * It shares the merge and the comparison with the runtime, so it writes
+ * exactly what the site would: stored values win over defaults field by field,
+ * and an admin's edits survive. Only absent or blank fields get filled.
  *
  * Usage (from the repo root):
  *   npm run seed:seo              # fill in whatever's missing
@@ -25,7 +25,7 @@ import mongoose from "mongoose";
 import nextEnv from "@next/env";
 
 import { SEO_DEFAULTS, type SeoConfig } from "@/config/seo";
-import { mergeSeo } from "@/lib/seo";
+import { changedSeoFields, mergeSeo } from "@/lib/seo";
 
 // Neither import reads MONGODB_URI at module scope (`@/lib/mongodb` does, and
 // would throw, which is why nothing here imports it) — but the connection
@@ -56,11 +56,11 @@ if (!doc) console.log("No settings document yet — one will be created.");
 const before: Partial<SeoConfig> = doc?.seo ?? {};
 const next = force ? SEO_DEFAULTS : mergeSeo(before);
 
-/* Report per top-level field rather than a wall of JSON — the point of the
-   summary is to make an unexpected overwrite obvious before it's committed. */
-const changed = (Object.keys(next) as (keyof typeof next)[]).filter(
-  (key) => JSON.stringify(before[key]) !== JSON.stringify(next[key])
-);
+/* The same comparison the app's auto-seed uses, so this script's report can't
+   disagree with what the running site would write. Reported per top-level
+   field rather than as a wall of JSON, to make an unexpected overwrite
+   obvious before it's committed. */
+const changed = changedSeoFields(before, next);
 
 if (changed.length === 0) {
   console.log("Already up to date — nothing to write.");

@@ -127,6 +127,50 @@ export function getPageSeo(config: SeoConfig, path: string): SeoPageConfig {
 }
 
 /**
+ * Top-level fields where the stored section differs from what the site is
+ * actually serving. Empty means the database already states the live config.
+ *
+ * Shared by the auto-seed below and `scripts/seed-seo.mts`, so the CLI's
+ * report and the runtime's write decision can never disagree.
+ */
+export function changedSeoFields(
+  before: Partial<SeoConfig>,
+  next: SeoConfig
+): (keyof SeoConfig)[] {
+  return (Object.keys(next) as (keyof SeoConfig)[]).filter(
+    (key) => JSON.stringify(before[key]) !== JSON.stringify(next[key])
+  );
+}
+
+/**
+ * Writes the merged config back so the database states it outright, instead of
+ * leaving it implied by the defaults in `@/config/seo`.
+ *
+ * Runs off the read the request path already does, so it costs no extra query
+ * — and because it writes `mergeSeo(stored)`, stored values win field by
+ * field and an admin's edits are never overwritten. Once written the fields
+ * match, so this is a one-time write per deploy that adds a field, not a write
+ * per request. Set `SEO_AUTO_SEED=0` to turn it off and seed by hand instead.
+ *
+ * Deliberately not awaited by the caller: a marketing page must not wait on a
+ * housekeeping write, and if it fails the next request simply tries again.
+ */
+async function autoSeed(stored: Partial<SeoConfig> | null, merged: SeoConfig) {
+  if (process.env.SEO_AUTO_SEED === "0") return;
+  if (changedSeoFields(stored ?? {}, merged).length === 0) return;
+
+  try {
+    const { default: Settings } = await import("@/models/Settings");
+    // Upsert on an empty filter: this is the singleton settings document, and
+    // it may not exist yet on a brand-new database.
+    await Settings.updateOne({}, { $set: { seo: merged } }, { upsert: true });
+  } catch {
+    // Never surface a seeding failure to a visitor — the merged config is
+    // already correct in memory, so the page renders either way.
+  }
+}
+
+/**
  * Reuse window for the merged config before the next read goes back to Mongo.
  *
  * Same reasoning as the settings snapshot in `@/lib/settings`, minus the
@@ -164,17 +208,23 @@ export async function getSeoConfig(): Promise<SeoConfig> {
 
   const load = async (): Promise<SeoConfig> => {
     let stored: Partial<SeoConfig> | null = null;
+    let reachedDb = false;
     try {
       const { connectDB } = await import("@/lib/mongodb");
       const { default: Settings } = await import("@/models/Settings");
       await connectDB();
       const doc = await Settings.findOne().select("seo").lean<{ seo?: Partial<SeoConfig> }>();
       stored = doc?.seo ?? null;
+      reachedDb = true;
     } catch {
       stored = null;
     }
 
     const value = mergeSeo(stored);
+    // Only when the read actually succeeded: a failed read looks identical to
+    // an empty one, and seeding off that would write defaults over a config we
+    // simply couldn't see.
+    if (reachedDb) void autoSeed(stored, value);
     cache.value = value;
     cache.expires = Date.now() + CACHE_TTL_MS;
     return value;

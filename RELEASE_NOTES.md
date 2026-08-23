@@ -23,7 +23,8 @@ Everything search engines and AI answer engines see is now editable from the adm
 - Saving publishes immediately: the SEO cache is dropped and every affected page is revalidated, so an edit doesn't wait out the 5-minute ISR window.
 - Blank fields fall back to the shipped defaults in `src/config/seo.ts`, so clearing an input restores the built-in value rather than emitting empty markup. The same defaults render if MongoDB is unreachable.
 - The FAQ section on the landing page is now server-rendered from the settings rather than the message files, in Sinhala when a translation exists and English when it doesn't. All 24 entries are translated, including the three that are structured-data only today — so switching one on for the page needs no further translation work. `faq.items` has been removed from `src/messages/en.json` and `si.json`; the section's heading and subtitle stay there.
-- New `npm run seed:seo` script writes the shipped defaults into the database, so the dashboard shows a fully populated config on a fresh install rather than one that materialises on first save. Safe to re-run (and to run on every deploy): stored values win over defaults, so admin edits survive. `--dry-run` previews, `--force` resets.
+- The defaults seed themselves into the database on the first request after a deploy, so the dashboard shows a fully populated config on a fresh install rather than one that materialises on first save. It writes only what's missing — admin edits always win — and stops writing once the two agree, so a release that adds a field fills in just that field. `SEO_AUTO_SEED=0` disables it.
+- `npm run seed:seo` does the same from the command line for what the automatic pass can't cover: `--dry-run` to preview, `--force` to reset an edited config back to the defaults, or seeding an environment that isn't serving traffic yet.
 - No new environment variables.
 
 ## v1.0.0 — First Release (2026-08-08)

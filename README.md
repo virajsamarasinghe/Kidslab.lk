@@ -97,9 +97,17 @@ Visit [http://localhost:3000](http://localhost:3000).
 
 The app is a standard Next.js app and deploys to any Next.js-compatible host (e.g. Vercel). Set all required environment variables (with **live** Clerk keys and a production Clerk webhook) on the hosting platform — none of the `.env.local` values ship with the build.
 
-### Seeding the SEO defaults
+### SEO defaults are seeded automatically
 
-The site does not need this to work: anything the database doesn't carry falls back to `SEO_DEFAULTS` in `src/config/seo.ts`, so a brand-new install renders with the correct metadata already. Run the seed when you want the database to *state* the config rather than imply it — every default written out as an editable row in **Settings → SEO & AEO** from day one, instead of appearing there only after the first Publish.
+Nothing to run and no deploy step to wire up: on the first request after a deploy the app writes the shipped defaults from `src/config/seo.ts` into the database, so **Settings → SEO & AEO** shows a fully populated, editable config from day one. It seeds off a read the request path performs anyway, so it costs no extra query, and it writes `mergeSeo(stored)` — stored values win field by field, so **your edits are never overwritten**. Once written the fields match and no further writes happen; a release that adds a new field fills in just that field on the next deploy.
+
+Set `SEO_AUTO_SEED=0` in the environment to turn it off and seed by hand instead.
+
+The site does not depend on any of this: anything the database doesn't carry falls back to `SEO_DEFAULTS`, so a fresh install renders with the correct metadata before the first write ever lands.
+
+#### Seeding manually
+
+`npm run seed:seo` does the same write from the command line, for the cases the automatic pass can't cover:
 
 ```bash
 npm run seed:seo              # fill in whatever's missing
@@ -107,24 +115,11 @@ npm run seed:seo -- --dry-run # show what would change, write nothing
 npm run seed:seo -- --force   # discard overrides, reset to the shipped defaults
 ```
 
-It reads `MONGODB_URI` from `.env.local`; point it at another environment by setting the variable in front of the command:
+Use it to preview a change before it happens, to reset a config an admin has edited (`--force` — the automatic pass will never do this), or to seed an environment that isn't taking traffic yet. It reads `MONGODB_URI` from `.env.local`; point it at another environment by setting the variable in front of the command:
 
 ```bash
 MONGODB_URI="mongodb+srv://…/kidslab" npm run seed:seo
 ```
-
-Without `--force` it is safe to re-run as often as you like — it goes through the same `mergeSeo()` the request path uses, so stored values win over defaults field by field and an admin's edits survive. Changes are live within ~60 seconds (the app's SEO cache TTL); no redeploy needed.
-
-**Running it automatically on deploy.** Do *not* put it in the `build` script: builds also run for preview deployments, and a build container often has no network route to the production database (Atlas IP allow-lists, in particular). Run it as a post-deploy step instead — e.g. a GitHub Actions job on push to `main`, with `MONGODB_URI` stored as a repository secret:
-
-```yaml
-- run: npm ci
-- run: npm run seed:seo
-  env:
-    MONGODB_URI: ${{ secrets.MONGODB_URI }}
-```
-
-Because the default mode never overwrites an override, running it on every deploy is harmless — a new field added to `SEO_DEFAULTS` in a later release gets filled in automatically, and everything the admin has edited stays put.
 
 ## License
 
