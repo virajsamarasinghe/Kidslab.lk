@@ -132,8 +132,11 @@ const SeoPageSchema = new Schema<SeoConfig["pages"][number]>(
 
 const SeoFaqSchema = new Schema<SeoConfig["faqs"][number]>(
   {
-    question: { type: String, default: "" },
-    answer:   { type: String, default: "" },
+    question:   { type: String,  default: "" },
+    answer:     { type: String,  default: "" },
+    questionSi: { type: String,  default: "" },
+    answerSi:   { type: String,  default: "" },
+    showOnPage: { type: Boolean, default: true },
   },
   { _id: false }
 );

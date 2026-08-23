@@ -25,7 +25,11 @@ export default async function Home() {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       ))}
-      <LandingPage courses={courses} googleReviews={googleReviews} />
+      <LandingPage
+        courses={courses}
+        googleReviews={googleReviews}
+        faqs={seo.faqs.filter((f) => f.showOnPage)}
+      />
     </>
   );
 }

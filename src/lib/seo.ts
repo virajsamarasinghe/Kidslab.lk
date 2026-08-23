@@ -85,7 +85,18 @@ export function mergeSeo(stored: Partial<SeoConfig> | null | undefined): SeoConf
     },
 
     pages: list(s.pages, d.pages),
-    faqs: list(s.faqs, d.faqs).filter((f) => f.question?.trim() && f.answer?.trim()),
+    // English question + answer are what make an entry real; the Sinhala pair
+    // is optional and falls back to English at render time. Normalised here so
+    // a doc written before translations existed can't render `undefined`.
+    faqs: list(s.faqs, d.faqs)
+      .filter((f) => f.question?.trim() && f.answer?.trim())
+      .map((f) => ({
+        question: f.question,
+        answer: f.answer,
+        questionSi: f.questionSi ?? "",
+        answerSi: f.answerSi ?? "",
+        showOnPage: f.showOnPage ?? true,
+      })),
     answerFacts: list(s.answerFacts, d.answerFacts).filter((f) => f.label?.trim() && f.value?.trim()),
     aiCrawlers: { ...DEFAULT_AI_CRAWLERS, ...(s.aiCrawlers ?? {}) },
     llmsTxtNotes: typeof s.llmsTxtNotes === "string" ? s.llmsTxtNotes : d.llmsTxtNotes,

@@ -10,7 +10,7 @@ Everything search engines and AI answer engines see is now editable from the adm
 - **Organization** — legal name, slogan, description, phone, email, full postal address, map coordinates, profile URLs, cities served and subjects taught. Feeds the `EducationalOrganization` / `LocalBusiness` structured data.
 - **Seminar** — the free seminar's name, description, date, times and registration URL, plus a switch that removes the `Event` markup entirely once the date has passed. This date also drives each course's start date in the structured data.
 - **Pages** — per-route title, description, keywords, canonical, share image, `noindex`, sitemap inclusion, priority and change frequency.
-- **FAQ** — the Q&A set published as `FAQPage` structured data and in `/llms.txt`. The biggest single lever on how the site is quoted in AI answers.
+- **FAQ** — one bilingual Q&A set (English + Sinhala, with a per-entry "show on the landing page" switch) that now drives the landing page's FAQ section, the `FAQPage` structured data and `/llms.txt` together. Previously the visible FAQ lived in `src/messages/*.json` and the markup lived in code; the two had drifted apart in wording, which costs rich-result eligibility. The biggest single lever on how the site is quoted in AI answers.
 - **Key facts** — short, quotable claims listed at the top of `/llms.txt`.
 - **AI crawlers** — per-bot access for GPTBot, ClaudeBot, PerplexityBot, Google-Extended, Applebot-Extended and eleven others; a bot switched off gets an explicit `Disallow: /` in robots.txt.
 - **llms.txt** — a free-text note appended to the generated file.
@@ -22,6 +22,7 @@ Everything search engines and AI answer engines see is now editable from the adm
 - `sitemap.xml` and `robots.txt` are now generated from the page list and crawler toggles rather than from hardcoded arrays.
 - Saving publishes immediately: the SEO cache is dropped and every affected page is revalidated, so an edit doesn't wait out the 5-minute ISR window.
 - Blank fields fall back to the shipped defaults in `src/config/seo.ts`, so clearing an input restores the built-in value rather than emitting empty markup. The same defaults render if MongoDB is unreachable.
+- The FAQ section on the landing page is now server-rendered from the settings rather than the message files, in Sinhala when a translation exists and English when it doesn't. `faq.items` has been removed from `src/messages/en.json` and `si.json`; the section's heading and subtitle stay there.
 - No new environment variables.
 
 ## v1.0.0 — First Release (2026-08-08)

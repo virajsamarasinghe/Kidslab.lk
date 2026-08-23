@@ -6,6 +6,7 @@ import {
   Building2,
   CalendarClock,
   CheckCircle2,
+  ChevronRight,
   FileText,
   Globe,
   HelpCircle,
@@ -92,6 +93,11 @@ export default function SeoSettingsPage() {
 
   function updateEvent<K extends keyof SeoConfig["event"]>(key: K, value: SeoConfig["event"][K]) {
     setValues(v => (v ? { ...v, event: { ...v.event, [key]: value } } : v));
+    setSaved(false);
+  }
+
+  function updateFaq(index: number, patch: Partial<SeoConfig["faqs"][number]>) {
+    setValues(v => (v ? { ...v, faqs: v.faqs.map((f, i) => (i === index ? { ...f, ...patch } : f)) } : v));
     setSaved(false);
   }
 
@@ -669,7 +675,8 @@ export default function SeoSettingsPage() {
                 <p className="text-[13px] text-slate-500 mt-0.5">
                   Published as <code>FAQPage</code> structured data and in <code>/llms.txt</code>. This is the
                   single biggest lever on AI answers — ChatGPT, Perplexity and AI Overviews quote these almost
-                  verbatim, so write each answer as a complete, standalone statement.
+                  verbatim, so write each answer as a complete, standalone statement. The same entries render in
+                  the landing page&apos;s FAQ section, in Sinhala when a translation exists.
                 </p>
               </div>
 
@@ -678,11 +685,9 @@ export default function SeoSettingsPage() {
                   <div className="flex gap-2">
                     <Input
                       value={faq.question}
-                      onChange={e =>
-                        update("faqs", values.faqs.map((f, j) => (j === i ? { ...f, question: e.target.value } : f)))
-                      }
+                      onChange={e => updateFaq(i, { question: e.target.value })}
                       placeholder="What age group is the program for?"
-                      aria-label={`Question ${i + 1}`}
+                      aria-label={`Question ${i + 1} (English)`}
                       className={`${inputClass} font-semibold`}
                     />
                     <Button
@@ -698,28 +703,77 @@ export default function SeoSettingsPage() {
                   <textarea
                     rows={4}
                     value={faq.answer}
-                    onChange={e =>
-                      update("faqs", values.faqs.map((f, j) => (j === i ? { ...f, answer: e.target.value } : f)))
-                    }
-                    aria-label={`Answer ${i + 1}`}
+                    onChange={e => updateFaq(i, { answer: e.target.value })}
+                    aria-label={`Answer ${i + 1} (English)`}
                     className={areaClass}
                   />
+
+                  <details className="group" open={Boolean(faq.questionSi || faq.answerSi)}>
+                    <summary className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+                      <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
+                      Sinhala
+                      {!faq.questionSi && !faq.answerSi && (
+                        <span className="normal-case tracking-normal font-medium text-amber-600">
+                          — not translated, shows English
+                        </span>
+                      )}
+                    </summary>
+                    <div className="space-y-3 pt-3">
+                      <Input
+                        value={faq.questionSi}
+                        onChange={e => updateFaq(i, { questionSi: e.target.value })}
+                        placeholder="Sinhala question"
+                        aria-label={`Question ${i + 1} (Sinhala)`}
+                        className={`${inputClass} font-semibold font-[var(--font-sinhala)]`}
+                      />
+                      <textarea
+                        rows={4}
+                        value={faq.answerSi}
+                        onChange={e => updateFaq(i, { answerSi: e.target.value })}
+                        placeholder="Sinhala answer"
+                        aria-label={`Answer ${i + 1} (Sinhala)`}
+                        className={areaClass}
+                      />
+                    </div>
+                  </details>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={faq.showOnPage}
+                      onChange={e => updateFaq(i, { showOnPage: e.target.checked })}
+                      className="w-4 h-4 rounded border-slate-300 accent-[color:var(--brand-navy)]"
+                    />
+                    <span className="text-[13px] text-slate-700">
+                      Show in the FAQ section on the landing page
+                    </span>
+                  </label>
                 </div>
               ))}
 
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
-                  onClick={() => update("faqs", [...values.faqs, { question: "", answer: "" }])}
+                  onClick={() =>
+                    update("faqs", [
+                      ...values.faqs,
+                      { question: "", answer: "", questionSi: "", answerSi: "", showOnPage: true },
+                    ])
+                  }
                   className="rounded-full text-xs font-semibold border-slate-200 gap-1.5"
                   style={{ color: "var(--brand-navy)" }}
                 >
                   <Plus className="w-3.5 h-3.5" /> Add question
                 </Button>
-                <span className="text-[11px] text-slate-400">{values.faqs.length} published</span>
+                <span className="text-[11px] text-slate-400">
+                  {values.faqs.length} published · {values.faqs.filter(f => f.showOnPage).length} on the page ·{" "}
+                  {values.faqs.filter(f => f.questionSi && f.answerSi).length} translated
+                </span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Rows with an empty question or answer are dropped on save — that&apos;s how you delete one.
+                Rows with an empty English question or answer are dropped on save — that&apos;s how you delete one.
+                The structured data and <code>/llms.txt</code> always use the English text; Sinhala is for the page
+                only, and an untranslated entry falls back to English there.
               </p>
             </Card>
           )}
