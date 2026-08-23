@@ -11,7 +11,23 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Combobox,
+  ComboboxInputGroup,
+  ComboboxInput,
+  ComboboxClear,
+  ComboboxTrigger,
+  ComboboxPortal,
+  ComboboxPositioner,
+  ComboboxPopup,
+  ComboboxList,
+  ComboboxEmpty,
+  ComboboxItem,
+} from "@/components/ui/combobox";
 import { track } from "@/lib/analytics";
+import { DISTRICTS } from "@/lib/sri-lanka-locations";
+
+const CITY_OPTIONS = DISTRICTS.map(d => d.name);
 
 export default function RegisterPage() {
   const { isSignedIn, user } = useUser();
@@ -277,7 +293,7 @@ export default function RegisterPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: "clamp(0.75rem, 1.2vw, 1.75rem)" }}>
               <div>
                 <Label className="reg-label text-slate-500 block" style={{ marginBottom: "clamp(0.3rem, 0.5vw, 0.75rem)" }}>
-                  Phone <span style={{ color: "var(--brand-red)" }}>*</span>
+                  WhatsApp Number <span style={{ color: "var(--brand-red)" }}>*</span>
                 </Label>
                 <Input
                   type="tel"
@@ -326,13 +342,38 @@ export default function RegisterPage() {
               </div>
               <div>
                 <Label className="reg-label text-slate-500 block" style={{ marginBottom: "clamp(0.3rem, 0.5vw, 0.75rem)" }}>
-                  City / District
+                  City / District <span style={{ color: "var(--brand-red)" }}>*</span>
                 </Label>
-                <Input
-                  autoComplete="address-level2" autoCapitalize="words" placeholder="Ex: Matara"
-                  className="reg-input border-slate-200 w-full"
-                  value={form.city} onChange={set("city")}
-                />
+                <Combobox
+                  items={CITY_OPTIONS}
+                  value={form.city || null}
+                  onValueChange={(value) => setForm(f => ({ ...f, city: value ?? "" }))}
+                  required
+                >
+                  <ComboboxInputGroup className="reg-input border-slate-200 w-full">
+                    <ComboboxInput
+                      placeholder="Search for your district…"
+                      autoComplete="address-level2"
+                      className="reg-input"
+                    />
+                    <ComboboxClear />
+                    <ComboboxTrigger />
+                  </ComboboxInputGroup>
+                  <ComboboxPortal>
+                    <ComboboxPositioner>
+                      <ComboboxPopup>
+                        <ComboboxEmpty>No district found.</ComboboxEmpty>
+                        <ComboboxList>
+                          {(item: string) => (
+                            <ComboboxItem key={item} value={item}>
+                              {item}
+                            </ComboboxItem>
+                          )}
+                        </ComboboxList>
+                      </ComboboxPopup>
+                    </ComboboxPositioner>
+                  </ComboboxPortal>
+                </Combobox>
               </div>
             </div>
 

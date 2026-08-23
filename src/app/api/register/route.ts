@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { revalidateTag } from "next/cache";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { sendWelcomeEmail } from "@/lib/brevo";
 import { enforceRateLimit, clientIp } from "@/lib/rate-limit";
+import { ADMIN_STATS_TAG } from "@/lib/dashboard-stats";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,9 +15,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { name, phone, email, age, parentName, city, interestedCourse } = body;
 
-    if (!name || !phone) {
+    if (!name || !phone || !city?.trim()) {
       return NextResponse.json(
-        { error: "Name and phone number are required" },
+        { error: "Name, phone number and city are required" },
         { status: 400 }
       );
     }
@@ -61,6 +63,10 @@ export async function POST(req: NextRequest) {
       city: city?.trim() ?? "",
       interestedCourse: interestedCourse ?? "Robotics & AI",
     });
+
+    // So the admin dashboard's cached counts/map reflect this registration
+    // immediately instead of waiting out the stats cache TTL.
+    revalidateTag(ADMIN_STATS_TAG, { expire: 0 });
 
     // Only send a welcome email when the user provided a real address
     if (email?.trim()) {
