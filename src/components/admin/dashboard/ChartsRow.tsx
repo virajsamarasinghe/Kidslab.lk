@@ -27,7 +27,7 @@ export default async function ChartsRow() {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-6">
       <Card className="pcb-card border-slate-100 shadow-sm xl:col-span-2">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 pb-2">
           <div>
             <CardTitle className="text-sm font-semibold text-slate-900">Registrations — Last 14 Days</CardTitle>
             <p className="text-xs text-slate-400 mt-1">{stats.usersThisWeek} new this week</p>

@@ -83,8 +83,8 @@ export default function AssistantSettingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
@@ -108,7 +108,7 @@ export default function AssistantSettingsPage() {
         <p className="text-slate-400 text-sm py-8">Loading…</p>
       ) : (
         <div className="space-y-5">
-          <Card className="pcb-card border-slate-100 shadow-sm p-6">
+          <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6">
             <div className="flex items-start justify-between gap-4">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -157,7 +157,7 @@ export default function AssistantSettingsPage() {
             )}
           </Card>
 
-          <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+          <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
             <h2 className="font-bold text-slate-900 text-sm">What visitors see</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -226,7 +226,7 @@ export default function AssistantSettingsPage() {
             </div>
           </Card>
 
-          <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+          <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
             <div>
               <h2 className="font-bold text-slate-900 text-sm">How it behaves</h2>
               <p className="text-[13px] text-slate-500 mt-0.5">

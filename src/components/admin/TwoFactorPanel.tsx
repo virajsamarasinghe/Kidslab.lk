@@ -124,7 +124,7 @@ export default function TwoFactorPanel() {
   }
 
   return (
-    <Card className="pcb-card border-slate-100 shadow-sm p-6">
+    <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6">
       <div className="flex items-start gap-3 mb-4">
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"

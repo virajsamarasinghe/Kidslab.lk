@@ -93,8 +93,8 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
@@ -114,7 +114,7 @@ export default function AdminProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Avatar card */}
-        <Card className="pcb-card border-slate-100 shadow-sm p-6 lg:col-span-1 h-fit">
+        <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 lg:col-span-1 h-fit">
           <div className="flex flex-col items-center text-center gap-4">
             <div className="relative shrink-0">
               <div
@@ -156,7 +156,7 @@ export default function AdminProfilePage() {
         </Card>
 
         {/* Details + password */}
-        <Card className="pcb-card border-slate-100 shadow-sm p-6 lg:col-span-2 space-y-8">
+        <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 lg:col-span-2 space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
               <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5 block">Name</Label>

@@ -53,8 +53,8 @@ export default function AdminActivityPage() {
   } = useListResource<ActivityEntry>("/api/admin/activity", { itemsKey: "entries", limit: 30 });
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
         <h1
           className="text-2xl font-bold text-slate-900 tracking-tight"
           style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
@@ -83,7 +83,7 @@ export default function AdminActivityPage() {
             <div key={e._id} className="flex items-start gap-3 px-5 py-3.5">
               <History className="w-4 h-4 text-slate-300 mt-0.5 shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-slate-700">
+                <p className="text-sm text-slate-700 break-words">
                   <span className="font-semibold text-slate-900">{e.actorEmail}</span> {describe(e)}
                 </p>
               </div>

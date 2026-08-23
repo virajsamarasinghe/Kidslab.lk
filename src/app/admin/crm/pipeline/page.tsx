@@ -209,8 +209,8 @@ export default function CrmPipelinePage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
         <h1
           className="text-2xl font-bold text-slate-900 tracking-tight"
           style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
@@ -230,7 +230,7 @@ export default function CrmPipelinePage() {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-8 px-8 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 xl:grid-cols-5 sm:overflow-visible sm:snap-none items-start">
+          <div className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 xl:grid-cols-5 sm:overflow-visible sm:snap-none items-start">
             {PIPELINE_STAGES.map((stage, colIdx) => (
               <StageColumn key={stage} stage={stage} contacts={columns[stage]} colIdx={colIdx} />
             ))}

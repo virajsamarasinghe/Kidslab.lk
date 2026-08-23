@@ -144,7 +144,7 @@ function PaletteBody({ onClose, onLogout }: Omit<PaletteProps, "open">) {
               setCursor(0);
             }}
             placeholder="Search pages and actions…"
-            className="flex-1 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
+            className="flex-1 min-w-0 py-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
           />
           <kbd className="text-[10px] font-semibold text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">
             ESC

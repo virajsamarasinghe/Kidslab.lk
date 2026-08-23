@@ -168,8 +168,8 @@ export default function EmailTemplatesPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
@@ -218,7 +218,7 @@ export default function EmailTemplatesPage() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
             {/* ── Editor ─────────────────────────────────────────────── */}
             <div className="space-y-5">
-              <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-4">
+              <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h2 className="font-bold text-slate-900 text-sm">{meta.label}</h2>
@@ -370,7 +370,7 @@ export default function EmailTemplatesPage() {
               </Card>
 
               {/* Placeholders */}
-              <Card className="pcb-card border-slate-100 shadow-sm p-6">
+              <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6">
                 <h2 className="font-bold text-slate-900 text-sm">Placeholders</h2>
                 <p className="text-[13px] text-slate-500 mt-0.5 mb-3">
                   Drop these into any field above and they&apos;re replaced with the real value when the email
@@ -455,7 +455,7 @@ export default function EmailTemplatesPage() {
                   </div>
                 </div>
 
-                <div className="bg-slate-100 p-3 flex justify-center">
+                <div className="bg-slate-100 p-2 sm:p-3 flex justify-center">
                   {/*
                     Framed so the email's own styles stay out of the dashboard's
                     CSS and vice versa — an inline render would inherit
@@ -471,13 +471,13 @@ export default function EmailTemplatesPage() {
                     title="Email preview"
                     src={previewUrl}
                     sandbox="allow-same-origin"
-                    className="h-[700px] rounded-lg bg-white border border-slate-200 transition-all"
-                    style={{ width: narrow ? 380 : "100%" }}
+                    className="h-[520px] sm:h-[700px] rounded-lg bg-white border border-slate-200 transition-all"
+                    style={{ width: narrow ? 380 : "100%", maxWidth: "100%" }}
                   />
                 </div>
               </Card>
 
-              <Card className="pcb-card border-slate-100 shadow-sm p-6 space-y-3">
+              <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 space-y-3">
                 <div>
                   <h2 className="font-bold text-slate-900 text-sm">Send yourself a test</h2>
                   <p className="text-[13px] text-slate-500 mt-0.5">

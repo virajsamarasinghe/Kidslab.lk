@@ -68,8 +68,8 @@ export default function AdminSettingsOverview() {
   const visibleSections = sections.filter(s => !("capability" in s) || canManageAdmins);
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 sm:mb-8">
         <h1
           className="text-2xl font-bold text-slate-900 tracking-tight"
           style={{ fontFamily: "var(--font-display), var(--font-sans), system-ui, sans-serif" }}
@@ -84,7 +84,7 @@ export default function AdminSettingsOverview() {
           const configured = isConfigured(key, data, adminCount);
           return (
             <a key={href} href={href}>
-              <Card className="pcb-card border-slate-100 shadow-sm p-6 h-full hover:shadow-md transition-shadow">
+              <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6 h-full hover:shadow-md transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center"

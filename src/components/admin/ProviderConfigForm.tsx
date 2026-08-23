@@ -86,7 +86,7 @@ export default function ProviderConfigForm({ section, title, description, icon: 
 
   return (
     <div className="p-8">
-      <div className="mb-8 flex items-center gap-3">
+      <div className="mb-6 sm:mb-8 flex items-center gap-3">
         <div
           className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
           style={{ backgroundColor: "rgba(15,36,24,0.06)" }}
@@ -270,7 +270,7 @@ function ProviderEntryCard({
   }
 
   return (
-    <Card className="pcb-card border-slate-100 shadow-sm p-6">
+    <Card className="pcb-card border-slate-100 shadow-sm p-4 sm:p-6">
       <div className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <div>
@@ -393,7 +393,7 @@ function ProviderEntryCard({
           </div>
         )}
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-3 pt-2">
           <Button
             onClick={handleSave}
             disabled={saving}

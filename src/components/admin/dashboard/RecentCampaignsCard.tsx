@@ -18,7 +18,7 @@ export default function RecentCampaignsCard({
 }) {
   return (
     <Card className="pcb-card border-slate-100 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 pb-2">
         <CardTitle className="text-sm font-semibold text-slate-900">Recent Campaigns</CardTitle>
         <a
           href="/admin/crm/campaigns"
