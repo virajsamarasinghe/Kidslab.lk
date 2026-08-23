@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { DEFAULT_ASSISTANT_PROMPT } from "@/config/assistant";
+import { SEO_DEFAULTS, type SeoConfig } from "@/config/seo";
 
 interface BrevoConfig {
   senderEmail: string;
@@ -55,6 +56,7 @@ export interface ISettings extends Document {
   llm: LLMConfig[];
   embedding: EmbeddingConfig;
   assistant: AssistantConfig;
+  seo: SeoConfig;
 }
 
 const BrevoSchema = new Schema<BrevoConfig>(
@@ -103,12 +105,120 @@ const AssistantSchema = new Schema<AssistantConfig>(
   { _id: false }
 );
 
+/**
+ * Admin-editable SEO/AEO overrides.
+ *
+ * Every field defaults to the shipped value in `@/config/seo`, and blank
+ * fields fall back to it again at read time (see `@/lib/seo`) — so clearing an
+ * input in the dashboard restores the default rather than emitting empty
+ * markup. `strict: false` is deliberately NOT set: unknown keys are dropped,
+ * which keeps a malformed PUT from persisting junk into the public metadata.
+ */
+const SeoPageSchema = new Schema<SeoConfig["pages"][number]>(
+  {
+    path:             { type: String,   default: "/" },
+    title:            { type: String,   default: "" },
+    description:      { type: String,   default: "" },
+    keywords:         { type: [String], default: () => [] },
+    ogImage:          { type: String,   default: "" },
+    canonical:        { type: String,   default: "" },
+    noindex:          { type: Boolean,  default: false },
+    includeInSitemap: { type: Boolean,  default: true },
+    priority:         { type: Number,   default: 0.5, min: 0, max: 1 },
+    changeFrequency:  { type: String,   default: "monthly", enum: ["always", "hourly", "daily", "weekly", "monthly", "yearly", "never"] },
+  },
+  { _id: false }
+);
+
+const SeoFaqSchema = new Schema<SeoConfig["faqs"][number]>(
+  {
+    question:   { type: String,  default: "" },
+    answer:     { type: String,  default: "" },
+    questionSi: { type: String,  default: "" },
+    answerSi:   { type: String,  default: "" },
+    showOnPage: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
+
+const SeoFactSchema = new Schema<SeoConfig["answerFacts"][number]>(
+  {
+    label: { type: String, default: "" },
+    value: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+const SeoOrganizationSchema = new Schema<SeoConfig["organization"]>(
+  {
+    legalName:       { type: String,   default: "" },
+    alternateNames:  { type: [String], default: () => [] },
+    slogan:          { type: String,   default: "" },
+    description:     { type: String,   default: "" },
+    keywords:        { type: String,   default: "" },
+    telephone:       { type: String,   default: "" },
+    email:           { type: String,   default: "" },
+    streetAddress:   { type: String,   default: "" },
+    addressLocality: { type: String,   default: "" },
+    postalCode:      { type: String,   default: "" },
+    addressCountry:  { type: String,   default: "" },
+    latitude:        { type: Number,   default: 0 },
+    longitude:       { type: Number,   default: 0 },
+    foundingDate:    { type: String,   default: "" },
+    sameAs:          { type: [String], default: () => [] },
+    areaServed:      { type: [String], default: () => [] },
+    knowsAbout:      { type: [String], default: () => [] },
+  },
+  { _id: false }
+);
+
+const SeoEventSchema = new Schema<SeoConfig["event"]>(
+  {
+    enabled:        { type: Boolean, default: true },
+    name:           { type: String,  default: "" },
+    description:    { type: String,  default: "" },
+    startDate:      { type: String,  default: "" },
+    startTime:      { type: String,  default: "" },
+    endTime:        { type: String,  default: "" },
+    offerValidFrom: { type: String,  default: "" },
+    url:            { type: String,  default: "" },
+  },
+  { _id: false }
+);
+
+const SeoSchema = new Schema<SeoConfig>(
+  {
+    siteName:           { type: String,   default: "" },
+    defaultTitle:       { type: String,   default: "" },
+    titleTemplate:      { type: String,   default: "" },
+    description:        { type: String,   default: "" },
+    socialTitle:        { type: String,   default: "" },
+    socialDescription:  { type: String,   default: "" },
+    keywords:           { type: [String], default: () => [] },
+    ogImage:            { type: String,   default: "" },
+    twitterCard:        { type: String,   default: "summary_large_image", enum: ["summary", "summary_large_image"] },
+    googleVerification: { type: String,   default: "" },
+    bingVerification:   { type: String,   default: "" },
+    organization:       { type: SeoOrganizationSchema, default: () => ({}) },
+    event:              { type: SeoEventSchema,        default: () => ({}) },
+    pages:              { type: [SeoPageSchema],       default: () => SEO_DEFAULTS.pages },
+    faqs:               { type: [SeoFaqSchema],        default: () => SEO_DEFAULTS.faqs },
+    answerFacts:        { type: [SeoFactSchema],       default: () => SEO_DEFAULTS.answerFacts },
+    // A free-form bot -> boolean map. Mixed rather than a sub-schema so a new
+    // crawler added to AI_CRAWLER_AGENTS needs no migration.
+    aiCrawlers:         { type: Schema.Types.Mixed,    default: () => ({ ...SEO_DEFAULTS.aiCrawlers }) },
+    llmsTxtNotes:       { type: String,   default: "" },
+  },
+  { _id: false }
+);
+
 const SettingsSchema = new Schema<ISettings>(
   {
     brevo:     { type: BrevoSchema,     default: () => ({}) },
     llm:       { type: [LLMSchema],     default: () => [] },
     embedding: { type: EmbeddingSchema, default: () => ({}) },
     assistant: { type: AssistantSchema, default: () => ({}) },
+    seo:       { type: SeoSchema,       default: () => ({}) },
   },
   { timestamps: true }
 );

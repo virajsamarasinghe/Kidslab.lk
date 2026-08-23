@@ -91,10 +91,35 @@ Visit [http://localhost:3000](http://localhost:3000).
 | `npm run build` | Production build |
 | `npm run start` | Run the production build |
 | `npm run lint` | Lint the codebase |
+| `npm run seed:seo` | Write the shipped SEO/AEO defaults into the database (see below) |
 
 ## Deployment
 
 The app is a standard Next.js app and deploys to any Next.js-compatible host (e.g. Vercel). Set all required environment variables (with **live** Clerk keys and a production Clerk webhook) on the hosting platform — none of the `.env.local` values ship with the build.
+
+### SEO defaults are seeded automatically
+
+Nothing to run and no deploy step to wire up: on the first request after a deploy the app writes the shipped defaults from `src/config/seo.ts` into the database, so **Settings → SEO & AEO** shows a fully populated, editable config from day one. It seeds off a read the request path performs anyway, so it costs no extra query, and it writes `mergeSeo(stored)` — stored values win field by field, so **your edits are never overwritten**. Once written the fields match and no further writes happen; a release that adds a new field fills in just that field on the next deploy.
+
+Set `SEO_AUTO_SEED=0` in the environment to turn it off and seed by hand instead.
+
+The site does not depend on any of this: anything the database doesn't carry falls back to `SEO_DEFAULTS`, so a fresh install renders with the correct metadata before the first write ever lands.
+
+#### Seeding manually
+
+`npm run seed:seo` does the same write from the command line, for the cases the automatic pass can't cover:
+
+```bash
+npm run seed:seo              # fill in whatever's missing
+npm run seed:seo -- --dry-run # show what would change, write nothing
+npm run seed:seo -- --force   # discard overrides, reset to the shipped defaults
+```
+
+Use it to preview a change before it happens, to reset a config an admin has edited (`--force` — the automatic pass will never do this), or to seed an environment that isn't taking traffic yet. It reads `MONGODB_URI` from `.env.local`; point it at another environment by setting the variable in front of the command:
+
+```bash
+MONGODB_URI="mongodb+srv://…/kidslab" npm run seed:seo
+```
 
 ## License
 

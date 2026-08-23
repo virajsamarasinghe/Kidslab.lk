@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Send, BrainCircuit, Layers3, ShieldCheck, ArrowRight, Bot } from "lucide-react";
+import { Send, BrainCircuit, Layers3, ShieldCheck, ArrowRight, Bot, Globe } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useAdminProfile } from "@/components/admin/AdminProfileContext";
 import { can } from "@/lib/roles";
@@ -12,6 +12,7 @@ const sections = [
   { key: "llm",       label: "LLM Config",       href: "/admin/settings/llm",       icon: BrainCircuit, desc: "Connect any OpenAI-compatible chat model provider." },
   { key: "assistant", label: "AI Assistant",     href: "/admin/settings/assistant", icon: Bot,          desc: "The chat widget on the public site — its prompt, greeting & starter questions." },
   { key: "embedding", label: "Embedding Model",  href: "/admin/settings/embedding", icon: Layers3,      desc: "Connect an embeddings endpoint for search & similarity." },
+  { key: "seo",       label: "SEO & AEO",        href: "/admin/settings/seo",       icon: Globe,        desc: "Titles, structured data, FAQ answers, sitemap & AI crawler access." },
 ] as const;
 
 interface SettingsSnapshot {
@@ -31,6 +32,9 @@ function isConfigured(
   // Brevo sends over SMTP, so a sender plus SMTP login is what "configured" means.
   if (key === "brevo") return Boolean(data.brevo?.smtpUser && data.brevo?.smtpKey && data.brevo?.senderEmail);
   if (key === "llm") return (data.llm ?? []).some(entry => entry.apiKey && entry.model);
+  // Ships with working defaults, so it's never in a "not set up" state — the
+  // dot would only ever be green, which tells an admin nothing.
+  if (key === "seo") return null;
   // The assistant is a feature toggle rather than a credential — "configured"
   // here means it's actually live for visitors, which needs a usable provider too.
   if (key === "assistant") {

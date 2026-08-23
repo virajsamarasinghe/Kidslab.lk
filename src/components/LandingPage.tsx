@@ -16,6 +16,7 @@ import { RegisterModalProvider, useRegisterModal } from "@/lib/register-modal-co
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/types/course";
+import type { SeoFaq } from "@/config/seo";
 import {
     ArrowRight,
     Award,
@@ -413,15 +414,17 @@ function LinkedInIcon({ className }: { className?: string }) {
 export default function LandingPage({
   courses,
   googleReviews = [],
+  faqs = [],
 }: {
   courses: Course[];
   googleReviews?: GoogleReview[];
+  faqs?: SeoFaq[];
 }) {
   return (
     <LocaleProvider>
       <I18nProvider>
         <RegisterModalProvider>
-          <HomeContent courses={courses} googleReviews={googleReviews} />
+          <HomeContent courses={courses} googleReviews={googleReviews} faqs={faqs} />
           <RegisterModal />
           <SubscribePopup />
         </RegisterModalProvider>
@@ -433,20 +436,31 @@ export default function LandingPage({
 function HomeContent({
   courses,
   googleReviews,
+  faqs,
 }: {
   courses: Course[];
   googleReviews: GoogleReview[];
+  faqs: SeoFaq[];
 }) {
   const t = useTranslations();
   const { locale } = useLocale();
   const { openRegisterModal } = useRegisterModal();
   const heroSentences = useMemo(() => getHeroSentences(t), [t]);
   const statLabels = t.raw("stats.labels") as string[];
-  /* Every FAQ entry is rendered — the FAQPage JSON-LD in structured-data.ts
-     mirrors these questions, and Google only credits FAQ markup whose answers
-     are actually visible on the page. Counted from the messages file so
-     adding a question there is the only step needed. */
-  const faqCount = (t.raw("faq.items") as { q: string; a: string }[]).length;
+  /* The FAQ comes from Settings -> SEO & AEO, not the messages file, so one
+     edit updates the visible section, the FAQPage JSON-LD and /llms.txt at
+     once — Google only credits FAQ markup whose answers are actually visible
+     on the page, and two sources are how those drift apart. Entries flagged
+     structured-data-only are already filtered out server-side; Sinhala falls
+     back to English when a translation hasn't been written yet. */
+  const faqItems = useMemo(
+    () =>
+      faqs.map((f) => ({
+        q: (locale === "si" && f.questionSi) || f.question,
+        a: (locale === "si" && f.answerSi) || f.answer,
+      })),
+    [faqs, locale]
+  );
 
   /* Prefer live Google reviews when available; otherwise fall back to the
      hardcoded, translated testimonials so the section never sits empty. */
@@ -1347,7 +1361,7 @@ function HomeContent({
             </AnimateIn>
 
             <div className="flex flex-col gap-3">
-              {Array.from({ length: faqCount }).map((_, i) => (
+              {faqItems.map((item, i) => (
                 <AnimateIn key={i} delay={i * 0.04}>
                   <details
                     className="group pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm open:shadow-md transition-shadow duration-300"
@@ -1356,19 +1370,19 @@ function HomeContent({
                       if (!e.currentTarget.open) return;
                       track("faq_open", {
                         faq_index: i,
-                        faq_question: t(`faq.items.${i}.q`),
+                        faq_question: item.q,
                         locale,
                       });
                     }}
                   >
                     <summary className="flex items-center justify-between gap-4 cursor-pointer list-none p-6 select-none">
                       <span className="font-semibold text-slate-900 text-body-lg">
-                        {t(`faq.items.${i}.q`)}
+                        {item.q}
                       </span>
                       <ChevronDown className="w-5 h-5 text-slate-400 shrink-0 transition-transform duration-300 group-open:rotate-180" />
                     </summary>
                     <p className="text-body-md text-slate-500 px-6 pb-6 -mt-2 leading-[1.75]">
-                      {t(`faq.items.${i}.a`)}
+                      {item.a}
                     </p>
                   </details>
                 </AnimateIn>

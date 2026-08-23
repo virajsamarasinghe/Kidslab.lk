@@ -1,22 +1,23 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/config/site";
+import { getSeoConfig } from "@/lib/seo";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = SITE_URL;
-  const now  = new Date();
+/**
+ * Built from the page list in Settings -> SEO & AEO, so adding a route to the
+ * sitemap (or pulling one out of it) is a dashboard edit rather than a deploy.
+ * `noindex` pages are excluded regardless of their sitemap flag — listing a
+ * page we're asking crawlers to ignore is a contradiction Search Console flags.
+ */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const seo = await getSeoConfig();
+  const now = new Date();
 
-  return [
-    {
-      url:             base,
-      lastModified:    now,
-      changeFrequency: "weekly",
-      priority:        1.0,
-    },
-    {
-      url:             `${base}/register`,
-      lastModified:    now,
-      changeFrequency: "monthly",
-      priority:        0.9,
-    },
-  ];
+  return seo.pages
+    .filter((page) => page.includeInSitemap && !page.noindex)
+    .map((page) => ({
+      url: page.canonical || `${SITE_URL}${page.path === "/" ? "" : page.path}`,
+      lastModified: now,
+      changeFrequency: page.changeFrequency,
+      priority: page.priority,
+    }));
 }
