@@ -12,6 +12,7 @@ import WhatsAppIcon from "@/components/WhatsAppIcon";
 import ChatWidget from "@/components/ChatWidget";
 import type { GoogleReview } from "@/lib/google-reviews";
 import { LocaleProvider, useLocale } from "@/lib/locale-context";
+import type { Locale } from "@/config/locales";
 import { RegisterModalProvider, useRegisterModal } from "@/lib/register-modal-context";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
@@ -415,13 +416,17 @@ export default function LandingPage({
   courses,
   googleReviews = [],
   faqs = [],
+  locale,
 }: {
   courses: Course[];
   googleReviews?: GoogleReview[];
   faqs?: SeoFaq[];
+  /* Comes from the route (`/` vs `/si`), not from browser state — see
+     `@/lib/locale-context` for why that matters. */
+  locale: Locale;
 }) {
   return (
-    <LocaleProvider>
+    <LocaleProvider locale={locale}>
       <I18nProvider>
         <RegisterModalProvider>
           <HomeContent courses={courses} googleReviews={googleReviews} faqs={faqs} />

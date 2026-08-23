@@ -32,6 +32,7 @@ export async function GET() {
     "## Contact",
     "",
     `- Website: ${SITE_URL}`,
+    `- Website (Sinhala): ${SITE_URL}/si`,
     `- Register: ${SITE_URL}/register`,
     `- Email: ${org.email}`,
     `- Phone / WhatsApp: ${org.telephone}`,

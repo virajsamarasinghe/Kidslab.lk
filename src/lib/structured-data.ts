@@ -1,5 +1,11 @@
 import type { Course } from "@/types/course";
 import { SITE_URL } from "@/config/site";
+import {
+  DEFAULT_LOCALE,
+  LOCALE_TAGS,
+  localizedPath,
+  type Locale,
+} from "@/config/locales";
 import type { SeoConfig } from "@/config/seo";
 
 /* Fallbacks used when no active course exists in the DB. These must stay in
@@ -106,15 +112,26 @@ function courseSchema(seo: SeoConfig, c?: Course) {
   };
 }
 
-/** schema.org/FAQPage from the admin-managed Q&A list. */
-export function faqSchema(seo: SeoConfig) {
+/**
+ * schema.org/FAQPage from the admin-managed Q&A list, in the language the
+ * page is rendered in.
+ *
+ * Google only credits FAQ markup whose answers the visitor can actually read
+ * on that URL, so the Sinhala page has to emit the Sinhala text — English
+ * markup on a Sinhala page is exactly the mismatch the single-source FAQ was
+ * introduced to avoid. Entries with no translation fall back to English,
+ * which is also what the page itself renders.
+ */
+export function faqSchema(seo: SeoConfig, locale: Locale = DEFAULT_LOCALE) {
+  const si = locale === "si";
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    inLanguage: LOCALE_TAGS[locale],
     mainEntity: seo.faqs.map((f) => ({
       "@type": "Question",
-      name: f.question,
-      acceptedAnswer: { "@type": "Answer", text: f.answer },
+      name: (si && f.questionSi) || f.question,
+      acceptedAnswer: { "@type": "Answer", text: (si && f.answerSi) || f.answer },
     })),
   };
 }
@@ -131,8 +148,17 @@ export function faqSchema(seo: SeoConfig) {
  * two fixed founders, not business facts that change between deploys, and
  * modelling credentials in a settings form would be all cost and no benefit.
  */
-export function buildLandingJsonLd(courses: Course[], seo: SeoConfig) {
+export function buildLandingJsonLd(
+  courses: Course[],
+  seo: SeoConfig,
+  locale: Locale = DEFAULT_LOCALE
+) {
   const org = seo.organization;
+  /* The URL this particular rendering lives at — `/` in English, `/si` in
+     Sinhala — so the WebSite block and the FAQ markup describe the page the
+     crawler is actually reading. The organisation blocks below stay identical
+     in both: they describe the business, not the document. */
+  const pageUrl = `${SITE_URL}${localizedPath("/", locale)}`.replace(/\/$/, "");
 
   return [
     /* 1. WebSite */
@@ -140,9 +166,9 @@ export function buildLandingJsonLd(courses: Course[], seo: SeoConfig) {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: seo.siteName,
-      url: SITE_URL,
+      url: pageUrl,
       description: seo.description,
-      inLanguage: ["en-LK", "si-LK"],
+      inLanguage: LOCALE_TAGS[locale],
     },
     /* 2. EducationalOrganization */
     {
@@ -397,6 +423,6 @@ export function buildLandingJsonLd(courses: Course[], seo: SeoConfig) {
       ],
     },
     /* 6. FAQPage — key AEO schema, managed from Settings -> SEO & AEO */
-    faqSchema(seo),
+    faqSchema(seo, locale),
   ];
 }

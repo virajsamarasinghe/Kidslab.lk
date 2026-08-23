@@ -20,7 +20,17 @@ export type AnalyticsEvent =
   /** A WhatsApp link was opened. */
   | "whatsapp_click"
   /** A FAQ question was expanded — shows which answers parents look for. */
-  | "faq_open";
+  | "faq_open"
+  /**
+   * A visitor hit a URL that doesn't exist.
+   *
+   * Not a conversion — a maintenance signal. A 404 with real traffic is
+   * almost always a link we broke or a URL someone else published, and
+   * neither is visible from the server logs of a statically served page.
+   * Carries the path only, never the query string, which is where a stray
+   * email address would end up.
+   */
+  | "page_not_found";
 
 type EventParams = Record<string, string | number | boolean>;
 

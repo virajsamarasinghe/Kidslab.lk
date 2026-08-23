@@ -14,7 +14,7 @@ export default async function Home() {
     getGoogleReviews(),
     getSeoConfig(),
   ]);
-  const jsonLd = buildLandingJsonLd(courses, seo);
+  const jsonLd = buildLandingJsonLd(courses, seo, "en");
 
   return (
     <>
@@ -29,6 +29,7 @@ export default async function Home() {
         courses={courses}
         googleReviews={googleReviews}
         faqs={seo.faqs.filter((f) => f.showOnPage)}
+        locale="en"
       />
     </>
   );

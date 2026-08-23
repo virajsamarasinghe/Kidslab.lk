@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "@/config/site";
 import {
+  DEFAULT_LOCALE,
+  LOCALE_TAGS,
+  OG_LOCALES,
+  hasTranslation,
+  localizedPath,
+  type Locale,
+} from "@/config/locales";
+import {
   DEFAULT_AI_CRAWLERS,
   SEO_DEFAULTS,
   type SeoConfig,
@@ -192,15 +200,56 @@ export function invalidateSeoCache() {
   cache.expires = 0;
 }
 
+/** The canonical URL of `path` in one locale, honouring any admin override. */
+function localizedCanonical(canonical: string, path: string, locale: Locale): string {
+  if (locale === DEFAULT_LOCALE || !hasTranslation(path)) return canonical;
+  return `${SITE_URL}${localizedPath(path, locale)}`;
+}
+
+/**
+ * The `hreflang` map for one route: every language it exists in, plus the
+ * `x-default` an engine falls back to when none of them match the visitor.
+ *
+ * Deliberately a function of the route, not of the rendering: it takes the
+ * *English* canonical and derives the rest, so `/` and `/si` are handed the
+ * same arguments and cannot emit disagreeing maps. Reciprocity is the whole
+ * point of hreflang — Google discards a cluster whose members don't agree —
+ * and making it structural is cheaper than remembering to keep it true.
+ */
+export function languageAlternates(
+  englishCanonical: string,
+  path: string
+): Record<string, string> {
+  const english = localizedCanonical(englishCanonical, path, DEFAULT_LOCALE);
+  if (!hasTranslation(path)) {
+    return { [LOCALE_TAGS[DEFAULT_LOCALE]]: english, "x-default": english };
+  }
+  return {
+    [LOCALE_TAGS.en]: english,
+    [LOCALE_TAGS.si]: `${SITE_URL}${localizedPath(path, "si")}`,
+    "x-default": english,
+  };
+}
+
 /**
  * Next.js `Metadata` for one route, assembled from the live SEO config.
  *
  * The root layout passes `"/"`, which is also what makes the title a
  * `{ default, template }` pair — every other route contributes only its own
  * title and lets the template wrap it.
+ *
+ * `locale` is the language the route is *served in*, not a preference: the
+ * Sinhala landing page passes `"si"` with the same `"/"` path, so it inherits
+ * the page's dashboard-managed title and description while emitting its own
+ * canonical (`/si`) and the matching `og:locale`.
  */
-export function buildMetadata(config: SeoConfig, path: string): Metadata {
+export function buildMetadata(
+  config: SeoConfig,
+  path: string,
+  locale: Locale = DEFAULT_LOCALE
+): Metadata {
   const page = getPageSeo(config, path);
+  const canonical = localizedCanonical(page.canonical, path, locale);
   const isRoot = path === "/";
   const title = isRoot
     ? { default: config.defaultTitle, template: config.titleTemplate }
@@ -245,8 +294,15 @@ export function buildMetadata(config: SeoConfig, path: string): Metadata {
 
     openGraph: {
       type: "website",
-      locale: "en_LK",
-      url: page.canonical,
+      locale: OG_LOCALES[locale],
+      ...(hasTranslation(path)
+        ? {
+            alternateLocale: Object.values(OG_LOCALES).filter(
+              (tag) => tag !== OG_LOCALES[locale]
+            ),
+          }
+        : {}),
+      url: canonical,
       siteName: config.siteName,
       title: socialTitle,
       description: config.socialDescription,
@@ -268,14 +324,13 @@ export function buildMetadata(config: SeoConfig, path: string): Metadata {
     },
 
     alternates: {
-      canonical: page.canonical,
-      // Both locales are served from the same URL by the in-page language
-      // switcher, so every hreflang points at the canonical.
-      languages: {
-        "en-LK": page.canonical,
-        "si-LK": page.canonical,
-        "x-default": page.canonical,
-      },
+      canonical,
+      // Reciprocal hreflang: each tag points at the URL that actually serves
+      // that language, and every one of those URLs points back. A route with
+      // no Sinhala translation advertises only English — claiming a si-LK
+      // alternate that resolves to English copy is the invalid return-tag
+      // setup Search Console flags, and Google drops the whole cluster.
+      languages: languageAlternates(page.canonical, path),
     },
 
     verification: {
