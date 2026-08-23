@@ -40,6 +40,7 @@ export default function AdminUsers() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   async function handleDelete() {
     if (!deleteId) return;
@@ -57,12 +58,29 @@ export default function AdminUsers() {
     });
     if (!ok) return;
     setSaving(true);
-    await fetch(`/api/users/${editUser._id}`, {
+    setSaveError("");
+    // Only the fields the edit form actually exposes — the PUT endpoint
+    // rejects unrecognized keys (e.g. _id, email, role), so the rest of
+    // `editUser` can't just be spread through.
+    const res = await fetch(`/api/users/${editUser._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editUser),
+      body: JSON.stringify({
+        name: editUser.name,
+        phone: editUser.phone,
+        age: editUser.age,
+        parentName: editUser.parentName,
+        city: editUser.city,
+        interestedCourse: editUser.interestedCourse,
+        status: editUser.status,
+      }),
     });
     setSaving(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setSaveError(data.error ?? "Failed to save changes");
+      return;
+    }
     setEditUser(null);
     reload();
   }
@@ -139,7 +157,7 @@ export default function AdminUsers() {
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => setEditUser(u)}
+                        onClick={() => { setEditUser(u); setSaveError(""); }}
                         className="p-2.5 -m-1 rounded-lg text-slate-400 hover:text-[color:var(--brand-navy)] hover:bg-slate-100 transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -170,6 +188,11 @@ export default function AdminUsers() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+            {saveError && (
+              <div className="mx-6 mt-4 rounded-lg bg-red-50 border border-red-200 text-red-600 text-sm px-3 py-2">
+                {saveError}
+              </div>
+            )}
             <div className="p-6 space-y-4">
               {([
                 ["Name",             "name",             "text"],
