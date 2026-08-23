@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "promote-super-admin": "node scripts/promote-super-admin.mjs",
-    "seed:seo": "tsx scripts/seed-seo.mts",
+    "seed:email-templates": "tsx scripts/seed-email-templates.mts",
     "test": "vitest run",
     "test:watch": "vitest"
   },

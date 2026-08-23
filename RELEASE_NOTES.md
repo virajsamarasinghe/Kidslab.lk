@@ -1,5 +1,23 @@
 # Release Notes
 
+## v1.2.0 — Editable email templates (2026-08-23)
+
+The wording of every email the site sends is now edited from the dashboard instead of being hardcoded, with a live preview of the finished message.
+
+### Settings → Email Templates (`/admin/settings/email-templates`)
+- All four outbound emails — registration welcome, admin invitation, password reset and the SMTP test — with per-template subject, inbox preview text, heading, opening and closing paragraphs, call-to-action button, small print and closing note.
+- **Live preview** beside the editor, rendered by the same code that sends the real message, updating as you type. Desktop and mobile widths.
+- **Placeholders** (`{{name}}`, `{{roleLabel}}`, `{{resetUrl}}`, …) listed per template with click-to-copy, and a warning when the copy contains a token that template doesn't know.
+- **Send yourself a test** delivers what's on screen, unsaved edits included, filled with sample data — the only way to see how Gmail and Outlook really render it.
+- **Restore defaults** puts one template back to the shipped copy.
+
+### Behaviour
+- Subject, preview text, heading and opening paragraphs fall back to the shipped copy when cleared, so an email can never go out headless. The optional blocks — button, small print, closing note — stay blank when cleared, which is how they're removed.
+- Registrant names and course titles are escaped on the way in; the branded layout, the detail tables and the password-reset link stay in code, so an edit can't break a reset email or drop the link.
+- **The shipped copy seeds itself when the server starts**, so a fresh install's dashboard opens on the real wording rather than on blanks that only materialise after the first email goes out. It fills in only what's missing — an admin's edits always win, and a note they deliberately cleared stays cleared. Seeding never delays startup: if the database is unreachable the server still boots, and the next send tries again. `EMAIL_TEMPLATES_AUTO_SEED=0` turns it off.
+- `npm run seed:email-templates` does the same from the command line for what the automatic pass can't cover: `--dry-run` to preview, `--force` to reset edited copy back to the shipped wording (also how you push a *changed* default to an install that was seeded before it changed), or seeding an environment that isn't serving traffic yet.
+- No new required environment variables, and no migration: an unedited template reads the shipped defaults either way.
+
 ## v1.1.0 — Dashboard-managed SEO & AEO (2026-08-23)
 
 Everything search engines and AI answer engines see is now editable from the admin dashboard instead of being hardcoded in the source.
@@ -23,8 +41,6 @@ Everything search engines and AI answer engines see is now editable from the adm
 - Saving publishes immediately: the SEO cache is dropped and every affected page is revalidated, so an edit doesn't wait out the 5-minute ISR window.
 - Blank fields fall back to the shipped defaults in `src/config/seo.ts`, so clearing an input restores the built-in value rather than emitting empty markup. The same defaults render if MongoDB is unreachable.
 - The FAQ section on the landing page is now server-rendered from the settings rather than the message files, in Sinhala when a translation exists and English when it doesn't. All 24 entries are translated, including the three that are structured-data only today — so switching one on for the page needs no further translation work. `faq.items` has been removed from `src/messages/en.json` and `si.json`; the section's heading and subtitle stay there.
-- The defaults seed themselves into the database on the first request after a deploy, so the dashboard shows a fully populated config on a fresh install rather than one that materialises on first save. It writes only what's missing — admin edits always win — and stops writing once the two agree, so a release that adds a field fills in just that field. `SEO_AUTO_SEED=0` disables it.
-- `npm run seed:seo` does the same from the command line for what the automatic pass can't cover: `--dry-run` to preview, `--force` to reset an edited config back to the defaults, or seeding an environment that isn't serving traffic yet.
 - No new environment variables.
 
 ## v1.0.0 — First Release (2026-08-08)

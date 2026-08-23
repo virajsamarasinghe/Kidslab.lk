@@ -4,9 +4,11 @@ import { connectDB } from "@/lib/mongodb";
 import { enforceRateLimit, clientIp } from "@/lib/rate-limit";
 import { logActivity } from "@/lib/activity-log";
 import { getBrevoCredentials, sendEmail } from "@/lib/brevo";
-import { button, divider, escapeHtml, muted, p, renderEmail } from "@/lib/email-template";
+import { escapeHtml } from "@/lib/email-template";
+import { renderEmailTemplate } from "@/lib/email-templates";
+import { getEmailTemplates } from "@/lib/settings";
 import { ADMIN_ROLES } from "@/lib/roles";
-import { SITE_NAME, SITE_URL } from "@/config/site";
+import { CONTACT_PHONE, SITE_LEGAL_NAME, SITE_NAME, SITE_URL } from "@/config/site";
 import User from "@/models/User";
 import PasswordResetToken from "@/models/PasswordResetToken";
 
@@ -59,35 +61,26 @@ export async function POST(req: NextRequest) {
 
   const link = `${SITE_URL}/reset-password?token=${token}`;
   try {
-    const html = renderEmail({
-      title: `Reset your ${SITE_NAME} admin password`,
-      preheader: `Your password reset link expires in ${TOKEN_TTL_MINUTES} minutes.`,
-      heading: "Reset your password",
-      body: [
-        p(`Hi ${escapeHtml(user.name || "there")},`),
-        p(
-          `We received a request to reset the password for your ${escapeHtml(SITE_NAME)} admin account. Click the button below to choose a new one.`
-        ),
-        button("Reset password", link),
-        muted(
-          `This link expires in <strong>${TOKEN_TTL_MINUTES} minutes</strong> and can only be used once.`
-        ),
-        muted(
-          `If the button doesn't work, copy this address into your browser:<br /><span style="word-break:break-all;">${escapeHtml(link)}</span>`
-        ),
-        divider(),
-        muted(
-          "Didn't request this? You can safely ignore this email — your password won't change, and nobody can reset it without this link. If you keep receiving these, contact your administrator."
-        ),
-      ].join(""),
+    const templates = await getEmailTemplates();
+    const { subject, html } = renderEmailTemplate("passwordReset", templates.passwordReset, {
+      siteName: SITE_NAME,
+      siteUrl: SITE_URL,
+      legalName: SITE_LEGAL_NAME,
+      contactPhone: CONTACT_PHONE,
+      name: user.name || "there",
+      email: user.email,
+      minutes: String(TOKEN_TTL_MINUTES),
+      resetUrl: link,
+    }, {
+      // Appended rather than left to the editable copy: a mail client that
+      // strips the button is exactly the case where this line has to be
+      // present, so it must not be possible to delete it from the dashboard.
+      extraNotes: [
+        `If the button doesn't work, copy this address into your browser:<br /><span style="word-break:break-all;">${escapeHtml(link)}</span>`,
+      ],
     });
 
-    await sendEmail(creds, {
-      to: user.email,
-      name: user.name,
-      subject: `Reset your ${SITE_NAME} admin password`,
-      html,
-    });
+    await sendEmail(creds, { to: user.email, name: user.name, subject, html });
     logActivity({ email: user.email }, "requested password reset", "auth", String(user._id), {
       ip: clientIp(req),
     });

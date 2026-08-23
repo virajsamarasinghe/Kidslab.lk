@@ -3,11 +3,13 @@ import { revalidatePath } from "next/cache";
 import { requireCapability } from "@/lib/auth";
 import { getSettings, invalidateSettingsSnapshot } from "@/lib/settings";
 import { invalidateSeoCache, mergeSeo } from "@/lib/seo";
+import { mergeEmailTemplates } from "@/lib/email-templates";
+import type { EmailTemplateKey, EmailTemplateContent } from "@/config/email-templates";
 import type { SeoConfig } from "@/config/seo";
 import { logActivity } from "@/lib/activity-log";
 import type { ISettings, LLMConfig } from "@/models/Settings";
 
-const SECTIONS = ["brevo", "llm", "embedding", "assistant", "seo"] as const;
+const SECTIONS = ["brevo", "llm", "embedding", "assistant", "seo", "emailTemplates"] as const;
 type Section = (typeof SECTIONS)[number];
 
 function maskSecret(value: string) {
@@ -26,8 +28,8 @@ function maskSecret(value: string) {
  * the whole unmasked settings doc through `$__parent`.
  */
 function serialize(settings: ISettings) {
-  const { brevo, llm, embedding, assistant, seo } = settings.toObject<
-    Pick<ISettings, "brevo" | "llm" | "embedding" | "assistant" | "seo">
+  const { brevo, llm, embedding, assistant, seo, emailTemplates } = settings.toObject<
+    Pick<ISettings, "brevo" | "llm" | "embedding" | "assistant" | "seo" | "emailTemplates">
   >();
 
   return {
@@ -40,6 +42,8 @@ function serialize(settings: ISettings) {
     // public site is actually emitting — including every shipped default that
     // has never been overridden.
     seo: mergeSeo(seo),
+    // Same reasoning: the editor opens on the copy that is actually going out.
+    emailTemplates: mergeEmailTemplates(emailTemplates),
   };
 }
 
@@ -147,6 +151,24 @@ export async function PUT(req: NextRequest) {
     revalidatePath("/llms.txt");
     logActivity(session, "updated", "settings", "seo");
     return NextResponse.json(serialize(settings).seo);
+  }
+
+  if (section === "emailTemplates") {
+    // Whole-section replace, like `seo`: `mergeEmailTemplates` is what decides
+    // whether a blank slot means "restore the shipped copy" (subject, heading)
+    // or "don't render this block" (button, closing notes). Merging field by
+    // field here would make an optional block impossible to remove.
+    const data = (body.data ?? {}) as Partial<
+      Record<EmailTemplateKey, Partial<EmailTemplateContent>>
+    >;
+    settings.emailTemplates = mergeEmailTemplates(data);
+
+    settings.markModified("emailTemplates");
+    await settings.save();
+    // The send paths read templates through the settings snapshot.
+    invalidateSettingsSnapshot();
+    logActivity(session, "updated", "settings", "emailTemplates");
+    return NextResponse.json(serialize(settings).emailTemplates);
   }
 
   const incoming = (body.data ?? {}) as Record<string, string>;
