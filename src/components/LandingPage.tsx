@@ -13,6 +13,7 @@ import ChatWidget from "@/components/ChatWidget";
 import type { GoogleReview } from "@/lib/google-reviews";
 import { LocaleProvider, useLocale } from "@/lib/locale-context";
 import { RegisterModalProvider, useRegisterModal } from "@/lib/register-modal-context";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import type { Course } from "@/types/course";
 import {
@@ -652,7 +653,10 @@ function HomeContent({
                 >
                   <Button
                     size="lg"
-                    onClick={openRegisterModal}
+                    onClick={() => {
+                      track("register_cta_click", { source: "hero" });
+                      openRegisterModal();
+                    }}
                     className="btn-register btn-brand-copper w-full sm:w-auto text-white font-semibold px-6 sm:px-8 xl:px-10 h-12 xl:h-14 2xl:h-16 rounded-full text-[15px] xl:text-base 2xl:text-lg tracking-[-0.01em] shadow-md"
                   >
                     {t("hero.ctaRegister")}
@@ -878,7 +882,10 @@ function HomeContent({
                               }}
                             >
                               <button
-                                onClick={openRegisterModal}
+                                onClick={() => {
+                                  track("register_cta_click", { source: "program_card" });
+                                  openRegisterModal();
+                                }}
                                 className="btn-register btn-brand-copper w-full text-white font-semibold h-12 md:h-11 rounded-full text-[15px] md:text-[14px] tracking-[-0.01em]"
                               >
                                 {card.ctaLabel}
@@ -1342,7 +1349,18 @@ function HomeContent({
             <div className="flex flex-col gap-3">
               {Array.from({ length: faqCount }).map((_, i) => (
                 <AnimateIn key={i} delay={i * 0.04}>
-                  <details className="group pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm open:shadow-md transition-shadow duration-300">
+                  <details
+                    className="group pcb-card bg-white rounded-2xl border border-slate-100 shadow-sm open:shadow-md transition-shadow duration-300"
+                    onToggle={(e) => {
+                      /* onToggle also fires on collapse — only the open is interesting. */
+                      if (!e.currentTarget.open) return;
+                      track("faq_open", {
+                        faq_index: i,
+                        faq_question: t(`faq.items.${i}.q`),
+                        locale,
+                      });
+                    }}
+                  >
                     <summary className="flex items-center justify-between gap-4 cursor-pointer list-none p-6 select-none">
                       <span className="font-semibold text-slate-900 text-body-lg">
                         {t(`faq.items.${i}.q`)}
@@ -1477,6 +1495,11 @@ function HomeContent({
                         href={c.href}
                         target={c.external ? "_blank" : undefined}
                         rel={c.external ? "noopener noreferrer" : undefined}
+                        onClick={
+                          c.id === "whatsapp"
+                            ? () => track("whatsapp_click", { source: "contact_card" })
+                            : undefined
+                        }
                         className={`group relative flex flex-col gap-2.5 sm:gap-3 p-4 sm:p-6 border-slate-100 ${c.hoverBg} transition-colors duration-200 ${
                           i % 2 === 0 ? "border-r" : ""
                         } ${i < 2 ? "border-b" : ""}`}
@@ -1576,7 +1599,10 @@ function HomeContent({
 
                   <div className="relative z-10 mt-8 flex flex-col gap-3">
                     <button
-                      onClick={openRegisterModal}
+                      onClick={() => {
+                        track("register_cta_click", { source: "contact_section" });
+                        openRegisterModal();
+                      }}
                       className="w-full bg-white font-bold h-12 rounded-full text-sm tracking-[-0.01em] transition-all hover:bg-slate-50 hover:shadow-lg hover:-translate-y-0.5 shadow-lg"
                       style={{ color: "var(--brand-navy)" }}
                     >
@@ -1679,7 +1705,14 @@ function HomeContent({
                       <a
                         key={l}
                         href={href ?? "#"}
-                        onClick={href ? undefined : openRegisterModal}
+                        onClick={
+                          href
+                            ? undefined
+                            : () => {
+                                track("register_cta_click", { source: "footer_link" });
+                                openRegisterModal();
+                              }
+                        }
                         className="block text-slate-400 hover:text-white py-1.5 md:py-0 md:mb-2.5 transition-colors"
                         style={{ fontSize: "0.875rem" }}
                       >
@@ -1724,6 +1757,7 @@ function HomeContent({
         href="https://wa.me/94763977035"
         target="_blank"
         rel="noopener noreferrer"
+        onClick={() => track("whatsapp_click", { source: "floating_button" })}
         aria-label="Chat on WhatsApp"
         className="fixed bottom-20 right-4 md:bottom-[5.25rem] md:right-5 xl:bottom-[5.5rem] xl:right-6 z-40 flex items-center justify-center w-12 h-12 md:w-11 md:h-11 xl:w-12 xl:h-12 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 active:scale-95"
         style={{ backgroundColor: "#25D366" }}

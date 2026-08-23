@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Sinhala, Space_Grotesk } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
-import { GoogleTagManager } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { SITE_URL, SITE_NAME, GTM_ID } from "@/config/site";
+import { SITE_URL, SITE_NAME, GTM_ID, GA_MEASUREMENT_ID } from "@/config/site";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -240,6 +240,10 @@ export default function RootLayout({
           <Analytics />
           <SpeedInsights />
         </body>
+        {/* GA4 via gtag.js. Like the GTM component above, this also sends a
+            page_view on client-side route changes — the raw gtag snippet only
+            ever reports the landing page in an App Router app. */}
+        <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
       </html>
     </ClerkProvider>
   );

@@ -7,6 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { track } from "@/lib/analytics";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { useRegisterModalState } from "@/lib/register-modal-context";
 
@@ -66,8 +67,14 @@ export default function RegisterModal() {
     });
     const data = await res.json();
     setLoading(false);
-    if (res.ok) setSuccess(true);
-    else setError(data.error ?? "Registration failed. Please try again.");
+    if (res.ok) {
+      /* The conversion that matters — fired only on a confirmed 2xx, so a
+         failed submit never inflates the count. */
+      track("seminar_registration_complete", { source: "modal" });
+      setSuccess(true);
+    } else {
+      setError(data.error ?? "Registration failed. Please try again.");
+    }
   }
 
   return (

@@ -21,6 +21,16 @@ export const CONTACT_ADDRESS = "Colombo, Sri Lanka";
 /** Google Tag Manager container ID (kidslab.lk web container). */
 export const GTM_ID = "GTM-K5SF2WC2";
 
+/**
+ * GA4 measurement ID, loaded directly via gtag.js.
+ *
+ * Deliberately NOT also configured as a Google tag inside the GTM container
+ * above — two loaders for the same measurement ID double-count every
+ * pageview. If GA4 is ever moved into GTM, delete the <GoogleAnalytics />
+ * component from the root layout in the same change.
+ */
+export const GA_MEASUREMENT_ID = "G-E8MR59WLNT";
+
 export const WHATSAPP_URL = "https://wa.me/94763977035";
 export const FACEBOOK_URL = "https://www.facebook.com/profile.php?id=61585638656242";
 
