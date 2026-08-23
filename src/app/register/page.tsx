@@ -25,9 +25,13 @@ import {
   ComboboxItem,
 } from "@/components/ui/combobox";
 import { track } from "@/lib/analytics";
+
+import { SITE_URL } from "@/config/site";
+
 import { DISTRICTS } from "@/lib/sri-lanka-locations";
 
 const CITY_OPTIONS = DISTRICTS.map(d => d.name);
+
 
 export default function RegisterPage() {
   const { isSignedIn, user } = useUser();
@@ -137,8 +141,8 @@ export default function RegisterPage() {
             "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Home", item: "https://kidslab.lk" },
-              { "@type": "ListItem", position: 2, name: "Register", item: "https://kidslab.lk/register" },
+              { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+              { "@type": "ListItem", position: 2, name: "Register", item: `${SITE_URL}/register` },
             ],
           }),
         }}

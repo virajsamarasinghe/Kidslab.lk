@@ -149,6 +149,10 @@ export async function PUT(req: NextRequest) {
     // would save a title and still see the old one for up to five minutes.
     for (const page of settings.seo.pages) revalidatePath(page.path);
     revalidatePath("/llms.txt");
+    // Both are metadata routes built from this same config — the page list
+    // drives the sitemap and the aiCrawlers toggles drive robots.txt.
+    revalidatePath("/sitemap.xml");
+    revalidatePath("/robots.txt");
     logActivity(session, "updated", "settings", "seo");
     return NextResponse.json(serialize(settings).seo);
   }

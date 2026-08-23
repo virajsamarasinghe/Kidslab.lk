@@ -3,6 +3,10 @@ import { SITE_URL } from "@/config/site";
 import { AI_CRAWLER_AGENTS, PRIVATE_PATHS } from "@/config/seo";
 import { getSeoConfig } from "@/lib/seo";
 
+/* As with the sitemap: the AI-crawler toggles are dashboard state, so this
+   file has to be regenerated on a timer rather than frozen at build time. */
+export const revalidate = 300;
+
 /**
  * Two groups: everyone, then the answer-engine crawlers by name.
  *
