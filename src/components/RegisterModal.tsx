@@ -7,9 +7,25 @@ import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Combobox,
+  ComboboxInputGroup,
+  ComboboxInput,
+  ComboboxClear,
+  ComboboxTrigger,
+  ComboboxPortal,
+  ComboboxPositioner,
+  ComboboxPopup,
+  ComboboxList,
+  ComboboxEmpty,
+  ComboboxItem,
+} from "@/components/ui/combobox";
 import { track } from "@/lib/analytics";
 import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
 import { useRegisterModalState } from "@/lib/register-modal-context";
+import { DISTRICTS } from "@/lib/sri-lanka-locations";
+
+const CITY_OPTIONS = DISTRICTS.map(d => d.name);
 
 export default function RegisterModal() {
   const { open, setOpen } = useRegisterModalState();
@@ -232,7 +248,7 @@ export default function RegisterModal() {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 block mb-1">
-                        Phone <span style={{ color: "var(--brand-red)" }}>*</span>
+                        WhatsApp Number <span style={{ color: "var(--brand-red)" }}>*</span>
                       </Label>
                       <Input
                         type="tel"
@@ -291,15 +307,38 @@ export default function RegisterModal() {
                   {/* City */}
                   <div>
                     <Label className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 block mb-1">
-                      City / District
+                      City / District <span style={{ color: "var(--brand-red)" }}>*</span>
                     </Label>
-                    <Input
-                      placeholder="Ex: Matara"
-                      autoComplete="address-level2"
-                      autoCapitalize="words"
-                      className="border-slate-200 w-full h-11 sm:h-10 text-sm"
-                      value={form.city} onChange={set("city")}
-                    />
+                    <Combobox
+                      items={CITY_OPTIONS}
+                      value={form.city || null}
+                      onValueChange={(value) => setForm(f => ({ ...f, city: value ?? "" }))}
+                      required
+                    >
+                      <ComboboxInputGroup className="border-slate-200 h-11 sm:h-10">
+                        <ComboboxInput
+                          placeholder="Search for your district…"
+                          autoComplete="address-level2"
+                          className="h-11 sm:h-10 text-sm"
+                        />
+                        <ComboboxClear />
+                        <ComboboxTrigger />
+                      </ComboboxInputGroup>
+                      <ComboboxPortal>
+                        <ComboboxPositioner>
+                          <ComboboxPopup>
+                            <ComboboxEmpty>No district found.</ComboboxEmpty>
+                            <ComboboxList>
+                              {(item: string) => (
+                                <ComboboxItem key={item} value={item}>
+                                  {item}
+                                </ComboboxItem>
+                              )}
+                            </ComboboxList>
+                          </ComboboxPopup>
+                        </ComboboxPositioner>
+                      </ComboboxPortal>
+                    </Combobox>
                   </div>
 
                   {/* Fixed program chip */}

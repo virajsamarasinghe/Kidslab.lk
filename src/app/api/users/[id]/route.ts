@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { connectDB } from "@/lib/mongodb";
 import { requireCapability } from "@/lib/auth";
 import User from "@/models/User";
 import { z } from "zod";
 import { parseBody } from "@/lib/validate";
+import { ADMIN_STATS_TAG } from "@/lib/dashboard-stats";
 
 const UserUpdateSchema = z.object({
   name:             z.string().trim().min(1).max(120).optional(),
@@ -41,6 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const user = await User.findOneAndUpdate({ _id: id, role: "user" }, parsed, { new: true }).select("-password").lean();
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  revalidateTag(ADMIN_STATS_TAG, { expire: 0 });
   return NextResponse.json(user);
 }
 
@@ -51,6 +54,9 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
   await connectDB();
   const { id } = await params;
   const user = await User.findOneAndDelete({ _id: id, role: "user" });
-  if (user) logActivity(session, "deleted", "user", id, { name: user.name, email: user.email });
+  if (user) {
+    logActivity(session, "deleted", "user", id, { name: user.name, email: user.email });
+    revalidateTag(ADMIN_STATS_TAG, { expire: 0 });
+  }
   return NextResponse.json({ success: true });
 }
