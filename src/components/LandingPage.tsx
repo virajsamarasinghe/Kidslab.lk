@@ -7,6 +7,7 @@ import I18nProvider from "@/components/I18nProvider";
 import LoadingScreen from "@/components/LoadingScreen";
 import Navbar from "@/components/Navbar";
 import RegisterModal from "@/components/RegisterModal";
+import RobotScrollHero from "@/components/robot/RobotScrollHero";
 import SubscribePopup from "@/components/SubscribePopup";
 import WhatsAppIcon from "@/components/WhatsAppIcon";
 import { LocaleProvider, useLocale } from "@/lib/locale-context";
@@ -28,7 +29,7 @@ import {
     Users,
     Zap,
 } from "lucide-react";
-import { motion, useScroll, useTransform } from "motion/react";
+import { motion } from "motion/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -210,7 +211,7 @@ function FooterSubscribe({
     <div className="w-full max-w-[280px]">
       <p className="text-label text-slate-500 mb-4">{heading}</p>
       {status === "success" ? (
-        <p className="flex items-center gap-2 text-green-400 text-sm">
+          <p className="flex items-center gap-2 text-green-600 text-sm">
           <CheckCircle className="w-4 h-4 shrink-0" />
           {success}
         </p>
@@ -222,7 +223,7 @@ function FooterSubscribe({
             placeholder={placeholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="min-w-0 flex-1 rounded-full bg-white/5 border border-white/10 px-4 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-white/30 transition-colors"
+            className="min-w-0 flex-1 rounded-full bg-white/75 border border-slate-200 px-4 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-slate-400 transition-colors"
           />
           <button
             type="submit"
@@ -445,72 +446,33 @@ function HomeContent({ courses }: { courses: Course[] }) {
     setActiveCourseIndex(clamped);
   };
 
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
-  const bannerY = useTransform(scrollYProgress, [0, 1], ["0%", "-100%"]);
-
   return (
     <>
       {/* JSON-LD lives in the server component at src/app/page.tsx so that it
           is built from the same DB courses the cards render — see
           buildLandingJsonLd() in src/lib/structured-data.ts. */}
       <LoadingScreen />
+      <RobotScrollHero />
       <motion.main
-        className="bg-white"
+        className="relative z-10 min-h-screen overflow-x-clip bg-transparent"
         animate={{ opacity: langFading ? 0.15 : 1 }}
         transition={{ duration: langFading ? 0.13 : 0.28, ease: "easeInOut" }}
       >
         <Navbar />
 
-        {/* ══ Hero ══════════════════════════════════════════════════════ */}
-        <section
-          ref={heroRef}
-          className="relative min-h-svh lg:h-svh flex items-center pt-16 pb-4 overflow-hidden"
-        >
-          <div
-            className="absolute inset-0"
-            style={{ backgroundColor: "var(--brand-paper)" }}
-          />
-          <div
-            className="absolute top-0 right-0 w-[700px] h-[700px] opacity-20"
-            style={{
-              background:
-                "radial-gradient(circle at 65% 35%, #dbe6ff 0%, transparent 55%), radial-gradient(circle at 80% 75%, #f3ddc3 0%, transparent 50%)",
-            }}
-          />
-          {/* PCB layout grid — the hero's signature backdrop */}
-          <div
-            className="absolute inset-0 opacity-[0.06]"
-            style={{
-              backgroundImage:
-                "linear-gradient(var(--brand-blue) 1px, transparent 1px), linear-gradient(90deg, var(--brand-blue) 1px, transparent 1px)",
-              backgroundSize: "34px 34px",
-            }}
-          />
-          <div
-            className="absolute inset-0 opacity-[0.08]"
-            style={{
-              backgroundImage:
-                "radial-gradient(var(--brand-red) 1.5px, transparent 1.5px)",
-              backgroundSize: "68px 68px",
-              backgroundPosition: "17px 17px",
-            }}
-          />
+        <div className="relative z-10">
 
+        {/* ══ Hero ══════════════════════════════════════════════════════ */}
+        <section className="relative min-h-svh flex items-center pt-16 pb-4 overflow-hidden">
           <motion.div
-            style={{ y: heroY }}
-            className="relative z-10 max-w-screen-xl mx-auto px-6 lg:px-10 xl:px-16 w-full py-8 lg:py-10 xl:py-14 2xl:py-20"
+            className="relative z-10 flex h-full w-full max-w-screen-xl items-center px-6 py-8 mx-auto lg:w-full lg:px-10 lg:py-10 xl:px-16 xl:py-14 2xl:py-20"
           >
-            <div className="max-w-3xl mx-auto text-center">
+            <div className="w-full max-w-3xl mx-auto text-center lg:mx-0 lg:w-[56%] lg:text-left">
               <motion.div
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45 }}
-                className="flex justify-center"
+                className="flex justify-center lg:justify-start"
               >
                 <span
                   className="pcb-stamp inline-flex items-center gap-2 pl-4 pr-5 py-1.5 text-label mb-4 lg:mb-5"
@@ -551,7 +513,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
-                className="mt-6 lg:mt-7 flex flex-wrap justify-center gap-3"
+                className="mt-6 lg:mt-7 flex flex-wrap justify-center gap-3 lg:justify-start"
               >
                 <motion.div
                   className="rounded-full"
@@ -592,7 +554,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.44 }}
-                className="mt-5 lg:mt-7 flex flex-wrap justify-center gap-5"
+                className="mt-5 lg:mt-7 flex flex-wrap justify-center gap-5 lg:justify-start"
               >
                 {[t("hero.trust1"), t("hero.trust2"), t("hero.trust3"), t("hero.trust4")].map(
                   (label) => (
@@ -614,7 +576,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
               initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.65, delay: 0.58 }}
-              className="mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 xl:gap-6 max-w-4xl mx-auto"
+              className="mt-12 lg:mt-14 xl:mt-16 grid grid-cols-2 gap-3 max-w-4xl mx-auto sm:gap-4 md:grid-cols-4 lg:mx-0 lg:max-w-2xl lg:grid-cols-2 xl:grid-cols-4 xl:gap-6"
             >
               {stats.map(({ value, label }, i) => (
                 <div
@@ -643,7 +605,6 @@ function HomeContent({ courses }: { courses: Course[] }) {
 
           {/* ══ University Banner — pinned to hero's bottom edge, drifts up on scroll ══ */}
           <motion.div
-            style={{ y: bannerY }}
             className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-r from-blue-700 to-violet-700 py-4 px-6"
           >
             <div className="max-w-screen-2xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-2.5">
@@ -672,7 +633,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
         {/* ══ Programs ══════════════════════════════════════════════════ */}
         <section
           id="programs"
-          className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-slate-50"
+          className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12"
         >
           <div className="max-w-screen-2xl mx-auto">
             <AnimateIn className="text-center mb-16">
@@ -886,7 +847,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
         </section>
 
         {/* ══ Why kidslab.lk ════════════════════════════════════════════ */}
-        <section id="about" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white">
+        <section id="about" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12">
           <div className="max-w-screen-2xl mx-auto">
             <AnimateIn className="text-center mb-16">
               <SectionLabel>
@@ -928,36 +889,18 @@ function HomeContent({ courses }: { courses: Course[] }) {
         <section
           id="team"
           className="scroll-mt-20 py-10 px-6 xl:py-14 xl:px-12 relative overflow-hidden min-h-[calc(100vh-5rem)] flex flex-col justify-center"
-          style={{
-            background:
-              "linear-gradient(135deg, var(--brand-navy) 0%, #123a2a 50%, #0d2560 100%)",
-          }}
         >
-          {/* Decorative blobs */}
-          <div
-            className="absolute -left-32 top-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, var(--brand-blue), transparent)",
-            }}
-          />
-          <div
-            className="absolute -right-32 bottom-0 w-96 h-96 rounded-full opacity-10 pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, var(--brand-red), transparent)",
-            }}
-          />
-
           <div className="max-w-screen-2xl mx-auto relative z-10">
             {/* Header */}
             <AnimateIn className="text-center mb-5 xl:mb-7">
               <SectionLabel
                 style={{
-                  color: "color-mix(in srgb, var(--brand-red) 70%, white)",
+                  color: "var(--brand-red)",
                 }}
               >
                 {t("team.eyebrow")}
               </SectionLabel>
-              <h2 className="text-display-lg text-white">
+              <h2 className="text-display-lg text-slate-900">
                 {t("team.headingStart")}
                 <span
                   className="bg-clip-text text-transparent"
@@ -969,7 +912,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                   {t("team.headingHighlight")}
                 </span>
               </h2>
-              <p className="text-body-xl text-slate-400 mt-2 max-w-xl mx-auto">
+              <p className="text-body-xl text-slate-500 mt-2 max-w-xl mx-auto">
                 {t("team.subtitle")}
               </p>
             </AnimateIn>
@@ -978,7 +921,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 xl:gap-6 max-w-xl xl:max-w-2xl mx-auto">
               {founders.map((f, i) => (
                 <AnimateIn key={f.name} delay={i * 0.15} className="h-full">
-                  <div className="h-full flex flex-col items-center text-center gap-2 rounded-2xl bg-white/[0.04] border border-white/10 px-5 py-4 xl:py-5 hover:bg-white/[0.06] transition-colors duration-300">
+                  <div className="h-full flex flex-col items-center text-center gap-2 rounded-2xl bg-white/65 border border-slate-200/80 shadow-sm px-5 py-4 xl:py-5 hover:bg-white/85 transition-colors duration-300">
                     {/* Avatar */}
                     <div className="relative w-16 h-16 xl:w-20 xl:h-20 rounded-full overflow-hidden ring-2 ring-blue-400/40 shrink-0">
                       <Image
@@ -991,23 +934,23 @@ function HomeContent({ courses }: { courses: Course[] }) {
                     </div>
 
                     {/* Co-Founder badge */}
-                    <span className="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-300 border border-blue-400/30 font-bold rounded-full px-3 py-0.5 text-[10px] tracking-widest uppercase">
+                    <span className="inline-flex items-center gap-1.5 bg-blue-500/15 text-blue-700 border border-blue-400/30 font-bold rounded-full px-3 py-0.5 text-[10px] tracking-widest uppercase">
                       <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
                       {t("team.coFounder")}
                     </span>
 
                     {/* Name + role */}
                     <div>
-                      <h3 className="text-white font-extrabold tracking-tight text-base xl:text-lg">
+                      <h3 className="text-slate-900 font-extrabold tracking-tight text-base xl:text-lg">
                         {f.name}
                       </h3>
-                      <p className="text-blue-300 font-medium text-xs xl:text-sm mt-0.5">
+                      <p className="text-blue-700 font-medium text-xs xl:text-sm mt-0.5">
                         {t("team.role")}
                       </p>
                     </div>
 
                     {/* University */}
-                    <div className="flex items-center gap-1.5 text-slate-400 text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-500 text-xs">
                       <GraduationCap className="w-3.5 h-3.5 shrink-0 text-blue-400" />
                       {t("team.university")}
                     </div>
@@ -1017,7 +960,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                       {(t.raw("team.tags") as string[]).map((tag) => (
                         <span
                           key={tag}
-                          className="bg-white/10 text-blue-200 border border-white/15 px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase"
+                          className="bg-white/70 text-blue-700 border border-slate-200 px-2.5 py-1 rounded-full text-[10px] font-semibold tracking-wider uppercase"
                         >
                           {tag}
                         </span>
@@ -1029,7 +972,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                       href={f.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0A66C2]/50 bg-[#0A66C2]/20 hover:bg-[#0A66C2]/50 text-[#93c5fd] hover:text-white transition-all duration-200 font-semibold text-sm"
+                      className="mt-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#0A66C2]/50 bg-[#0A66C2]/10 hover:bg-[#0A66C2]/20 text-[#0A66C2] hover:text-[#064e9e] transition-all duration-200 font-semibold text-sm"
                     >
                       <LinkedInIcon className="w-3.5 h-3.5 shrink-0" />
                       {t("team.linkedin")}
@@ -1041,17 +984,17 @@ function HomeContent({ courses }: { courses: Course[] }) {
 
             {/* University strip */}
             <AnimateIn delay={0.3} className="mt-4 xl:mt-6">
-              <div className="max-w-3xl xl:max-w-5xl mx-auto bg-white/[0.04] border border-white/8 rounded-2xl px-8 xl:px-12 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 xl:gap-8">
+              <div className="max-w-3xl xl:max-w-5xl mx-auto bg-white/65 border border-slate-200/80 rounded-2xl px-8 xl:px-12 py-3 flex flex-col sm:flex-row items-center justify-center gap-2 xl:gap-8 shadow-sm">
                 <div className="flex items-center gap-3">
                   <GraduationCap className="w-4 h-4 xl:w-5 xl:h-5 text-blue-400 shrink-0" />
                   <p
-                    className="text-slate-300 font-semibold"
+                    className="text-slate-700 font-semibold"
                     style={{ fontSize: "clamp(0.78rem, 0.85vw, 1.05rem)" }}
                   >
                     {t("team.universityStrip")}
                   </p>
                 </div>
-                <div className="hidden sm:block w-px h-5 bg-white/20" />
+                <div className="hidden sm:block w-px h-5 bg-slate-300" />
                 <div className="flex items-center gap-3">
                   <MapPin className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-slate-500 shrink-0" />
                   <p
@@ -1067,7 +1010,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
         </section>
 
         {/* ══ Testimonials ══════════════════════════════════════════════ */}
-        <section className="py-28 px-6 xl:py-36 xl:px-12 bg-slate-50">
+        <section className="py-28 px-6 xl:py-36 xl:px-12">
           <div className="max-w-6xl mx-auto">
             <AnimateIn className="text-center mb-16">
               <SectionLabel className="text-green-600">
@@ -1132,7 +1075,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
         </section>
 
         {/* ══ FAQ ═══════════════════════════════════════════════════════ */}
-        <section id="faq" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12 bg-white">
+        <section id="faq" className="scroll-mt-20 py-28 px-6 xl:py-36 xl:px-12">
           <div className="max-w-3xl mx-auto">
             <AnimateIn className="text-center mb-16">
               <SectionLabel>{t("faq.eyebrow")}</SectionLabel>
@@ -1169,22 +1112,8 @@ function HomeContent({ courses }: { courses: Course[] }) {
 
         {/* ══ Contact ═══════════════════════════════════════════════════ */}
         <section
-          className="py-28 px-6 xl:py-36 xl:px-12 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden"
+          className="py-28 px-6 xl:py-36 xl:px-12 relative overflow-hidden"
         >
-          {/* Decorative blobs */}
-          <div
-            className="absolute -left-40 top-10 w-96 h-96 rounded-full opacity-[0.07] pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, var(--brand-navy), transparent)",
-            }}
-          />
-          <div
-            className="absolute -right-40 bottom-10 w-96 h-96 rounded-full opacity-[0.07] pointer-events-none"
-            style={{
-              background: "radial-gradient(circle, var(--brand-red), transparent)",
-            }}
-          />
-
           <div id="contact" className="max-w-screen-2xl mx-auto relative z-10 scroll-mt-24">
             <AnimateIn className="text-center mb-14">
               <SectionLabel>{t("contact.eyebrow")}</SectionLabel>
@@ -1409,12 +1338,9 @@ function HomeContent({ courses }: { courses: Course[] }) {
         </section>
 
         {/* ══ Footer ════════════════════════════════════════════════════ */}
-        <footer
-          className="text-white pt-14 pb-10 px-[clamp(1rem,2vw,2.5rem)]"
-          style={{ backgroundColor: "var(--brand-navy)" }}
-        >
+        <footer className="text-slate-900 pt-14 pb-10 px-[clamp(1rem,2vw,2.5rem)]">
           <div className="w-full">
-            <div className="flex flex-col md:flex-row items-start justify-between gap-12 pb-12 border-b border-white/10">
+            <div className="flex flex-col md:flex-row items-start justify-between gap-12 pb-12 border-b border-slate-200">
               {/* Brand */}
               <div className="max-w-[300px]">
                 <div className="flex items-center gap-3 mb-4">
@@ -1432,7 +1358,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                   </span>
                 </div>
                 <p
-                  className="text-slate-400 leading-relaxed"
+                  className="text-slate-500 leading-relaxed"
                   style={{ fontSize: "0.875rem" }}
                 >
                   {t("footer.blurb")}
@@ -1455,7 +1381,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                   href="https://www.facebook.com/profile.php?id=61585638656242"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 mt-5 text-slate-400 hover:text-[#1877F2] transition-colors"
+                  className="inline-flex items-center gap-2 mt-5 text-slate-500 hover:text-[#1877F2] transition-colors"
                   style={{ fontSize: "0.875rem" }}
                 >
                   <FacebookIcon className="w-4 h-4" />
@@ -1471,7 +1397,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                     <a
                       key={l}
                       href="#programs"
-                      className="block text-slate-400 hover:text-white mb-2.5 transition-colors"
+                      className="block text-slate-500 hover:text-slate-900 mb-2.5 transition-colors"
                       style={{ fontSize: "0.875rem" }}
                     >
                       {l}
@@ -1484,7 +1410,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
                     <a
                       key={l}
                       href="#"
-                      className="block text-slate-400 hover:text-white mb-2.5 transition-colors"
+                      className="block text-slate-500 hover:text-slate-900 mb-2.5 transition-colors"
                       style={{ fontSize: "0.875rem" }}
                     >
                       {l}
@@ -1519,6 +1445,7 @@ function HomeContent({ courses }: { courses: Course[] }) {
             </p>
           </div>
         </footer>
+        </div>
       </motion.main>
 
       {/* ── Floating WhatsApp button ── */}
