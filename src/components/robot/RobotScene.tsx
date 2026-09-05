@@ -20,16 +20,16 @@ export default function RobotScene({ progress }: RobotSceneProps) {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-[2] overflow-hidden" aria-hidden="true">
-      <div className="absolute left-1/2 top-1/2 w-[min(118vw,1080px)] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.82] sm:w-[min(108vw,1080px)] md:w-[min(86vw,1080px)] lg:w-[min(72vw,1080px)] 2xl:w-[min(64vw,1080px)]">
-        <div className="relative aspect-[1000/760] w-full">
+      <div className="absolute left-1/2 top-1/2 w-[min(92vw,820px)] max-w-none -translate-x-1/2 -translate-y-1/2 sm:w-[min(84vw,900px)] md:w-[min(70vw,980px)] lg:w-[min(66vw,1100px)] 2xl:w-[min(60vw,1120px)]">
+        <div className="relative aspect-[4/3] w-full">
           <div className="absolute inset-[9%] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(43,95,224,0.11),transparent_67%)]" />
           {showFallback ? (
             <Image
-              src={robotAssetPaths.components.assembledFallback}
+              src={robotAssetPaths.components.frameAssemblyFallback}
               alt=""
               fill
               sizes="100vw"
-              className="object-contain"
+              className="object-contain mix-blend-multiply"
               priority
             />
           ) : (

@@ -1,10 +1,16 @@
 "use client";
 
-import { useScroll } from "motion/react";
+import { motion, useScroll, useTransform } from "motion/react";
 import RobotScene from "./RobotScene";
 
 export default function RobotScrollHero() {
   const { scrollYProgress } = useScroll();
+  const robotProgress = useTransform(scrollYProgress, [0, 0.24], [0, 1]);
+  const sceneOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.08, 0.24, 0.4, 1],
+    [0.88, 0.72, 0.5, 0.22, 0.08],
+  );
 
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -36,7 +42,9 @@ export default function RobotScrollHero() {
             "radial-gradient(circle at 65% 35%, #dbe6ff 0%, transparent 55%), radial-gradient(circle at 80% 75%, #f3ddc3 0%, transparent 50%)",
         }}
       />
-      <RobotScene progress={scrollYProgress} />
+      <motion.div className="absolute inset-0" style={{ opacity: sceneOpacity }}>
+        <RobotScene progress={robotProgress} />
+      </motion.div>
     </div>
   );
 }

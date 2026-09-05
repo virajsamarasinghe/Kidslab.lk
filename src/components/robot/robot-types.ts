@@ -1,26 +1,28 @@
 import type { MotionValue } from "motion/react";
 
 export type RobotPartId =
-  | "caster"
-  | "wheelLeft"
-  | "wheelRight"
-  | "motorLeft"
-  | "motorRight"
-  | "chassisLower"
-  | "structural"
-  | "chassisUpper"
-  | "battery"
-  | "motorDriver"
-  | "wires"
-  | "arduino"
-  | "irSensor";
+  | "frameLower"
+  | "frameUpper"
+  | "standoffFrontLeft"
+  | "standoffFrontRight"
+  | "standoffRearLeft"
+  | "standoffRearRight"
+  | "upperScrewFrontLeft"
+  | "upperScrewFrontRight"
+  | "upperScrewRearLeft"
+  | "upperScrewRearRight"
+  | "lowerNutFrontLeft"
+  | "lowerNutFrontRight"
+  | "lowerNutRearLeft"
+  | "lowerNutRearRight"
+  | "caster";
 
 export type RobotMotionConfig = {
   id: RobotPartId;
   phase: readonly [number, number];
+  basePosition: readonly [number, number, number];
   position?: readonly [number, number, number];
-  rotation?: readonly [number, number, number];
-  scale?: number;
+  follows?: "frameUpper" | "frameLower";
 };
 
 export type RobotProgress = MotionValue<number>;

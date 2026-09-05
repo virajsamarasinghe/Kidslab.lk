@@ -1,6 +1,7 @@
 "use client";
 
 import { Canvas, useThree } from "@react-three/fiber";
+import { OrthographicCamera } from "@react-three/drei";
 import { useEffect } from "react";
 import type { RobotProgress } from "./robot-types";
 import RobotWorld from "./RobotModel";
@@ -29,25 +30,26 @@ function WebGLContextMonitor({ onContextLost }: { onContextLost?: () => void }) 
 }
 
 function CameraSetup() {
-  const { camera, invalidate } = useThree();
+  const size = useThree((state) => state.size);
 
-  useEffect(() => {
-    camera.position.set(6.4, 4.9, 8.6);
-    camera.lookAt(0, 0.35, 0);
-    invalidate();
-  }, [camera, invalidate]);
-
-  return null;
+  // One projection for all photographic layers, at every viewport size.
+  return (
+    <OrthographicCamera
+      makeDefault
+      position={[0, 0, 10]}
+      zoom={Math.min(size.width / 8.4, size.height / 6.3)}
+      near={0.1}
+      far={100}
+    />
+  );
 }
 
 export default function RobotCanvas({ progress, reduceMotion, onContextLost }: RobotCanvasProps) {
   return (
     <Canvas
-      shadows="basic"
       dpr={[1, 1.25]}
       frameloop="demand"
-      camera={{ position: [6.4, 4.9, 8.6], fov: 32, near: 0.1, far: 100 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{ antialias: true, alpha: true, localClippingEnabled: true, powerPreference: "high-performance" }}
       style={{ position: "absolute", inset: 0 }}
     >
       <WebGLContextMonitor onContextLost={onContextLost} />

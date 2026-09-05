@@ -1,90 +1,60 @@
-import type { RobotMotionConfig } from "./robot-types";
+import type { RobotMotionConfig, RobotPartId } from "./robot-types";
 
-/**
- * Scroll phases and 3D offsets are intentionally kept here so the physical
- * disassembly can be tuned without touching the model geometry or copy.
- * Position values are in scene units; the camera keeps the scene responsive.
- */
-export const robotMotionConfig = [
-  {
-    id: "caster",
-    phase: [0.86, 0.98],
-    position: [0, -0.16, 0.24],
-    rotation: [0.02, 0, 0.02],
-  },
-  {
-    id: "wheelLeft",
-    phase: [0.7, 0.86],
-    position: [-1.3, 0.04, 0],
-    rotation: [0, 0, -0.04],
-  },
-  {
-    id: "wheelRight",
-    phase: [0.7, 0.86],
-    position: [1.3, 0.04, 0],
-    rotation: [0, 0, 0.04],
-  },
-  {
-    id: "motorLeft",
-    phase: [0.46, 0.7],
-    position: [-0.9, 0.03, 0.04],
-    rotation: [0, 0, -0.025],
-  },
-  {
-    id: "motorRight",
-    phase: [0.46, 0.7],
-    position: [0.9, 0.03, 0.04],
-    rotation: [0, 0, 0.025],
-  },
-  {
-    id: "chassisLower",
-    phase: [0.4, 0.62],
-    position: [0, -0.28, 0],
-    rotation: [0.02, 0, 0],
-    scale: 0.985,
-  },
-  {
-    id: "structural",
-    phase: [0.42, 0.8],
-    position: [0, 0.13, 0],
-    scale: 0.97,
-  },
-  {
-    id: "battery",
-    phase: [0.28, 0.5],
-    position: [0.55, 0.78, 0.18],
-    rotation: [0.04, 0.08, 0.02],
-  },
-  {
-    id: "motorDriver",
-    phase: [0.28, 0.5],
-    position: [1.08, 0.18, 0.3],
-    rotation: [0.04, 0.1, 0.07],
-  },
-  {
-    id: "chassisUpper",
-    phase: [0.4, 0.62],
-    position: [0, 0.82, 0],
-    rotation: [-0.05, 0.02, 0.02],
-    scale: 1.015,
-  },
-  {
-    id: "wires",
-    phase: [0.12, 0.34],
-    position: [0, 1.35, 0.08],
-    rotation: [0.08, -0.02, -0.03],
-  },
-  {
-    id: "arduino",
-    phase: [0.12, 0.34],
-    position: [0, 1.42, 0.08],
-    rotation: [0.08, -0.02, -0.03],
-    scale: 1.015,
-  },
-  {
-    id: "irSensor",
-    phase: [0.84, 0.96],
-    position: [0, -0.2, 0.82],
-    rotation: [0.04, 0, 0],
-  },
-] satisfies readonly RobotMotionConfig[];
+// The photographs already contain perspective. All layers share this image
+// plane; projecting each part independently would move it off its mounting hole.
+export const framePhotoSize = 1254;
+export const framePlateSize = [6.2, 4.16] as const;
+export const framePlateGap = 0.72;
+
+export function framePhotoPoint(x: number, y: number, height = 0): readonly [number, number, number] {
+  return [
+    (x / framePhotoSize - 0.5) * framePlateSize[0],
+    (0.5 - y / framePhotoSize) * framePlateSize[1] + height,
+    0,
+  ];
+}
+
+// Actual hole centers in chassis-plate-photo.png. Every fastener on an axis
+// derives from the same point on both identically sized plates.
+const mounts = {
+  FrontLeft: [188, 600],
+  FrontRight: [455, 908],
+  RearLeft: [835, 284],
+  RearRight: [1107, 570],
+} as const;
+
+export const frameBaseLayout = {
+  frameLower: [0, 0, 0],
+  frameUpper: [0, framePlateGap, 0],
+  standoffFrontLeft: framePhotoPoint(...mounts.FrontLeft),
+  standoffFrontRight: framePhotoPoint(...mounts.FrontRight),
+  standoffRearLeft: framePhotoPoint(...mounts.RearLeft),
+  standoffRearRight: framePhotoPoint(...mounts.RearRight),
+  upperScrewFrontLeft: framePhotoPoint(...mounts.FrontLeft, framePlateGap),
+  upperScrewFrontRight: framePhotoPoint(...mounts.FrontRight, framePlateGap),
+  upperScrewRearLeft: framePhotoPoint(...mounts.RearLeft, framePlateGap),
+  upperScrewRearRight: framePhotoPoint(...mounts.RearRight, framePlateGap),
+  lowerNutFrontLeft: framePhotoPoint(...mounts.FrontLeft, -0.035),
+  lowerNutFrontRight: framePhotoPoint(...mounts.FrontRight, -0.035),
+  lowerNutRearLeft: framePhotoPoint(...mounts.RearLeft, -0.035),
+  lowerNutRearRight: framePhotoPoint(...mounts.RearRight, -0.035),
+  caster: framePhotoPoint(258, 862, -0.025),
+} as const satisfies Record<RobotPartId, readonly [number, number, number]>;
+
+/** Vertical separation preserves the mounting axes, including on reverse scroll. */
+export const robotMotionConfig: readonly RobotMotionConfig[] = [
+  { id: "frameLower", phase: [0.16, 0.64], basePosition: frameBaseLayout.frameLower, position: [0, -0.7, 0] },
+  { id: "frameUpper", phase: [0.16, 0.64], basePosition: frameBaseLayout.frameUpper, position: [0, 0.95, 0] },
+  ...(["FrontLeft", "FrontRight", "RearLeft", "RearRight"] as const).flatMap((mount): RobotMotionConfig[] => {
+    const standoff = `standoff${mount}` as const;
+    const screw = `upperScrew${mount}` as const;
+    const nut = `lowerNut${mount}` as const;
+
+    return [
+      { id: standoff, phase: [0.24, 0.72], basePosition: frameBaseLayout[standoff], position: [0, 0.1, 0] },
+      { id: screw, phase: [0.04, 0.32], basePosition: frameBaseLayout[screw], position: [0, 0.48, 0], follows: "frameUpper" },
+      { id: nut, phase: [0.08, 0.4], basePosition: frameBaseLayout[nut], position: [0, -0.24, 0], follows: "frameLower" },
+    ];
+  }),
+  { id: "caster", phase: [0.68, 0.96], basePosition: frameBaseLayout.caster, position: [0, -0.42, 0], follows: "frameLower" },
+];
