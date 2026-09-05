@@ -1,60 +1,108 @@
-import type { RobotMotionConfig, RobotPartId } from "./robot-types";
+import type { RobotMotionConfig } from "./robot-types";
 
-// The photographs already contain perspective. All layers share this image
-// plane; projecting each part independently would move it off its mounting hole.
-export const framePhotoSize = 1254;
-export const framePlateSize = [6.2, 4.16] as const;
-export const framePlateGap = 0.72;
+export const FRAME_UPPER_Y = 0.9;
 
-export function framePhotoPoint(x: number, y: number, height = 0): readonly [number, number, number] {
-  return [
-    (x / framePhotoSize - 0.5) * framePlateSize[0],
-    (0.5 - y / framePhotoSize) * framePlateSize[1] + height,
-    0,
-  ];
-}
-
-// Actual hole centers in chassis-plate-photo.png. Every fastener on an axis
-// derives from the same point on both identically sized plates.
-const mounts = {
-  FrontLeft: [188, 600],
-  FrontRight: [455, 908],
-  RearLeft: [835, 284],
-  RearRight: [1107, 570],
-} as const;
-
-export const frameBaseLayout = {
-  frameLower: [0, 0, 0],
-  frameUpper: [0, framePlateGap, 0],
-  standoffFrontLeft: framePhotoPoint(...mounts.FrontLeft),
-  standoffFrontRight: framePhotoPoint(...mounts.FrontRight),
-  standoffRearLeft: framePhotoPoint(...mounts.RearLeft),
-  standoffRearRight: framePhotoPoint(...mounts.RearRight),
-  upperScrewFrontLeft: framePhotoPoint(...mounts.FrontLeft, framePlateGap),
-  upperScrewFrontRight: framePhotoPoint(...mounts.FrontRight, framePlateGap),
-  upperScrewRearLeft: framePhotoPoint(...mounts.RearLeft, framePlateGap),
-  upperScrewRearRight: framePhotoPoint(...mounts.RearRight, framePlateGap),
-  lowerNutFrontLeft: framePhotoPoint(...mounts.FrontLeft, -0.035),
-  lowerNutFrontRight: framePhotoPoint(...mounts.FrontRight, -0.035),
-  lowerNutRearLeft: framePhotoPoint(...mounts.RearLeft, -0.035),
-  lowerNutRearRight: framePhotoPoint(...mounts.RearRight, -0.035),
-  caster: framePhotoPoint(258, 862, -0.025),
-} as const satisfies Record<RobotPartId, readonly [number, number, number]>;
-
-/** Vertical separation preserves the mounting axes, including on reverse scroll. */
+/**
+ * Scroll phases follow the robot's physical disassembly order. Every offset is
+ * in the robot's local coordinate system, so the exploded assembly remains
+ * coherent while its parent completes one full turn.
+ */
 export const robotMotionConfig: readonly RobotMotionConfig[] = [
-  { id: "frameLower", phase: [0.16, 0.64], basePosition: frameBaseLayout.frameLower, position: [0, -0.7, 0] },
-  { id: "frameUpper", phase: [0.16, 0.64], basePosition: frameBaseLayout.frameUpper, position: [0, 0.95, 0] },
-  ...(["FrontLeft", "FrontRight", "RearLeft", "RearRight"] as const).flatMap((mount): RobotMotionConfig[] => {
-    const standoff = `standoff${mount}` as const;
-    const screw = `upperScrew${mount}` as const;
-    const nut = `lowerNut${mount}` as const;
-
-    return [
-      { id: standoff, phase: [0.24, 0.72], basePosition: frameBaseLayout[standoff], position: [0, 0.1, 0] },
-      { id: screw, phase: [0.04, 0.32], basePosition: frameBaseLayout[screw], position: [0, 0.48, 0], follows: "frameUpper" },
-      { id: nut, phase: [0.08, 0.4], basePosition: frameBaseLayout[nut], position: [0, -0.24, 0], follows: "frameLower" },
-    ];
-  }),
-  { id: "caster", phase: [0.68, 0.96], basePosition: frameBaseLayout.caster, position: [0, -0.42, 0], follows: "frameLower" },
+  {
+    id: "frameLower",
+    phase: [0.42, 0.68],
+    basePosition: [0, 0, 0],
+    position: [0, -0.72, 0],
+  },
+  {
+    id: "frameUpper",
+    phase: [0.34, 0.62],
+    basePosition: [0, FRAME_UPPER_Y, 0],
+    position: [0, 1.22, 0],
+  },
+  {
+    id: "standoffs",
+    phase: [0.44, 0.7],
+    basePosition: [0, 0, 0],
+    position: [0, 0.12, 0],
+  },
+  {
+    id: "upperScrews",
+    phase: [0.26, 0.5],
+    basePosition: [0, FRAME_UPPER_Y, 0],
+    position: [0, 0.82, 0],
+    follows: "frameUpper",
+  },
+  {
+    id: "lowerNuts",
+    phase: [0.3, 0.54],
+    basePosition: [0, -0.08, 0],
+    position: [0, -0.42, 0],
+    follows: "frameLower",
+  },
+  {
+    id: "caster",
+    phase: [0.78, 0.98],
+    basePosition: [0, -0.08, 0],
+    position: [0, -0.8, 0.34],
+    follows: "frameLower",
+  },
+  {
+    id: "arduino",
+    phase: [0.06, 0.3],
+    basePosition: [-0.72, 0.99, 0.55],
+    position: [-0.18, 1.65, 0.08],
+    rotation: [0, -0.12, -0.04],
+  },
+  {
+    id: "wires",
+    phase: [0.04, 0.28],
+    basePosition: [0, 1.12, 0],
+    position: [0, 1.65, 0.12],
+    rotation: [0, -0.1, 0],
+  },
+  {
+    id: "battery",
+    phase: [0.15, 0.42],
+    basePosition: [0.82, 1.2, -1.78],
+    position: [0.62, 1.42, -0.24],
+    rotation: [0.06, 0.14, 0.05],
+  },
+  {
+    id: "motorDriver",
+    phase: [0.16, 0.43],
+    basePosition: [0.9, 1.0, 0.7],
+    position: [0.82, 1.18, 0.22],
+    rotation: [-0.04, 0.12, 0.05],
+  },
+  {
+    id: "motorLeft",
+    phase: [0.54, 0.77],
+    basePosition: [-1.65, -0.05, -0.08],
+    position: [-1.18, 0, 0],
+  },
+  {
+    id: "motorRight",
+    phase: [0.54, 0.77],
+    basePosition: [1.65, -0.05, -0.08],
+    position: [1.18, 0, 0],
+  },
+  {
+    id: "wheelLeft",
+    phase: [0.65, 0.87],
+    basePosition: [-2.34, -0.03, -0.08],
+    position: [-1.52, 0, 0],
+  },
+  {
+    id: "wheelRight",
+    phase: [0.65, 0.87],
+    basePosition: [2.34, -0.03, -0.08],
+    position: [1.52, 0, 0],
+  },
+  {
+    id: "irSensor",
+    phase: [0.72, 0.94],
+    basePosition: [0, -0.2, 3.27],
+    position: [0, -0.32, 1.2],
+  },
 ];

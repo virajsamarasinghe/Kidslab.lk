@@ -6,7 +6,7 @@ export const robotAssetPaths = {
     screw: "/robot/components/frame-screw-photo.png",
     nut: "/robot/components/frame-nut-photo.png",
     caster: "/robot/components/frame-caster-photo.png",
-    frameAssemblyFallback: "/robot/components/frame-assembly-photo.png",
+    frameAssemblyFallback: "/robot/components/assembled-robot-realistic.png",
   },
   references: {
     assembled: "/robot/references/assembled-reference.webp",

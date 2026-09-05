@@ -8,8 +8,8 @@ export default function RobotScrollHero() {
   const robotProgress = useTransform(scrollYProgress, [0, 0.24], [0, 1]);
   const sceneOpacity = useTransform(
     scrollYProgress,
-    [0, 0.08, 0.24, 0.4, 1],
-    [0.88, 0.72, 0.5, 0.22, 0.08],
+    [0, 0.24, 0.4, 1],
+    [0.92, 0.86, 0.22, 0.08],
   );
 
   return (
